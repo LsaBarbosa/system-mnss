@@ -1,7 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import type { OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { HealthService } from './core/api/health.service';
-import { HealthStatus } from './core/api/health-status';
+import type { HealthStatus } from './core/api/health-status';
+import { ErrorBannerComponent } from './shared/error-banner/error-banner.component';
 
 type ApiState = 'checking' | 'available' | 'unavailable';
 
@@ -14,7 +16,7 @@ interface OperationTile {
 @Component({
   selector: 'mnss-root',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ErrorBannerComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

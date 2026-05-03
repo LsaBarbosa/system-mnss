@@ -26,8 +26,8 @@ Copie este prompt antes da primeira história, caso a conversa esteja vazia:
 
 ~~~text
 Você vai me ajudar a implementar o Sistema Nova Aliança / MNSS.
-Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript, RxJS.
-Arquitetura: monólito modular local + monólito modular online + módulo de sincronização.
+Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript, RxJS.
+Arquitetura: monólito modular local + online, monólito modular no back-end e front-end Angular por features/camadas.
 Regra central: PDV, caixa, KDS, impressão e banco local precisam funcionar sem internet.
 Sempre gere código copiável por arquivo, com o caminho do arquivo antes do bloco de código.
 Não omita imports.
@@ -50,6 +50,10 @@ Quando faltar contexto do meu projeto, peça o arquivo necessário ou gere uma v
 - Ações críticas devem gerar auditoria quando previsto.
 - Não expor PostgreSQL, RabbitMQ e Redis na internet.
 - Separar ambiente local e online conforme o domínio.
+- Back-end deve seguir arquitetura hexagonal: `adapter -> application -> domain`.
+- Domínio e aplicação não dependem de HTTP, JPA, Spring MVC, mensageria, Redis, hardware ou APIs externas.
+- Front-end deve seguir arquitetura Angular por features: `domain`, `application`, `data-access`, `ui` e `pages`.
+- Componentes de UI não acessam `HttpClient`; chamadas HTTP ficam em `data-access`.
 
 ---
 
@@ -80,18 +84,18 @@ Quando faltar contexto do meu projeto, peça o arquivo necessário ou gere uma v
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S01-H01: Como dev, quero criar o monorepo para organizar backend, frontend, infra e docs.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Fundação técnica.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: ARQ, README.
-- Regras importantes desta história: manter monólito modular, sem criar microserviços; separar domínio, aplicação e infraestrutura; deixar build e testes executáveis desde a primeira entrega; não implementar regra funcional de negócio antes da base estar compilando.
+- Regras importantes desta história: manter monólito modular, sem criar microserviços; aplicar estrutura modular no back-end, separar domínio, serviços e controladores, e aplicar front-end por features/camadas; deixar build e testes executáveis desde a primeira entrega; não implementar regra funcional de negócio antes da base estar compilando.
 
 O que gerar:
 1. Back-end: Criar estrutura `backend/`, `infra/`, `docs/`.
@@ -136,18 +140,18 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S01-H02: Como dev, quero criar o bootstrap da API local.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Fundação técnica.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: ARQ, DL.
-- Regras importantes desta história: manter monólito modular, sem criar microserviços; separar domínio, aplicação e infraestrutura; deixar build e testes executáveis desde a primeira entrega; não implementar regra funcional de negócio antes da base estar compilando.
+- Regras importantes desta história: manter monólito modular, sem criar microserviços; aplicar estrutura modular no back-end, separar domínio, serviços e controladores, e aplicar front-end por features/camadas; deixar build e testes executáveis desde a primeira entrega; não implementar regra funcional de negócio antes da base estar compilando.
 
 O que gerar:
 1. Back-end: Criar `local-app` Spring Boot com `/actuator/health` e `/api/ping`.
@@ -192,18 +196,18 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S01-H03: Como dev, quero criar o bootstrap da API online.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Fundação técnica.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: ARQ, DO.
-- Regras importantes desta história: manter monólito modular, sem criar microserviços; separar domínio, aplicação e infraestrutura; deixar build e testes executáveis desde a primeira entrega; não implementar regra funcional de negócio antes da base estar compilando.
+- Regras importantes desta história: manter monólito modular, sem criar microserviços; aplicar estrutura modular no back-end, separar domínio, serviços e controladores, e aplicar front-end por features/camadas; deixar build e testes executáveis desde a primeira entrega; não implementar regra funcional de negócio antes da base estar compilando.
 
 O que gerar:
 1. Back-end: Criar `online-app` Spring Boot com profile `online`.
@@ -248,18 +252,18 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S01-H04: Como dev, quero padronizar resposta de erro.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Fundação técnica.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: FLUXOS.
-- Regras importantes desta história: manter monólito modular, sem criar microserviços; separar domínio, aplicação e infraestrutura; deixar build e testes executáveis desde a primeira entrega; não implementar regra funcional de negócio antes da base estar compilando.
+- Regras importantes desta história: manter monólito modular, sem criar microserviços; aplicar estrutura modular no back-end, separar domínio, serviços e controladores, e aplicar front-end por features/camadas; deixar build e testes executáveis desde a primeira entrega; não implementar regra funcional de negócio antes da base estar compilando.
 
 O que gerar:
 1. Back-end: Criar `ApiError`, `BusinessException`, `GlobalExceptionHandler`.
@@ -304,18 +308,18 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S01-H05: Como dev, quero configurar qualidade mínima.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Fundação técnica.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: ARQ.
-- Regras importantes desta história: manter monólito modular, sem criar microserviços; separar domínio, aplicação e infraestrutura; deixar build e testes executáveis desde a primeira entrega; não implementar regra funcional de negócio antes da base estar compilando.
+- Regras importantes desta história: manter monólito modular, sem criar microserviços; aplicar estrutura modular no back-end, separar domínio, serviços e controladores, e aplicar front-end por features/camadas; deixar build e testes executáveis desde a primeira entrega; não implementar regra funcional de negócio antes da base estar compilando.
 
 O que gerar:
 1. Back-end: Adicionar JUnit 5, Mockito, Testcontainers, MapStruct, OpenAPI.
@@ -366,14 +370,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S02-H01: Como dev, quero subir infraestrutura local com Docker Compose.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Infraestrutura local/online.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DL, ARQ.
@@ -422,14 +426,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S02-H02: Como dev, quero subir infraestrutura online base.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Infraestrutura local/online.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DO, ARQ.
@@ -478,14 +482,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S02-H03: Como operador técnico, quero health check técnico.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Infraestrutura local/online.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DL, DO, SYNC.
@@ -534,14 +538,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S02-H04: Como dev, quero Nginx local inicial.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Infraestrutura local/online.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DL.
@@ -590,14 +594,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S02-H05: Como admin, quero scripts básicos de backup.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Infraestrutura local/online.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DL, DO.
@@ -652,14 +656,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S03-H01: Como usuário interno, quero fazer login.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Segurança e usuários.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DOM, FLUXOS.
@@ -708,14 +712,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S03-H02: Como sistema, quero carregar usuário autenticado.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Segurança e usuários.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: FLUXOS.
@@ -764,14 +768,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S03-H03: Como admin, quero cadastrar usuário interno.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Segurança e usuários.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DOM, FLUXOS.
@@ -820,14 +824,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S03-H04: Como admin, quero atribuir perfis.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Segurança e usuários.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DOM, BD.
@@ -876,14 +880,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S03-H05: Como gerente, quero permissões para ações críticas.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Segurança e usuários.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: ARQ, FLUXOS.
@@ -938,14 +942,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S04-H01: Como dev, quero migrations Flyway iniciais.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Banco e domínio base.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: BD.
@@ -994,14 +998,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S04-H02: Como dev, quero entidades JPA base.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Banco e domínio base.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DOM, BD.
@@ -1050,14 +1054,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S04-H03: Como dev, quero repositories base.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Banco e domínio base.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: BD.
@@ -1106,14 +1110,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S04-H04: Como sistema, quero seed de roles.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Banco e domínio base.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DOM, BD.
@@ -1162,14 +1166,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S04-H05: Como sistema, quero auditoria técnica base.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Banco e domínio base.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DOM, FLUXOS.
@@ -1224,14 +1228,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S05-H01: Como gerente, quero cadastrar categoria.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Catálogo.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DOM, BD, FLUXOS.
@@ -1280,14 +1284,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S05-H02: Como gerente, quero editar categoria.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Catálogo.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DOM, FLUXOS.
@@ -1336,14 +1340,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S05-H03: Como gerente, quero definir visibilidade da categoria por canal.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Catálogo.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DOM, FLUXOS.
@@ -1392,14 +1396,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S05-H04: Como gerente, quero cadastrar produto.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Catálogo.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DOM, BD, FLUXOS.
@@ -1448,14 +1452,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S05-H05: Como gerente, quero editar produto.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Catálogo.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DOM, SYNC.
@@ -1504,14 +1508,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S05-H06: Como operador, quero buscar produto por código de barras.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Catálogo.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: PDV, DOM.
@@ -1566,14 +1570,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S06-H01: Como atendente, quero marcar produto indisponível.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Disponibilidade.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DOM, FLUXOS.
@@ -1622,14 +1626,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S06-H02: Como sistema, quero bloquear produto indisponível no online.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Disponibilidade.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DOM, SYNC.
@@ -1678,14 +1682,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S06-H03: Como operador, quero listar apenas produtos vendáveis no PDV.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Disponibilidade.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: PDV, DOM.
@@ -1734,14 +1738,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S06-H04: Como sistema, quero criar evento de sync ao mudar disponibilidade.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Disponibilidade.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: SYNC, FLUXOS.
@@ -1790,14 +1794,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S06-H05: Como gerente, quero auditar alteração de disponibilidade.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Disponibilidade.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DOM, FLUXOS.
@@ -1852,14 +1856,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S07-H01: Como operador, quero abrir caixa.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Caixa.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: PDV, DOM, FLUXOS.
@@ -1908,14 +1912,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S07-H02: Como operador, quero consultar caixa atual.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Caixa.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: PDV.
@@ -1964,14 +1968,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S07-H03: Como gerente, quero registrar sangria.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Caixa.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: PDV, FLUXOS.
@@ -2020,14 +2024,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S07-H04: Como gerente, quero registrar suprimento.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Caixa.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: PDV, FLUXOS.
@@ -2076,14 +2080,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S07-H05: Como operador, quero fechar caixa.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Caixa.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: PDV, FLUXOS.
@@ -2132,14 +2136,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S07-H06: Como operador, quero ver resumo do caixa.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Caixa.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: PDV.
@@ -2194,14 +2198,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S08-H01: Como operador, quero iniciar venda.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: PDV carrinho.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: PDV, FLUXOS.
@@ -2250,14 +2254,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S08-H02: Como operador, quero adicionar produto ao carrinho.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: PDV carrinho.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DOM, PDV.
@@ -2306,14 +2310,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S08-H03: Como operador, quero alterar quantidade.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: PDV carrinho.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: PDV, DOM.
@@ -2362,14 +2366,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S08-H04: Como operador, quero remover item.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: PDV carrinho.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: FLUXOS.
@@ -2418,14 +2422,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S08-H05: Como operador, quero buscar produto por nome/categoria/código.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: PDV carrinho.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: PDV.
@@ -2474,14 +2478,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S08-H06: Como operador, quero ver totais em tempo real.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: PDV carrinho.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DOM, PDV.
@@ -2536,14 +2540,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S09-H01: Como operador, quero registrar pagamento em dinheiro.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Pagamento presencial.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: PDV, DOM.
@@ -2592,14 +2596,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S09-H02: Como operador, quero registrar Pix presencial.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Pagamento presencial.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: PDV.
@@ -2648,14 +2652,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S09-H03: Como operador, quero registrar débito/crédito/voucher.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Pagamento presencial.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: PDV, DOM.
@@ -2704,14 +2708,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S09-H04: Como operador, quero pagamento misto.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Pagamento presencial.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: PDV, FLUXOS.
@@ -2760,14 +2764,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S09-H05: Como sistema, quero movimentação de caixa por pagamento.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Pagamento presencial.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DOM, PDV.
@@ -2822,14 +2826,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S10-H01: Como operador, quero finalizar venda paga.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Finalização, impressão, desconto e cancelamento.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: PDV, FLUXOS.
@@ -2878,14 +2882,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S10-H02: Como sistema, quero criar evento de sync ao finalizar venda.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Finalização, impressão, desconto e cancelamento.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: PDV, SYNC.
@@ -2934,14 +2938,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S10-H03: Como operador, quero imprimir comprovante.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Finalização, impressão, desconto e cancelamento.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: PDV, DL, HW.
@@ -2990,14 +2994,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S10-H04: Como operador, quero abrir gaveta em pagamento dinheiro.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Finalização, impressão, desconto e cancelamento.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: PDV, HW.
@@ -3046,14 +3050,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S10-H05: Como operador, quero aplicar desconto.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Finalização, impressão, desconto e cancelamento.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: PDV, FLUXOS.
@@ -3102,14 +3106,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S10-H06: Como gerente, quero cancelar venda finalizada.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Finalização, impressão, desconto e cancelamento.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: PDV, FLUXOS.
@@ -3164,14 +3168,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S11-H01: Como sistema, quero criar tickets KDS ao finalizar venda com preparo.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: KDS tickets e tempo real.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: KDS, PDV, DOM.
@@ -3220,14 +3224,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S11-H02: Como cozinha, quero filtrar tickets por setor.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: KDS tickets e tempo real.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: KDS.
@@ -3276,14 +3280,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S11-H03: Como KDS, quero receber ticket via WebSocket.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: KDS tickets e tempo real.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: KDS, ARQ.
@@ -3332,14 +3336,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S11-H04: Como produção, quero ver tempo desde criação.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: KDS tickets e tempo real.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: KDS.
@@ -3388,14 +3392,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S11-H05: Como produção, quero layout em colunas.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: KDS tickets e tempo real.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: KDS.
@@ -3450,14 +3454,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S12-H01: Como produção, quero iniciar preparo do ticket.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: KDS preparo e expedição.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: KDS, FLUXOS.
@@ -3506,14 +3510,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S12-H02: Como produção, quero marcar item pronto.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: KDS preparo e expedição.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: KDS.
@@ -3562,14 +3566,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S12-H03: Como produção, quero marcar ticket pronto.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: KDS preparo e expedição.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: KDS.
@@ -3618,14 +3622,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S12-H04: Como sistema, quero pedido READY quando todos tickets estiverem prontos.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: KDS preparo e expedição.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: KDS, FLUXOS.
@@ -3674,14 +3678,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S12-H05: Como expedição, quero finalizar pedido pronto.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: KDS preparo e expedição.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: KDS, FLUXOS.
@@ -3736,14 +3740,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S13-H01: Como sistema, quero registrar SyncEvent.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Sincronização local → online.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: SYNC, BD.
@@ -3792,14 +3796,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S13-H02: Como worker local, quero enviar evento para online.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Sincronização local → online.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: SYNC.
@@ -3848,14 +3852,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S13-H03: Como API online, quero receber evento local.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Sincronização local → online.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: SYNC, ARQ.
@@ -3904,14 +3908,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S13-H04: Como sistema, quero assinar payload com HMAC.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Sincronização local → online.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: SYNC.
@@ -3960,14 +3964,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S13-H05: Como sistema, quero retry inicial.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Sincronização local → online.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: SYNC.
@@ -4022,14 +4026,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S14-H01: Como cliente, quero acessar site institucional.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Site e cardápio público.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: README, ARQ.
@@ -4078,14 +4082,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S14-H02: Como cliente, quero ver categorias online.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Site e cardápio público.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DOM, FLUXOS.
@@ -4134,14 +4138,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S14-H03: Como cliente, quero ver produtos disponíveis.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Site e cardápio público.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DOM, FLUXOS.
@@ -4190,14 +4194,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S14-H04: Como cliente, quero buscar produto no cardápio.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Site e cardápio público.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: FLUXOS.
@@ -4246,14 +4250,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S14-H05: Como admin, quero preview do cardápio online.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Site e cardápio público.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DOM.
@@ -4308,14 +4312,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S15-H01: Como cliente, quero adicionar produto ao carrinho online.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Pedido online.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DOM, FLUXOS.
@@ -4364,14 +4368,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S15-H02: Como cliente, quero informar meus dados.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Pedido online.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DOM.
@@ -4420,14 +4424,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S15-H03: Como cliente, quero informar endereço para entrega.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Pedido online.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DOM, FLUXOS.
@@ -4476,14 +4480,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S15-H04: Como cliente, quero criar pedido online.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Pedido online.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: FLUXOS, DOM.
@@ -4532,14 +4536,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S15-H05: Como sistema, quero criar sync event do pedido online.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Pedido online.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: SYNC, FLUXOS.
@@ -4594,14 +4598,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S16-H01: Como cliente, quero escolher pagamento online.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Pagamento online e webhook.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DOM, FLUXOS.
@@ -4650,14 +4654,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S16-H02: Como sistema, quero integrar gateway via adapter.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Pagamento online e webhook.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: FLUXOS.
@@ -4706,14 +4710,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S16-H03: Como gateway, quero enviar webhook.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Pagamento online e webhook.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DO, FLUXOS.
@@ -4762,14 +4766,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S16-H04: Como sistema, quero aprovar pagamento por webhook.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Pagamento online e webhook.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DOM, FLUXOS.
@@ -4818,14 +4822,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S16-H05: Como sistema, quero tratar pagamento recusado/expirado.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Pagamento online e webhook.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DOM, FLUXOS.
@@ -4880,14 +4884,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S17-H01: Como worker local, quero buscar pendências online.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Sync online → local e painel.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: SYNC.
@@ -4936,14 +4940,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S17-H02: Como API local, quero processar pedido online recebido.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Sync online → local e painel.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: SYNC, DOM.
@@ -4992,14 +4996,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S17-H03: Como sistema, quero confirmar recebimento.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Sync online → local e painel.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: SYNC.
@@ -5048,14 +5052,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S17-H04: Como sistema, quero gerar KDS para pedido online.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Sync online → local e painel.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: KDS, SYNC.
@@ -5104,14 +5108,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S17-H05: Como gerente, quero painel de sincronização.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Sync online → local e painel.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: SYNC, FLUXOS.
@@ -5160,14 +5164,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S17-H06: Como gerente, quero reprocessar ou ignorar evento.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Sync online → local e painel.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: SYNC, FLUXOS.
@@ -5222,14 +5226,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S18-H01: Como admin, quero health check operacional local.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Observabilidade, deploy e homologação.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DL, SYNC.
@@ -5278,14 +5282,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S18-H02: Como admin, quero health check online.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Observabilidade, deploy e homologação.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DO, FLUXOS.
@@ -5334,14 +5338,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S18-H03: Como dev, quero pipeline de build e deploy.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Observabilidade, deploy e homologação.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DO.
@@ -5390,14 +5394,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S18-H04: Como operador, quero validar fluxo fim a fim local.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Observabilidade, deploy e homologação.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: PDV, KDS, FLUXOS.
@@ -5446,14 +5450,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S18-H05: Como admin, quero validar fluxo online fim a fim.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Observabilidade, deploy e homologação.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: FLUXOS, SYNC, DO.
@@ -5502,14 +5506,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S18-H06: Como suporte, quero documentação de implantação.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Observabilidade, deploy e homologação.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DL, DO.
@@ -5564,14 +5568,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S19-H01: Como gerente, quero registrar entrada de estoque.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Estoque básico.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DOM, FLUXOS.
@@ -5620,14 +5624,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S19-H02: Como gerente, quero registrar perda.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Estoque básico.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DOM.
@@ -5676,14 +5680,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S19-H03: Como sistema, quero baixar estoque por venda.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Estoque básico.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DOM, FLUXOS.
@@ -5732,14 +5736,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S19-H04: Como sistema, quero indisponibilizar produto sem estoque.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Estoque básico.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DOM, SYNC.
@@ -5788,14 +5792,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S19-H05: Como sistema, quero sincronizar estoque/disponibilidade.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: Estoque básico.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: SYNC.
@@ -5850,14 +5854,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S20-H01: Como provider, quero enviar webhook WhatsApp.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: WhatsApp inicial.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DO, FLUXOS.
@@ -5906,14 +5910,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S20-H02: Como atendente, quero ver produtos habilitados para WhatsApp.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: WhatsApp inicial.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DOM, FLUXOS.
@@ -5962,14 +5966,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S20-H03: Como atendente, quero montar pedido assistido.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: WhatsApp inicial.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: DOM, FLUXOS.
@@ -6018,14 +6022,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S20-H04: Como cliente, quero receber confirmação.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: WhatsApp inicial.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: FLUXOS.
@@ -6074,14 +6078,14 @@ Entregue a resposta neste formato:
 **Prompt para copiar e colar no ChatGPT UI:**
 
 ~~~text
-Você é um arquiteto/desenvolvedor full-stack Java 25 + Spring Boot + Angular/TypeScript.
+Você é um arquiteto/desenvolvedor full-stack Java 21 + Spring Boot + Angular/TypeScript.
 
 Gere código copiável para a história S20-H05: Como sistema, quero sincronizar pedido WhatsApp para loja.
 
 Contexto do projeto:
 - Sistema Nova Aliança / MNSS.
 - Arquitetura híbrida local + online.
-- Stack: Java 25, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
+- Stack: Java 21, Spring Boot, PostgreSQL, RabbitMQ, Redis, Flyway, MapStruct, OpenAPI, JUnit 5, Mockito, Testcontainers, Angular, TypeScript e RxJS.
 - Domínio da sprint: WhatsApp inicial.
 - Regra central: a loja precisa vender presencialmente mesmo sem internet.
 - Documentos de referência: SYNC, FLUXOS.

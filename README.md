@@ -6,13 +6,15 @@ Base inicial do sistema Nova Alianca, seguindo a arquitetura hibrida local + onl
 
 ```text
 back-end/
-  core-domain/   regras e objetos de dominio sem framework
-  sync-module/   contratos iniciais de idempotencia e sincronizacao
-  local-app/     API local para PDV, caixa, KDS e operacao offline
-  online-app/    API online para canais externos e sincronizacao
+  core-domain/   dominio puro, entidades, value objects e regras sem framework
+  sync-module/   dominio/portas de idempotencia e sincronizacao
+  shared-infra/  infraestrutura tecnica compartilhada sem regra de negocio
+  local-app/     composition root local e adapters locais
+  online-app/    composition root online e adapters online
 
 front-end/
-  Angular standalone app com console operacional inicial
+  Angular standalone app organizado por core, shared e features
+  features/<feature>/{domain,application,data-access,ui,pages}
 
 infra/local/
   Docker Compose local para PostgreSQL, RabbitMQ, Redis e Nginx
@@ -20,12 +22,16 @@ infra/local/
 
 ## Decisoes do bootstrap
 
-- Monolito modular separado por ambiente local e online.
+- Monolito modular separado por ambiente local e online, sem microservicos no inicio.
+- Back-end deve ser organizado em módulos funcionais.
+- Dominio e aplicacao nao dependem de HTTP, banco, mensageria, hardware ou APIs externas.
+- Front-end deve seguir arquitetura por features: `domain`, `application`, `data-access`, `ui` e `pages`.
+- Componentes de UI nao acessam `HttpClient`; chamadas HTTP ficam em `data-access`.
 - Operacao local tratada como caminho critico.
 - IDs principais em UUID.
 - Dinheiro em `BigDecimal` no Java e `NUMERIC(12,2)` no PostgreSQL.
 - Eventos de sync com `idempotency_key` unica.
-- Java configurado em 21 porque e o JDK disponivel neste workspace. Os docs citam Java 25; a troca deve ser feita quando o JDK 25 estiver instalado no ambiente.
+- Java configurado em 21.
 
 ## Comandos
 

@@ -178,7 +178,7 @@ online/
 
 ### Backend
 
-- Java 25
+- Java 21
 - Spring Boot
 - Spring Security
 - Spring Data JPA
@@ -219,16 +219,12 @@ online/
 
 ## 8. Monólito modular
 
-Foi decidido não iniciar com microserviços.
-
-A arquitetura será:
+A arquitetura será um monólito modular:
 
 ```text
 Monólito modular local
-+
-Monólito modular online
-+
-Módulo de sincronização
++ Monólito modular online
++ módulos de domínio/aplicação/infra compartilhados
 ```
 
 ### Motivos
@@ -240,7 +236,65 @@ Módulo de sincronização
 - Melhor para sistema local
 - Mais fácil de evoluir no início
 
-## 9. Estrutura sugerida do repositório
+## 9. Estrutura de módulos
+
+O back-end deve ser organizado de forma modular, separando as responsabilidades técnicas.
+
+### 9.1 Camadas sugeridas
+
+Cada domínio funcional deve ser organizado de forma clara:
+
+```text
+<dominio>/
+├── model/          # entidades, objetos de valor e enums
+├── service/        # lógica de negócio e serviços
+└── web/            # controladores e DTOs de entrada
+```
+
+### 9.2 Módulos Gradle e responsabilidades
+
+| Módulo | Responsabilidade |
+|---|---|
+| `core-domain` | Domínio e regras compartilhadas. |
+| `sync-module` | Lógica de sincronização. |
+| `shared-infra` | Infraestrutura técnica compartilhada. |
+| `local-app` | Ponto de entrada do ambiente local. |
+| `online-app` | Ponto de entrada do ambiente online. |
+
+### 9.3 DTOs e entidades
+
+- Request/response DTOs pertencem às camadas de entrada (web).
+- Entidades JPA são usadas para persistência.
+- Objetos de domínio contêm a lógica de negócio pura.
+- MapStruct deve mapear entre esses diferentes modelos.
+
+## 10. Arquitetura do front-end
+
+O front-end Angular deve seguir arquitetura por features com camadas internas. A aplicação pode começar como um único app Angular, mas cada área funcional deve ficar isolada por feature.
+
+### 10.1 Estrutura por feature
+
+```text
+src/app/
+├── core/
+│   ├── config/         # environment, tokens e configuração global
+│   ├── http/           # interceptors, erro HTTP e clients base
+│   ├── auth/           # sessão, guards e autorização global
+│   └── layout/         # shell e navegação global
+├── shared/
+│   ├── ui/             # componentes visuais reutilizáveis
+│   ├── pipes/
+│   └── testing/
+└── features/
+    └── <feature>/
+        ├── domain/      # modelos TS e tipos
+        ├── application/ # facades e serviços de tela
+        ├── data-access/ # services HTTP e DTOs
+        ├── ui/          # componentes presentacionais
+        └── pages/       # componentes roteáveis
+```
+
+## 11. Estrutura do repositório
 
 ```text
 nova-alianca-system/
@@ -253,10 +307,7 @@ nova-alianca-system/
 │   └── shared-infra/
 │
 ├── frontend/
-│   ├── site-publico/
-│   ├── admin/
-│   ├── pdv/
-│   └── kds/
+│   ├── src/app/
 │
 ├── infra/
 │   ├── local/
@@ -265,7 +316,7 @@ nova-alianca-system/
 └── docs/
 ```
 
-## 10. Comunicação local ↔ online
+## 12. Comunicação local ↔ online
 
 A comunicação será feita via API HTTPS segura.
 
@@ -275,30 +326,11 @@ Não será permitido expor diretamente:
 - RabbitMQ
 - Redis
 
-Fluxo recomendado:
-
-```text
-Local → HTTPS → API Online
-Online → Dados disponíveis → Local consulta/baixa via HTTPS
-```
-
-## 11. Comunicação em tempo real
+## 13. Comunicação em tempo real
 
 O KDS usará WebSocket para receber pedidos em tempo real no ambiente local.
 
-```text
-PDV cria pedido
-↓
-API local salva pedido
-↓
-API local publica evento
-↓
-WebSocket notifica KDS
-↓
-KDS atualiza tela
-```
-
-## 12. Banco de dados
+## 14. Banco de dados
 
 Haverá dois bancos:
 
@@ -307,29 +339,7 @@ PostgreSQL Local
 PostgreSQL Online
 ```
 
-### 12.1 Banco local
-
-Fonte principal para:
-
-- Vendas presenciais
-- Caixa
-- KDS
-- Estoque operacional
-- Disponibilidade real
-- Eventos locais
-
-### 12.2 Banco online
-
-Fonte principal para:
-
-- Pedidos online
-- Clientes online
-- Pagamentos online
-- Site
-- WhatsApp
-- Relatórios remotos
-
-## 13. Fonte de verdade por domínio
+## 15. Fonte de verdade por domínio
 
 | Domínio | Fonte principal |
 |---|---|
@@ -344,13 +354,12 @@ Fonte principal para:
 | Relatórios consolidados | Online |
 | Cadastro de produtos | Admin sincronizado |
 
-## 14. Segurança arquitetural
+## 16. Segurança
 
 ### Local
 
 - Acesso apenas na rede interna
 - Banco não exposto publicamente
-- Servidor em local protegido
 - Login por operador
 - Permissões por perfil
 - Logs de auditoria
@@ -359,24 +368,21 @@ Fonte principal para:
 
 - HTTPS obrigatório
 - Firewall
-- SSH com chave
 - Banco não público
-- RabbitMQ não público
-- Redis não público
 - Validação de webhooks
 - Rate limit
 - Backup
 
-## 15. Decisões finais
+## 17. Decisões finais
 
 - Sistema híbrido local + online.
 - Operação crítica fica local.
 - Nuvem atende vendas externas e gestão remota.
 - Comunicação entre ambientes via HTTPS.
-- RabbitMQ usado internamente em cada ambiente.
 - PostgreSQL como fonte principal.
 - Redis como apoio.
 - Docker Compose para local e online.
-- Monólito modular, não microserviços inicialmente.
+- Monólito modular.
+- Front-end Angular organizado por features.
 - KDS com WebSocket.
 - Impressão local.

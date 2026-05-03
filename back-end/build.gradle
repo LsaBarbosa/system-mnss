@@ -1,7 +1,14 @@
 plugins {
     id 'java'
+    id 'jacoco'
     id 'org.springframework.boot' version '3.5.13' apply false
     id 'io.spring.dependency-management' version '1.1.7' apply false
+}
+
+ext {
+    mapstructVersion = '1.6.3'
+    springdocOpenapiVersion = '2.8.17'
+    minimumInstructionCoverage = 0.01
 }
 
 allprojects {
@@ -11,6 +18,14 @@ allprojects {
 
 subprojects {
     apply plugin: 'java'
+    apply plugin: 'jacoco'
+    apply plugin: 'io.spring.dependency-management'
+
+    dependencyManagement {
+        imports {
+            mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
+        }
+    }
 
     java {
         toolchain {
@@ -24,14 +39,45 @@ subprojects {
 
     tasks.withType(Test).configureEach {
         useJUnitPlatform()
+        finalizedBy tasks.named('jacocoTestReport')
     }
-}
 
-configure([project(':core-domain'), project(':sync-module')]) {
     dependencies {
-        testImplementation platform('org.junit:junit-bom:5.12.2')
+        implementation "org.mapstruct:mapstruct:${mapstructVersion}"
+        annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
+
         testImplementation 'org.junit.jupiter:junit-jupiter'
-        testImplementation 'org.assertj:assertj-core:3.27.3'
+        testImplementation 'org.assertj:assertj-core'
+        testImplementation 'org.mockito:mockito-junit-jupiter'
+        testImplementation 'org.testcontainers:junit-jupiter'
+        testAnnotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
         testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    }
+
+    jacocoTestReport {
+        dependsOn tasks.named('test')
+
+        reports {
+            xml.required = true
+            html.required = true
+        }
+    }
+
+    jacocoTestCoverageVerification {
+        dependsOn tasks.named('jacocoTestReport')
+
+        violationRules {
+            rule {
+                limit {
+                    counter = 'INSTRUCTION'
+                    value = 'COVEREDRATIO'
+                    minimum = minimumInstructionCoverage
+                }
+            }
+        }
+    }
+
+    tasks.named('check') {
+        dependsOn tasks.named('jacocoTestCoverageVerification')
     }
 }

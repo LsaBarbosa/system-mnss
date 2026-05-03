@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { HealthStatus } from './health-status';
+import type { Observable } from 'rxjs';
+import type { HealthStatus } from './health-status';
 
 @Injectable({ providedIn: 'root' })
 export class HealthService {

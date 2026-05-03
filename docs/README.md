@@ -46,7 +46,7 @@ A regra mais importante:
 
 ## Stack principal
 
-- Java 25
+- Java 21
 - Spring Boot
 - PostgreSQL
 - RabbitMQ
@@ -63,7 +63,7 @@ A regra mais importante:
 
 | Documento | Finalidade |
 |---|---|
-| `arquitetura.md` | Visão arquitetural geral do sistema local + online |
+| `arquitetura.md` | Visão arquitetural geral, organização modular do back-end e arquitetura por features do front-end |
 | `modelo-de-dominio.md` | Domínios, entidades, agregados e regras de negócio |
 | `banco-de-dados.md` | Modelo inicial de banco, tabelas e convenções |
 | `sincronizacao.md` | Estratégia de sincronização entre loja e nuvem |
@@ -72,7 +72,7 @@ A regra mais importante:
 | `hardware.md` | Estrutura física necessária para loja, PDV, KDS e rede |
 | `deploy-local.md` | Deploy do ambiente local dentro da padaria |
 | `deploy-online.md` | Deploy do ambiente online na VPS Hostinger |
-| `roadmap-sprints.md` | Organização do desenvolvimento por fases e sprints |
+| `roadmap-sprints-sistema-mnss.md` | Organização do desenvolvimento por fases e sprints |
 
 ## Ordem recomendada de leitura
 
@@ -85,7 +85,36 @@ A regra mais importante:
 7. `hardware.md`
 8. `deploy-local.md`
 9. `deploy-online.md`
-10. `roadmap-sprints.md`
+10. `roadmap-sprints-sistema-mnss.md`
+
+## Padrão obrigatório de implementação
+
+Back-end:
+
+```text
+```
+
+- `domain` contem regras puras, entidades, value objects e eventos.
+- Camada de serviço contém a lógica de negócio e orquestração.
+- Camada web contém controladores HTTP e DTOs.
+- Domínio não pode depender de Spring, JPA, HTTP, RabbitMQ, Redis ou APIs externas.
+
+Front-end:
+
+```text
+features/<feature>/
+  domain/
+  application/
+  data-access/
+  ui/
+  pages/
+```
+
+- `data-access` concentra HTTP, DTOs e mappers.
+- `application` concentra facades, estado e orquestração.
+- `ui` contem componentes presentacionais.
+- `pages` contem componentes roteáveis e composição de tela.
+- `core` guarda infraestrutura global; `shared` guarda peças reutilizáveis sem depender de features.
 
 ## Nome técnico sugerido
 

@@ -16,5 +16,6 @@ rootProject.name = 'mnss-nova-alianca-backend'
 
 include 'core-domain'
 include 'sync-module'
+include 'shared-infra'
 include 'local-app'
 include 'online-app'

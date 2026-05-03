@@ -23,14 +23,25 @@
         <h1>Console inicial</h1>
       </div>
 
-      <div class="api-status" [class.api-status--available]="apiState === 'available'" [class.api-status--unavailable]="apiState === 'unavailable'">
+      <div
+        class="api-status"
+        [class.api-status--available]="apiState === 'available'"
+        [class.api-status--unavailable]="apiState === 'unavailable'"
+      >
         <span aria-hidden="true"></span>
         {{ apiLabel }}
       </div>
     </header>
 
+    <mnss-error-banner />
+
     <section class="status-grid" aria-label="Status operacional">
-      <article class="status-panel" *ngFor="let tile of operationTiles" [class.status-panel--ready]="tile.tone === 'ready'" [class.status-panel--warning]="tile.tone === 'warning'">
+      <article
+        class="status-panel"
+        *ngFor="let tile of operationTiles"
+        [class.status-panel--ready]="tile.tone === 'ready'"
+        [class.status-panel--warning]="tile.tone === 'warning'"
+      >
         <span>{{ tile.label }}</span>
         <strong>{{ tile.status }}</strong>
       </article>

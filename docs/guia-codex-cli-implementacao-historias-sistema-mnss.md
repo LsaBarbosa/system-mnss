@@ -29,12 +29,16 @@ Dentro do Codex CLI, cole o bloco da história correspondente e peça para ele i
 8. Eventos de sincronização, webhooks e integrações devem ser idempotentes.
 9. Toda ação crítica deve gerar auditoria quando previsto.
 10. Cada história deve terminar com testes unitários do back-end e do front-end quando aplicável.
+11. Back-end deve seguir **arquitetura hexagonal**: `adapter -> application -> domain`.
+12. Domínio e aplicação não podem depender de HTTP, JPA, Spring MVC, mensageria, Redis, hardware ou APIs externas.
+13. Front-end deve seguir **arquitetura Angular por features**: `domain`, `application`, `data-access`, `ui` e `pages`.
+14. Componentes `ui` não acessam `HttpClient`; integrações HTTP ficam em `data-access`.
 
 ---
 
 ## 2. Documentos de referência usados
 
-- **ARQ** — `arquitetura.md`: arquitetura híbrida local + online, monólito modular, comunicação HTTPS e separação entre operação local e canais online.
+- **ARQ** — `arquitetura.md`: arquitetura híbrida local + online, monólito modular, back-end hexagonal, front-end por features/camadas, comunicação HTTPS e separação entre operação local e canais online.
 - **DOM** — `modelo-de-dominio.md`: entidades, agregados, enums, regras de negócio e prioridade de implementação do domínio.
 - **BD** — `banco-de-dados.md`: PostgreSQL, Flyway, UUID, timestamps, NUMERIC para dinheiro, tabelas e índices iniciais.
 - **SYNC** — `sincronizacao.md`: Outbox, Inbox, Retry, HMAC, idempotência, push local → online e pull online → local.
@@ -95,7 +99,7 @@ npm run build
 **Domínio técnico:** Fundação técnica
 
 **Documentos que justificam a implementação:**
-- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, comunicação HTTPS e separação entre operação local e canais online.
+- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, back-end hexagonal, front-end por features/camadas, comunicação HTTPS e separação entre operação local e canais online.
 - `README.md`: visão geral do projeto, módulos sugeridos e ordem de leitura da documentação.
 
 **Escopo funcional detalhado:**
@@ -122,7 +126,9 @@ Front-end:
 
 **Regras e cuidados obrigatórios:**
 - manter monólito modular, sem criar microserviços.
-- separar domínio, aplicação e infraestrutura.
+- aplicar arquitetura hexagonal no back-end: adapter -> application -> domain.
+- separar domínio, aplicação, portas e adapters de infraestrutura.
+- aplicar arquitetura front-end por features com domain, application, data-access, ui e pages.
 - deixar build e testes executáveis desde a primeira entrega.
 - não implementar regra funcional de negócio antes da base estar compilando.
 
@@ -152,7 +158,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: ARQ, README.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Teste de arquitetura verificando pacotes obrigatórios com ArchUnit..
 5. Crie/ajuste testes unitários do front-end: Teste simples validando que cada app Angular inicial renderiza o shell..
@@ -165,7 +171,7 @@ Regras de execução:
 **Domínio técnico:** Fundação técnica
 
 **Documentos que justificam a implementação:**
-- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, comunicação HTTPS e separação entre operação local e canais online.
+- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, back-end hexagonal, front-end por features/camadas, comunicação HTTPS e separação entre operação local e canais online.
 - `deploy-local.md`: Docker Compose local, Nginx, health checks, backup, IP fixo e segurança local.
 
 **Escopo funcional detalhado:**
@@ -192,7 +198,9 @@ Front-end:
 
 **Regras e cuidados obrigatórios:**
 - manter monólito modular, sem criar microserviços.
-- separar domínio, aplicação e infraestrutura.
+- aplicar arquitetura hexagonal no back-end: adapter -> application -> domain.
+- separar domínio, aplicação, portas e adapters de infraestrutura.
+- aplicar arquitetura front-end por features com domain, application, data-access, ui e pages.
 - deixar build e testes executáveis desde a primeira entrega.
 - não implementar regra funcional de negócio antes da base estar compilando.
 
@@ -222,7 +230,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: ARQ, DL.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Context load; `/api/ping` retorna 200; profile `local` carrega..
 5. Crie/ajuste testes unitários do front-end: Service HTTP chama `/api/ping` e trata sucesso/erro..
@@ -235,7 +243,7 @@ Regras de execução:
 **Domínio técnico:** Fundação técnica
 
 **Documentos que justificam a implementação:**
-- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, comunicação HTTPS e separação entre operação local e canais online.
+- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, back-end hexagonal, front-end por features/camadas, comunicação HTTPS e separação entre operação local e canais online.
 - `deploy-online.md`: VPS Hostinger, Nginx, HTTPS, Docker Compose, webhooks, CI/CD, backup e segurança online.
 
 **Escopo funcional detalhado:**
@@ -262,7 +270,9 @@ Front-end:
 
 **Regras e cuidados obrigatórios:**
 - manter monólito modular, sem criar microserviços.
-- separar domínio, aplicação e infraestrutura.
+- aplicar arquitetura hexagonal no back-end: adapter -> application -> domain.
+- separar domínio, aplicação, portas e adapters de infraestrutura.
+- aplicar arquitetura front-end por features com domain, application, data-access, ui e pages.
 - deixar build e testes executáveis desde a primeira entrega.
 - não implementar regra funcional de negócio antes da base estar compilando.
 
@@ -292,7 +302,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: ARQ, DO.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Context load; profile `online` exige variáveis obrigatórias..
 5. Crie/ajuste testes unitários do front-end: Configuração de environment é carregada corretamente..
@@ -331,7 +341,9 @@ Front-end:
 
 **Regras e cuidados obrigatórios:**
 - manter monólito modular, sem criar microserviços.
-- separar domínio, aplicação e infraestrutura.
+- aplicar arquitetura hexagonal no back-end: adapter -> application -> domain.
+- separar domínio, aplicação, portas e adapters de infraestrutura.
+- aplicar arquitetura front-end por features com domain, application, data-access, ui e pages.
 - deixar build e testes executáveis desde a primeira entrega.
 - não implementar regra funcional de negócio antes da base estar compilando.
 
@@ -361,7 +373,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Validação retorna 400; regra de negócio retorna código esperado; erro inesperado não vaza stacktrace..
 5. Crie/ajuste testes unitários do front-end: Interceptor converte erro HTTP em mensagem exibível..
@@ -374,7 +386,7 @@ Regras de execução:
 **Domínio técnico:** Fundação técnica
 
 **Documentos que justificam a implementação:**
-- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, comunicação HTTPS e separação entre operação local e canais online.
+- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, back-end hexagonal, front-end por features/camadas, comunicação HTTPS e separação entre operação local e canais online.
 
 **Escopo funcional detalhado:**
 - Implementar exatamente a capacidade descrita na história, sem antecipar histórias futuras.
@@ -400,7 +412,9 @@ Front-end:
 
 **Regras e cuidados obrigatórios:**
 - manter monólito modular, sem criar microserviços.
-- separar domínio, aplicação e infraestrutura.
+- aplicar arquitetura hexagonal no back-end: adapter -> application -> domain.
+- separar domínio, aplicação, portas e adapters de infraestrutura.
+- aplicar arquitetura front-end por features com domain, application, data-access, ui e pages.
 - deixar build e testes executáveis desde a primeira entrega.
 - não implementar regra funcional de negócio antes da base estar compilando.
 
@@ -430,7 +444,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: ARQ.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Build falha com teste quebrado; cobertura mínima configurada..
 5. Crie/ajuste testes unitários do front-end: `ng test` executa; componente base renderiza sem erro..
@@ -450,7 +464,7 @@ Regras de execução:
 
 **Documentos que justificam a implementação:**
 - `deploy-local.md`: Docker Compose local, Nginx, health checks, backup, IP fixo e segurança local.
-- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, comunicação HTTPS e separação entre operação local e canais online.
+- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, back-end hexagonal, front-end por features/camadas, comunicação HTTPS e separação entre operação local e canais online.
 
 **Escopo funcional detalhado:**
 - Implementar exatamente a capacidade descrita na história, sem antecipar histórias futuras.
@@ -506,7 +520,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DL, ARQ.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Validar propriedades de conexão por profile; falha rápida sem `DB_HOST`..
 5. Crie/ajuste testes unitários do front-end: Environment local possui URL válida..
@@ -520,7 +534,7 @@ Regras de execução:
 
 **Documentos que justificam a implementação:**
 - `deploy-online.md`: VPS Hostinger, Nginx, HTTPS, Docker Compose, webhooks, CI/CD, backup e segurança online.
-- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, comunicação HTTPS e separação entre operação local e canais online.
+- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, back-end hexagonal, front-end por features/camadas, comunicação HTTPS e separação entre operação local e canais online.
 
 **Escopo funcional detalhado:**
 - Implementar exatamente a capacidade descrita na história, sem antecipar histórias futuras.
@@ -576,7 +590,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DO, ARQ.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Profile online exige `JWT_SECRET` e `SYNC_MASTER_SECRET`..
 5. Crie/ajuste testes unitários do front-end: Environment produção não usa localhost..
@@ -647,7 +661,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DL, DO, SYNC.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Health retorna `UP` com mocks; retorna `DOWN` quando dependência falha..
 5. Crie/ajuste testes unitários do front-end: Componente mostra `Online`, `Instável`, `Offline`..
@@ -716,7 +730,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DL.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Validação de propriedades de CORS/proxy..
 5. Crie/ajuste testes unitários do front-end: Testar carregamento de base href..
@@ -787,7 +801,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DL, DO.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Service de metadados de backup calcula status válido/atrasado..
 5. Crie/ajuste testes unitários do front-end: Pipe/formatação de data do último backup..
@@ -867,7 +881,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Login válido retorna token; senha inválida retorna 401; usuário inativo é bloqueado..
 5. Crie/ajuste testes unitários do front-end: Form inválido bloqueia submit; sucesso armazena token; erro exibe mensagem..
@@ -940,7 +954,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Token válido retorna usuário/perfis; token expirado retorna 401..
 5. Crie/ajuste testes unitários do front-end: Guard redireciona não autenticado para login..
@@ -1014,7 +1028,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Username duplicado falha; senha é hasheada; perfil obrigatório..
 5. Crie/ajuste testes unitários do front-end: Form exige campos obrigatórios; lista renderiza usuários..
@@ -1088,7 +1102,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, BD.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Usuário sem perfil operacional é recusado; perfil inexistente falha..
 5. Crie/ajuste testes unitários do front-end: Seleção múltipla mantém estado correto..
@@ -1101,7 +1115,7 @@ Regras de execução:
 **Domínio técnico:** Segurança e usuários
 
 **Documentos que justificam a implementação:**
-- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, comunicação HTTPS e separação entre operação local e canais online.
+- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, back-end hexagonal, front-end por features/camadas, comunicação HTTPS e separação entre operação local e canais online.
 - `fluxos-e-casos-de-uso.md`: fluxos funcionais, casos de uso, regras transversais, APIs sugeridas e critérios de aceite.
 
 **Escopo funcional detalhado:**
@@ -1162,7 +1176,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: ARQ, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Usuário sem permissão recebe 403; admin acessa tudo..
 5. Crie/ajuste testes unitários do front-end: Botão crítico oculta/desabilita sem perfil..
@@ -1242,7 +1256,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: BD.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Migration executa em banco vazio; migration duplicada falha; tabelas esperadas existem..
 5. Crie/ajuste testes unitários do front-end: Testes de contratos mockados validam modelos TypeScript..
@@ -1315,7 +1329,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, BD.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Entidade preenche timestamps; BigDecimal não aceita valor negativo onde proibido..
 5. Crie/ajuste testes unitários do front-end: Modelos TypeScript compilam com campos obrigatórios..
@@ -1387,7 +1401,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: BD.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Repository persiste e busca entidade com Testcontainers..
 5. Crie/ajuste testes unitários do front-end: Service usa URL correta e método HTTP esperado..
@@ -1460,7 +1474,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, BD.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Roles são criados uma única vez; execução repetida não duplica..
 5. Crie/ajuste testes unitários do front-end: Select de roles carrega opções mockadas..
@@ -1533,7 +1547,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Audit log grava ação, usuário, entidade e timestamp; não aceita ação vazia..
 5. Crie/ajuste testes unitários do front-end: Componente de tabela renderiza logs mockados..
@@ -1616,7 +1630,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, BD, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Nome obrigatório; ordem default; categoria ativa por padrão..
 5. Crie/ajuste testes unitários do front-end: Form valida nome; submit chama service; erro aparece..
@@ -1692,7 +1706,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Não edita categoria inexistente; atualiza `updatedAt`; preserva ID..
 5. Crie/ajuste testes unitários do front-end: Modal/form edição popula valores..
@@ -1769,7 +1783,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Categoria oculta no PDV não aparece em consulta PDV..
 5. Crie/ajuste testes unitários do front-end: Checkboxes refletem estado e atualizam payload..
@@ -1846,7 +1860,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, BD, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Preço obrigatório; categoria deve existir; unidade obrigatória; setor obrigatório..
 5. Crie/ajuste testes unitários do front-end: Form valida preço, categoria, unidade e setor..
@@ -1922,7 +1936,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, SYNC.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Alterar preço gera evento `PRODUCT_PRICE_CHANGED`; produto inexistente retorna erro..
 5. Crie/ajuste testes unitários do front-end: Filtro por nome/categoria funciona com dados mockados..
@@ -1997,7 +2011,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, DOM.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Produto inativo não retorna como vendável; barcode inexistente retorna 404..
 5. Crie/ajuste testes unitários do front-end: Campo captura Enter e chama service..
@@ -2078,7 +2092,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Produto indisponível exige motivo conforme status; salva usuário responsável..
 5. Crie/ajuste testes unitários do front-end: Toggle altera estado visual e envia motivo..
@@ -2153,7 +2167,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, SYNC.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Produto `UNAVAILABLE` não aparece em `sellOnline`..
 5. Crie/ajuste testes unitários do front-end: Badge “Indisponível” aparece corretamente..
@@ -2228,7 +2242,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, DOM.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Produto inativo é removido; produto sem `sellOnPdv` não aparece..
 5. Crie/ajuste testes unitários do front-end: Lista renderiza produtos agrupados por categoria..
@@ -2304,7 +2318,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: SYNC, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Alteração cria evento PENDING; falha não desfaz alteração local..
 5. Crie/ajuste testes unitários do front-end: Indicador renderiza pendente/sincronizado..
@@ -2380,7 +2394,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Audit contém usuário, oldValue, newValue e entityId..
 5. Crie/ajuste testes unitários do front-end: Tabela de histórico renderiza mocks..
@@ -2462,7 +2476,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Valor inicial obrigatório; usuário sem permissão falha; caixa aberto duplicado é bloqueado..
 5. Crie/ajuste testes unitários do front-end: Form exige valor inicial; sucesso libera PDV..
@@ -2536,7 +2550,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Retorna caixa aberto do operador; sem caixa retorna estado vazio..
 5. Crie/ajuste testes unitários do front-end: Header renderiza status corretamente..
@@ -2612,7 +2626,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Motivo obrigatório; valor positivo; caixa fechado bloqueia..
 5. Crie/ajuste testes unitários do front-end: Form valida valor e motivo..
@@ -2688,7 +2702,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Valor positivo; usuário autorizado; movimento vinculado ao caixa..
 5. Crie/ajuste testes unitários do front-end: Submit chama endpoint correto..
@@ -2763,7 +2777,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Calcula esperado; diferença registrada; caixa fechado não recebe movimento..
 5. Crie/ajuste testes unitários do front-end: Tela calcula diferença visualmente; exige justificativa se divergente..
@@ -2837,7 +2851,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Agrupa por método; inclui sangria/suprimento/diferença..
 5. Crie/ajuste testes unitários do front-end: Tabela de resumo renderiza totais..
@@ -2918,7 +2932,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Sem caixa aberto falha; cria Order origem PDV; status CREATED..
 5. Crie/ajuste testes unitários do front-end: Botão cria venda e inicializa carrinho..
@@ -2993,7 +3007,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, PDV.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Produto inativo bloqueia; salva snapshot de nome/preço; total calculado..
 5. Crie/ajuste testes unitários do front-end: Carrinho adiciona item e atualiza subtotal..
@@ -3067,7 +3081,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, DOM.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Quantidade zero/negativa falha; total recalcula; venda finalizada bloqueia..
 5. Crie/ajuste testes unitários do front-end: Quantidade altera total visual..
@@ -3140,7 +3154,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Item inexistente retorna erro; total recalcula; venda finalizada bloqueia..
 5. Crie/ajuste testes unitários do front-end: Item some do carrinho..
@@ -3214,7 +3228,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Busca ignora produtos não vendáveis; barcode inexistente retorna aviso..
 5. Crie/ajuste testes unitários do front-end: Busca filtra lista; scanner por Enter adiciona item..
@@ -3289,7 +3303,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, PDV.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Total = soma itens - desconto + taxas; arredondamento monetário correto..
 5. Crie/ajuste testes unitários do front-end: Componente totaliza payload recebido..
@@ -3370,7 +3384,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, DOM.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Valor menor que total falha; troco calculado; Payment `PAID`..
 5. Crie/ajuste testes unitários do front-end: Troco é exibido; valor inválido bloqueia botão..
@@ -3443,7 +3457,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Valor deve bater com total; cria CashMovement..
 5. Crie/ajuste testes unitários do front-end: Confirmação atualiza estado de pagamento..
@@ -3517,7 +3531,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, DOM.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Método inválido falha; valor positivo; status pago..
 5. Crie/ajuste testes unitários do front-end: Select de método monta payload correto..
@@ -3592,7 +3606,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Soma menor/maior que total falha; cada pagamento gera CashMovement..
 5. Crie/ajuste testes unitários do front-end: Saldo restante recalcula; não permite finalizar com saldo aberto..
@@ -3667,7 +3681,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, PDV.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Cada Payment cria uma movimentação; caixa fechado bloqueia..
 5. Crie/ajuste testes unitários do front-end: Lista de pagamentos renderiza por método..
@@ -3749,7 +3763,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Sem itens falha; sem pagamento falha; status final correto..
 5. Crie/ajuste testes unitários do front-end: Botão desabilita sem itens/pagamento..
@@ -3826,7 +3840,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, SYNC.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Evento PENDING criado; falha de sync não desfaz venda..
 5. Crie/ajuste testes unitários do front-end: Badge de pendência exibido..
@@ -3902,7 +3916,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, DL, HW.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Geração de comando não duplica venda; falha de impressão retorna erro controlado..
 5. Crie/ajuste testes unitários do front-end: Estado de impressão mostra sucesso/erro..
@@ -3978,7 +3992,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, HW.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Só aciona gaveta para dinheiro; não aciona para Pix/cartão..
 5. Crie/ajuste testes unitários do front-end: Componente mostra ação apenas quando aplicável..
@@ -4054,7 +4068,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Limite permitido aplica; acima exige gerente; desconto negativo falha..
 5. Crie/ajuste testes unitários do front-end: Form alterna valor/percentual; calcula preview..
@@ -4131,7 +4145,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Motivo obrigatório; sem permissão falha; gera AuditLog e ajuste financeiro..
 5. Crie/ajuste testes unitários do front-end: Form exige motivo; usuário sem perfil não vê ação..
@@ -4213,7 +4227,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: KDS, PDV, DOM.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Itens `SEM_PREPARO` não geram ticket; setores diferentes geram tickets diferentes..
 5. Crie/ajuste testes unitários do front-end: Lista renderiza tickets por setor..
@@ -4286,7 +4300,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: KDS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Filtro retorna apenas setor; setor inválido falha..
 5. Crie/ajuste testes unitários do front-end: Seleção de setor atualiza lista..
@@ -4300,7 +4314,7 @@ Regras de execução:
 
 **Documentos que justificam a implementação:**
 - `kds.md`: tickets por setor, WebSocket, status de preparo, tempo de espera e operação local da cozinha.
-- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, comunicação HTTPS e separação entre operação local e canais online.
+- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, back-end hexagonal, front-end por features/camadas, comunicação HTTPS e separação entre operação local e canais online.
 
 **Escopo funcional detalhado:**
 - Implementar exatamente a capacidade descrita na história, sem antecipar histórias futuras.
@@ -4361,7 +4375,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: KDS, ARQ.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Evento emitido com payload esperado; erro de WebSocket não quebra transação..
 5. Crie/ajuste testes unitários do front-end: Ao receber evento, card é adicionado..
@@ -4433,7 +4447,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: KDS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Tempo calculado corretamente; timezone não altera ordem..
 5. Crie/ajuste testes unitários do front-end: Timer atualiza visualmente sem recarregar..
@@ -4506,7 +4520,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: KDS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Status mapeado corretamente no DTO..
 5. Crie/ajuste testes unitários do front-end: Ticket aparece na coluna certa..
@@ -4586,7 +4600,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: KDS, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: WAITING → IN_PREPARATION permitido; READY → start bloqueado..
 5. Crie/ajuste testes unitários do front-end: Card muda para coluna Em preparo..
@@ -4659,7 +4673,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: KDS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Item em preparo vira READY; item cancelado não pode ficar pronto..
 5. Crie/ajuste testes unitários do front-end: Item aparece concluído..
@@ -4732,7 +4746,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: KDS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Todos itens ficam READY; `readyAt` preenchido..
 5. Crie/ajuste testes unitários do front-end: Ticket muda para coluna Pronto..
@@ -4806,7 +4820,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: KDS, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Com um ticket pendente, pedido não fica READY; todos prontos, fica READY..
 5. Crie/ajuste testes unitários do front-end: Banner/alerta no PDV indica pedido pronto..
@@ -4880,7 +4894,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: KDS, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: READY → FINISHED permitido; CREATED → FINISHED bloqueado..
 5. Crie/ajuste testes unitários do front-end: Ação some após finalização..
@@ -4963,7 +4977,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: SYNC, BD.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Evento tem UUID, tipo, entidade, payload, status PENDING..
 5. Crie/ajuste testes unitários do front-end: Badge exibe PENDING/SYNCED/FAILED..
@@ -5039,7 +5053,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: SYNC.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Envio sucesso marca SYNCED; falha marca RETRYING/FAILED..
 5. Crie/ajuste testes unitários do front-end: Tela reflete mudança de status mockada..
@@ -5053,7 +5067,7 @@ Regras de execução:
 
 **Documentos que justificam a implementação:**
 - `sincronizacao.md`: Outbox, Inbox, Retry, HMAC, idempotência, push local → online e pull online → local.
-- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, comunicação HTTPS e separação entre operação local e canais online.
+- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, back-end hexagonal, front-end por features/camadas, comunicação HTTPS e separação entre operação local e canais online.
 
 **Escopo funcional detalhado:**
 - Implementar exatamente a capacidade descrita na história, sem antecipar histórias futuras.
@@ -5116,7 +5130,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: SYNC, ARQ.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Evento duplicado não reprocessa; assinatura inválida retorna 401..
 5. Crie/ajuste testes unitários do front-end: Tabela de eventos mockados renderiza..
@@ -5191,7 +5205,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: SYNC.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Assinatura válida passa; payload alterado falha; timestamp antigo pode falhar..
 5. Crie/ajuste testes unitários do front-end: N/A..
@@ -5266,7 +5280,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: SYNC.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Retry incrementa contador; excedeu tentativas vira FAILED..
 5. Crie/ajuste testes unitários do front-end: Componente mostra contador mockado..
@@ -5286,7 +5300,7 @@ Regras de execução:
 
 **Documentos que justificam a implementação:**
 - `README.md`: visão geral do projeto, módulos sugeridos e ordem de leitura da documentação.
-- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, comunicação HTTPS e separação entre operação local e canais online.
+- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, back-end hexagonal, front-end por features/camadas, comunicação HTTPS e separação entre operação local e canais online.
 
 **Escopo funcional detalhado:**
 - Implementar exatamente a capacidade descrita na história, sem antecipar histórias futuras.
@@ -5345,7 +5359,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: README, ARQ.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Endpoint público não exige login; payload básico válido..
 5. Crie/ajuste testes unitários do front-end: Home renderiza nome, seções e CTA..
@@ -5419,7 +5433,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Só categorias ativas e `showOnline=true`..
 5. Crie/ajuste testes unitários do front-end: Categorias aparecem ordenadas..
@@ -5493,7 +5507,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Produto indisponível não aparece; promocional usa preço correto..
 5. Crie/ajuste testes unitários do front-end: Card mostra preço/promocional corretamente..
@@ -5566,7 +5580,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Busca ignora inativos; resultado vazio retorna lista vazia..
 5. Crie/ajuste testes unitários do front-end: Busca filtra por nome..
@@ -5640,7 +5654,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Preview usa mesmas regras do público..
 5. Crie/ajuste testes unitários do front-end: Preview exibe status e canal..
@@ -5720,7 +5734,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Produto indisponível é recusado; preço recalculado no servidor..
 5. Crie/ajuste testes unitários do front-end: Carrinho adiciona/remove item e recalcula visual..
@@ -5792,7 +5806,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Nome e telefone obrigatórios; e-mail inválido falha se informado..
 5. Crie/ajuste testes unitários do front-end: Form valida campos obrigatórios..
@@ -5865,7 +5879,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Delivery sem endereço falha; pickup não exige endereço..
 5. Crie/ajuste testes unitários do front-end: Campo endereço aparece apenas em entrega..
@@ -5939,7 +5953,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: FLUXOS, DOM.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Pedido sem itens falha; snapshot de nome/preço salvo; status inicial correto..
 5. Crie/ajuste testes unitários do front-end: Confirmação mostra número/status..
@@ -6013,7 +6027,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: SYNC, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Evento PENDING criado; pedido fica SENT_TO_STORE/aguardando envio..
 5. Crie/ajuste testes unitários do front-end: Página de status exibe “aguardando confirmação da loja”..
@@ -6093,7 +6107,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Cria Payment PENDING; pedido fica PAYMENT_PENDING..
 5. Crie/ajuste testes unitários do front-end: Seleção de método altera etapa de pagamento..
@@ -6165,7 +6179,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Adapter mock retorna cobrança; falha do gateway retorna erro controlado..
 5. Crie/ajuste testes unitários do front-end: Componente renderiza QR/instruções mockadas..
@@ -6239,7 +6253,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DO, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Assinatura inválida falha; payload bruto é registrado; webhook duplicado é idempotente..
 5. Crie/ajuste testes unitários do front-end: Status muda conforme polling/mock..
@@ -6314,7 +6328,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Frontend não consegue confirmar pagamento; só webhook altera para PAID..
 5. Crie/ajuste testes unitários do front-end: Status “Pago” aparece após atualização..
@@ -6388,7 +6402,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Status recusado não cria envio para loja; expirado bloqueia pagamento antigo..
 5. Crie/ajuste testes unitários do front-end: Mensagem de recusado/expirado aparece..
@@ -6470,7 +6484,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: SYNC.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Retorna apenas eventos da loja; sem assinatura válida falha..
 5. Crie/ajuste testes unitários do front-end: Lista de pendências renderiza..
@@ -6547,7 +6561,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: SYNC, DOM.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Evento duplicado não cria pedido duplicado; cliente/endereço persistem..
 5. Crie/ajuste testes unitários do front-end: Pedido aparece na lista local..
@@ -6623,7 +6637,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: SYNC.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: ACK marca online como RECEIVED_BY_STORE; ACK duplicado é seguro..
 5. Crie/ajuste testes unitários do front-end: Badge de status atualiza..
@@ -6701,7 +6715,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: KDS, SYNC.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Pedido online com setores gera tickets; sem preparo não gera..
 5. Crie/ajuste testes unitários do front-end: Card mostra origem correta..
@@ -6779,7 +6793,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: SYNC, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Filtra PENDING/FAILED; mensagem de erro retornada..
 5. Crie/ajuste testes unitários do front-end: Filtros funcionam; cards mostram contadores..
@@ -6857,7 +6871,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: SYNC, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Sem permissão falha; ignorar exige motivo; reprocessar altera status..
 5. Crie/ajuste testes unitários do front-end: Modal exige motivo para ignorar..
@@ -6937,7 +6951,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DL, SYNC.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Health reflete dependência falha; pendências são contadas..
 5. Crie/ajuste testes unitários do front-end: Painel renderiza status e alertas..
@@ -7011,7 +7025,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DO, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Webhook indisponível afeta status; DB down retorna DOWN..
 5. Crie/ajuste testes unitários do front-end: Tela exibe status online..
@@ -7082,7 +7096,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DO.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Pipeline falha com testes quebrados; imagem recebe tag..
 5. Crie/ajuste testes unitários do front-end: Build front falha com lint/test quebrado..
@@ -7159,7 +7173,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, KDS, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Testes de serviços cobrem cada etapa principal..
 5. Crie/ajuste testes unitários do front-end: Testes de componentes cobrem fluxo simulado..
@@ -7236,7 +7250,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: FLUXOS, SYNC, DO.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Webhook + sync idempotente em sequência..
 5. Crie/ajuste testes unitários do front-end: Checkout e status renderizam etapas..
@@ -7308,7 +7322,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DL, DO.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Endpoint `/version` retorna versão/commit..
 5. Crie/ajuste testes unitários do front-end: Footer mostra versão..
@@ -7388,7 +7402,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Quantidade positiva; produto obrigatório; usuário obrigatório..
 5. Crie/ajuste testes unitários do front-end: Form valida produto/quantidade..
@@ -7461,7 +7475,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Motivo obrigatório; movimento audita usuário..
 5. Crie/ajuste testes unitários do front-end: Modal exige motivo..
@@ -7535,7 +7549,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Venda baixa quantidade correta; venda cancelada ajusta conforme regra..
 5. Crie/ajuste testes unitários do front-end: Coluna estoque renderiza quantidade..
@@ -7609,7 +7623,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, SYNC.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Estoque zero cria `PRODUCT_UNAVAILABLE`; sob encomenda não bloqueia..
 5. Crie/ajuste testes unitários do front-end: Badge atualiza no catálogo..
@@ -7682,7 +7696,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: SYNC.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Evento criado e idempotente..
 5. Crie/ajuste testes unitários do front-end: Status de sync aparece..
@@ -7763,7 +7777,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DO, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Assinatura inválida falha; mensagem duplicada é ignorada..
 5. Crie/ajuste testes unitários do front-end: Lista renderiza conversa e última mensagem..
@@ -7839,7 +7853,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Produto sem canal WhatsApp não aparece..
 5. Crie/ajuste testes unitários do front-end: Busca filtra catálogo WhatsApp..
@@ -7914,7 +7928,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Pedido exige cliente/telefone; snapshot salvo..
 5. Crie/ajuste testes unitários do front-end: Carrinho assistido adiciona itens..
@@ -7987,7 +8001,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Falha do provider não cancela pedido; erro é registrado..
 5. Crie/ajuste testes unitários do front-end: Preview do resumo formatado..
@@ -8062,7 +8076,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: SYNC, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online.
+2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Evento idempotente; ACK atualiza status..
 5. Crie/ajuste testes unitários do front-end: Status renderiza corretamente..

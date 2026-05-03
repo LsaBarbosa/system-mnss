@@ -1,0 +1,15 @@
+.gradle/
+.mvn/wrapper/maven-wrapper.jar
+build/
+out/
+target/
+
+node_modules/
+dist/
+.angular/
+coverage/
+
+.env
+*.log
+*.tmp
+.DS_Store

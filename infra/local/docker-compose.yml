@@ -1,0 +1,98 @@
+services:
+  postgres-local:
+    image: postgres:16-alpine
+    container_name: mnss-postgres-local
+    environment:
+      POSTGRES_DB: ${POSTGRES_LOCAL_DB:-mnss_local}
+      POSTGRES_USER: ${POSTGRES_LOCAL_USER:-mnss}
+      POSTGRES_PASSWORD: ${POSTGRES_LOCAL_PASSWORD:-mnss}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres-local-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_LOCAL_USER:-mnss} -d ${POSTGRES_LOCAL_DB:-mnss_local}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-online:
+    image: postgres:16-alpine
+    container_name: mnss-postgres-online
+    environment:
+      POSTGRES_DB: ${POSTGRES_ONLINE_DB:-mnss_online}
+      POSTGRES_USER: ${POSTGRES_ONLINE_USER:-mnss}
+      POSTGRES_PASSWORD: ${POSTGRES_ONLINE_PASSWORD:-mnss}
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - postgres-online-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_ONLINE_USER:-mnss} -d ${POSTGRES_ONLINE_DB:-mnss_online}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq-local:
+    image: rabbitmq:3.13-management-alpine
+    container_name: mnss-rabbitmq-local
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_LOCAL_USER:-mnss}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_LOCAL_PASSWORD:-mnss}
+    ports:
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
+    volumes:
+      - rabbitmq-local-data:/var/lib/rabbitmq
+
+  rabbitmq-online:
+    image: rabbitmq:3.13-management-alpine
+    container_name: mnss-rabbitmq-online
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_ONLINE_USER:-mnss}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_ONLINE_PASSWORD:-mnss}
+    ports:
+      - "127.0.0.1:5673:5672"
+      - "127.0.0.1:15673:15672"
+    volumes:
+      - rabbitmq-online-data:/var/lib/rabbitmq
+
+  redis-local:
+    image: redis:7-alpine
+    container_name: mnss-redis-local
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis-local-data:/data
+
+  redis-online:
+    image: redis:7-alpine
+    container_name: mnss-redis-online
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "127.0.0.1:6380:6379"
+    volumes:
+      - redis-online-data:/data
+
+  nginx-local:
+    image: nginx:1.27-alpine
+    container_name: mnss-nginx-local
+    ports:
+      - "127.0.0.1:8088:80"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - postgres-local
+      - redis-local
+      - rabbitmq-local
+
+volumes:
+  postgres-local-data:
+  postgres-online-data:
+  rabbitmq-local-data:
+  rabbitmq-online-data:
+  redis-local-data:
+  redis-online-data:

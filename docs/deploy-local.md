@@ -1,0 +1,489 @@
+# Deploy Local — Sistema Nova Aliança
+
+## 1. Objetivo
+
+Este documento descreve como deve ser estruturado o deploy local do Sistema Nova Aliança dentro da padaria.
+
+O ambiente local será responsável por:
+
+- PDV
+- KDS
+- Caixa
+- Impressão
+- Banco local
+- RabbitMQ local
+- Redis local
+- Sincronização com a nuvem
+
+## 2. Decisão principal
+
+O deploy local usará:
+
+```text
+Ubuntu Server
+Docker
+Docker Compose
+Nginx
+PostgreSQL
+RabbitMQ
+Redis
+Java Local API
+Angular PDV/KDS/Admin
+```
+
+## 3. Servidor local
+
+### Configuração mínima
+
+```text
+Mini PC ou desktop compacto
+Intel i5 ou Ryzen 5
+16 GB RAM
+SSD 512 GB
+Rede Gigabit
+Ubuntu Server
+Nobreak
+```
+
+### Configuração ideal
+
+```text
+Intel i5/i7 ou Ryzen 5/7
+32 GB RAM
+SSD NVMe 1 TB
+Segundo disco para backup
+Rede Gigabit
+Ubuntu Server
+Nobreak
+```
+
+## 4. Serviços locais
+
+Serviços previstos:
+
+```text
+nova-alianca-local-api
+postgres-local
+rabbitmq-local
+redis-local
+nginx-local
+sync-worker-local
+```
+
+Opcionalmente:
+
+```text
+prometheus-local
+grafana-local
+loki-local
+```
+
+## 5. Estrutura de diretórios no servidor
+
+Sugestão:
+
+```text
+/opt/nova-alianca/
+├── docker-compose.yml
+├── .env
+├── nginx/
+│   └── conf.d/
+├── postgres/
+│   ├── data/
+│   └── backup/
+├── rabbitmq/
+├── redis/
+├── logs/
+└── scripts/
+    ├── backup-postgres.sh
+    ├── restore-postgres.sh
+    └── update-system.sh
+```
+
+## 6. Variáveis de ambiente
+
+Arquivo `.env` local:
+
+```env
+SPRING_PROFILES_ACTIVE=local
+
+POSTGRES_DB=nova_alianca_local
+POSTGRES_USER=nova_alianca
+POSTGRES_PASSWORD=change_me
+
+RABBITMQ_DEFAULT_USER=nova_alianca
+RABBITMQ_DEFAULT_PASS=change_me
+
+REDIS_HOST=redis-local
+REDIS_PORT=6379
+
+LOCAL_API_PORT=8080
+
+ONLINE_SYNC_BASE_URL=https://api.padarianovaalianca.com.br
+STORE_ID=nova-alianca-001
+STORE_SECRET=change_me
+```
+
+## 7. Docker Compose local
+
+Exemplo inicial:
+
+```yaml
+services:
+  nova-alianca-local-api:
+    image: nova-alianca/local-api:latest
+    container_name: nova-alianca-local-api
+    depends_on:
+      - postgres-local
+      - rabbitmq-local
+      - redis-local
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      DB_HOST: postgres-local
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      RABBITMQ_HOST: rabbitmq-local
+      RABBITMQ_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS}
+      REDIS_HOST: redis-local
+      ONLINE_SYNC_BASE_URL: ${ONLINE_SYNC_BASE_URL}
+      STORE_ID: ${STORE_ID}
+      STORE_SECRET: ${STORE_SECRET}
+    expose:
+      - "8080"
+    restart: unless-stopped
+
+  postgres-local:
+    image: postgres:17
+    container_name: postgres-local
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_local_data:/var/lib/postgresql/data
+      - ./postgres/backup:/backup
+    restart: unless-stopped
+
+  rabbitmq-local:
+    image: rabbitmq:4-management
+    container_name: rabbitmq-local
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    volumes:
+      - rabbitmq_local_data:/var/lib/rabbitmq
+    restart: unless-stopped
+
+  redis-local:
+    image: redis:8
+    container_name: redis-local
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_local_data:/data
+    restart: unless-stopped
+
+  nginx-local:
+    image: nginx:stable
+    container_name: nginx-local
+    depends_on:
+      - nova-alianca-local-api
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    restart: unless-stopped
+
+volumes:
+  postgres_local_data:
+  rabbitmq_local_data:
+  redis_local_data:
+```
+
+## 8. Nginx local
+
+Arquivo:
+
+```text
+/opt/nova-alianca/nginx/conf.d/local.conf
+```
+
+Exemplo:
+
+```nginx
+server {
+    listen 80;
+    server_name api.novaalianca.local;
+
+    location / {
+        proxy_pass http://nova-alianca-local-api:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+```
+
+Para simplificar no início, o PDV pode acessar por IP:
+
+```text
+http://192.168.0.10
+```
+
+## 9. DNS local
+
+Opções:
+
+### Simples
+
+Usar IP fixo do servidor local.
+
+```text
+http://192.168.0.10
+```
+
+### Melhor
+
+Configurar DNS local no roteador:
+
+```text
+pdv.novaalianca.local
+kds.novaalianca.local
+admin.novaalianca.local
+api.novaalianca.local
+```
+
+## 10. IP fixo
+
+O servidor local deve ter IP fixo.
+
+Exemplo:
+
+```text
+192.168.0.10
+```
+
+Reservar IP no roteador ou configurar no Ubuntu Server.
+
+## 11. Firewall local
+
+No servidor local, liberar apenas o necessário:
+
+```bash
+sudo ufw allow ssh
+sudo ufw allow 80/tcp
+sudo ufw enable
+```
+
+Não expor publicamente:
+
+```text
+5432 PostgreSQL
+5672 RabbitMQ
+15672 RabbitMQ Management
+6379 Redis
+```
+
+## 12. Backup local
+
+Script sugerido:
+
+```bash
+#!/bin/bash
+
+BACKUP_DIR="/opt/nova-alianca/postgres/backup"
+DATE=$(date +"%Y-%m-%d_%H-%M-%S")
+CONTAINER="postgres-local"
+DB="nova_alianca_local"
+USER="nova_alianca"
+
+mkdir -p $BACKUP_DIR
+
+docker exec $CONTAINER pg_dump -U $USER $DB > "$BACKUP_DIR/backup_$DATE.sql"
+
+find $BACKUP_DIR -type f -name "*.sql" -mtime +15 -delete
+```
+
+Arquivo:
+
+```text
+/opt/nova-alianca/scripts/backup-postgres.sh
+```
+
+Agendar no cron:
+
+```bash
+0 2 * * * /opt/nova-alianca/scripts/backup-postgres.sh
+```
+
+## 13. Atualização local
+
+Script inicial:
+
+```bash
+#!/bin/bash
+
+cd /opt/nova-alianca
+
+docker compose pull
+docker compose up -d
+docker image prune -f
+```
+
+Arquivo:
+
+```text
+/opt/nova-alianca/scripts/update-system.sh
+```
+
+## 14. Processo de deploy local inicial
+
+Passos:
+
+```text
+1. Instalar Ubuntu Server.
+2. Configurar IP fixo.
+3. Instalar Docker.
+4. Instalar Docker Compose.
+5. Criar diretório /opt/nova-alianca.
+6. Criar .env.
+7. Criar docker-compose.yml.
+8. Criar configuração Nginx.
+9. Subir containers.
+10. Verificar health check.
+11. Configurar backup.
+12. Configurar máquinas PDV/KDS para acessar o servidor.
+```
+
+## 15. Comandos principais
+
+Subir ambiente:
+
+```bash
+docker compose up -d
+```
+
+Ver logs:
+
+```bash
+docker compose logs -f
+```
+
+Ver logs da API:
+
+```bash
+docker logs -f nova-alianca-local-api
+```
+
+Parar ambiente:
+
+```bash
+docker compose down
+```
+
+Atualizar:
+
+```bash
+docker compose pull
+docker compose up -d
+```
+
+## 16. Health checks
+
+Endpoints:
+
+```text
+GET /actuator/health
+GET /actuator/metrics
+GET /api/sync/status
+```
+
+Verificar:
+
+- API local
+- PostgreSQL
+- RabbitMQ
+- Redis
+- Espaço em disco
+- Última sincronização
+- Eventos pendentes
+
+## 17. Impressão local
+
+A API local ou módulo de impressão precisará acessar impressora local.
+
+Opções:
+
+- Impressora USB no próprio PDV.
+- Impressora Ethernet na rede.
+- Serviço local de impressão.
+
+Preferência:
+
+```text
+Impressora Ethernet
+```
+
+## 18. Segurança local
+
+Regras:
+
+- Servidor protegido fisicamente.
+- Senhas fortes.
+- SSH com chave, se possível.
+- Banco não exposto fora do Docker/rede interna.
+- Backups diários.
+- Nobreak.
+- Usuários com permissões mínimas.
+
+## 19. Contingência
+
+### Internet caiu
+
+Sistema local continua.
+
+### Servidor local caiu
+
+A operação é impactada.
+
+Mitigações:
+
+- Nobreak
+- Backup
+- Documentação de restauração
+- Equipamento reserva futuro
+
+### Banco corrompido
+
+Restaurar último backup.
+
+### Atualização falhou
+
+Manter imagem anterior disponível.
+
+## 20. Checklist de implantação local
+
+```text
+[ ] Servidor instalado
+[ ] IP fixo configurado
+[ ] Docker instalado
+[ ] Docker Compose instalado
+[ ] Diretório /opt/nova-alianca criado
+[ ] .env configurado
+[ ] docker-compose.yml criado
+[ ] Nginx local configurado
+[ ] Containers iniciados
+[ ] API local respondendo
+[ ] PostgreSQL saudável
+[ ] RabbitMQ saudável
+[ ] Redis saudável
+[ ] PDV acessando sistema
+[ ] KDS acessando sistema
+[ ] Impressora testada
+[ ] Gaveta testada
+[ ] Backup configurado
+[ ] Nobreak instalado
+[ ] Sincronização testada
+```

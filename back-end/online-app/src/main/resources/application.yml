@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: mnss-online-api
+  datasource:
+    url: ${MNSS_ONLINE_DB_URL:jdbc:postgresql://localhost:5433/mnss_online}
+    username: ${MNSS_ONLINE_DB_USER:mnss}
+    password: ${MNSS_ONLINE_DB_PASSWORD:mnss}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+server:
+  port: ${MNSS_ONLINE_API_PORT:8081}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+mnss:
+  environment: online

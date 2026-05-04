@@ -1,0 +1,160 @@
+.stock-shell {
+  display: grid;
+  gap: 24px;
+  min-height: 100vh;
+  padding: 28px;
+  background: #f6f8f9;
+}
+
+.topbar,
+form header,
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.topbar p,
+.topbar h1,
+form h2,
+.section-heading h2 {
+  margin: 0;
+}
+
+.topbar p,
+.section-heading span,
+form header span {
+  color: #5d6b73;
+}
+
+.topbar h1 {
+  margin-top: 4px;
+  font-size: 1.8rem;
+}
+
+.topbar a {
+  color: #24566b;
+  font-weight: 700;
+}
+
+.stock-grid {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.85fr) minmax(420px, 1.15fr);
+  gap: 20px;
+}
+
+.panel,
+.history-panel,
+form {
+  border: 1px solid #d8e0e4;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.panel,
+.history-panel {
+  overflow: hidden;
+}
+
+form {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+}
+
+.section-heading {
+  padding: 16px 18px;
+}
+
+label {
+  display: grid;
+  gap: 7px;
+  color: #32434b;
+  font-weight: 700;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  border: 1px solid #cbd5da;
+  border-radius: 6px;
+  padding: 0.65rem 0.75rem;
+  color: #172126;
+  font: inherit;
+}
+
+textarea {
+  resize: vertical;
+}
+
+button {
+  min-height: 40px;
+  border: 0;
+  border-radius: 8px;
+  padding: 0 14px;
+  background: #24566b;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+button:disabled {
+  background: #91a0a7;
+}
+
+.two-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.form-error {
+  margin: 0;
+  color: #9b2c2c;
+  font-weight: 700;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  border-top: 1px solid #e5eaed;
+  padding: 12px 18px;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  color: #5d6b73;
+  font-size: 0.85rem;
+}
+
+td {
+  color: #172126;
+}
+
+td strong {
+  color: #1d6b4a;
+}
+
+.stock-zero {
+  color: #9b2c2c;
+}
+
+@media (max-width: 920px) {
+  .stock-grid,
+  .two-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .topbar,
+  form header,
+  .section-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

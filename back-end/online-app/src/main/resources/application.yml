@@ -5,6 +5,15 @@ spring:
     url: ${MNSS_ONLINE_DB_URL:jdbc:postgresql://localhost:5433/mnss_online}
     username: ${MNSS_ONLINE_DB_USER:mnss}
     password: ${MNSS_ONLINE_DB_PASSWORD:mnss}
+  rabbitmq:
+    host: ${MNSS_ONLINE_RABBITMQ_HOST:localhost}
+    port: ${MNSS_ONLINE_RABBITMQ_PORT:5673}
+    username: ${MNSS_ONLINE_RABBITMQ_USER:mnss}
+    password: ${MNSS_ONLINE_RABBITMQ_PASSWORD:mnss}
+  data:
+    redis:
+      host: ${MNSS_ONLINE_REDIS_HOST:localhost}
+      port: ${MNSS_ONLINE_REDIS_PORT:6380}
   jpa:
     hibernate:
       ddl-auto: validate
@@ -17,10 +26,13 @@ server:
   port: ${MNSS_ONLINE_API_PORT:8081}
 
 management:
+  endpoint:
+    health:
+      show-details: always
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,metrics
 
 mnss:
   environment: online

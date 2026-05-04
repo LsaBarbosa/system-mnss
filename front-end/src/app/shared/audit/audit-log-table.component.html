@@ -1,0 +1,18 @@
+<table class="audit-table">
+  <thead>
+    <tr>
+      <th>Acao</th>
+      <th>Entidade</th>
+      <th>Usuario</th>
+      <th>Data</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let log of logs; trackBy: trackById">
+      <td>{{ log.action }}</td>
+      <td>{{ log.entityType }}</td>
+      <td>{{ log.actorUserId || '-' }}</td>
+      <td>{{ log.createdAt }}</td>
+    </tr>
+  </tbody>
+</table>

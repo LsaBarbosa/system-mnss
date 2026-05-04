@@ -32,7 +32,12 @@ describe('HealthService', () => {
       environment: 'local',
       offlineCriticalOperation: true,
       message: 'ready',
-      checkedAt: '2026-05-03T12:00:00Z'
+      checkedAt: '2026-05-03T12:00:00Z',
+      components: {
+        db: 'UP',
+        redis: 'UP',
+        rabbit: 'UP'
+      }
     });
   });
 });

@@ -17,7 +17,10 @@ front-end/
   features/<feature>/{domain,application,data-access,ui,pages}
 
 infra/local/
-  Docker Compose local para PostgreSQL, RabbitMQ, Redis e Nginx
+  Docker Compose local para API, front-end estatico, PostgreSQL, RabbitMQ, Redis e Nginx
+
+infra/online/
+  Docker Compose base para VPS com API online, site/admin, PostgreSQL, RabbitMQ, Redis, Nginx e Certbot
 ```
 
 ## Decisoes do bootstrap
@@ -55,6 +58,18 @@ PATH=/home/kronos/.nvm/versions/node/v24.14.1/bin:$PATH npm run build
 Infra local:
 
 ```bash
-cp .env.example .env
-docker compose -f infra/local/docker-compose.yml --env-file .env up -d
+cp infra/local/.env.example infra/local/.env
+docker compose -f infra/local/docker-compose.yml --env-file infra/local/.env up -d
+infra/local/scripts/backup-postgres.sh
+```
+
+O ambiente local cria os perfis iniciais e um usuario admin a partir das variaveis
+`MNSS_INITIAL_ADMIN_USERNAME` e `MNSS_INITIAL_ADMIN_PASSWORD`.
+
+Infra online base:
+
+```bash
+cp infra/online/.env.example infra/online/.env
+docker compose -f infra/online/docker-compose.yml --env-file infra/online/.env up -d
+infra/online/scripts/backup-postgres.sh
 ```

@@ -1,0 +1,30 @@
+.error-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 44px;
+  border: 1px solid #d89b9b;
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #fff4f3;
+  color: #7b2626;
+}
+
+.error-banner span {
+  min-width: 0;
+}
+
+.error-banner button {
+  display: grid;
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid #d89b9b;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #7b2626;
+  cursor: pointer;
+  font-weight: 700;
+}

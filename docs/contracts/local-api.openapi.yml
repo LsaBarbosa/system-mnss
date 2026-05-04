@@ -1,0 +1,1286 @@
+openapi: 3.0.3
+info:
+  title: Sistema MNSS Local API
+  version: 0.0.1
+paths:
+  /api/auth/login:
+    post:
+      summary: Autentica usuario interno.
+      operationId: loginInternalUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login aceito.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/auth/me:
+    get:
+      summary: Retorna usuario autenticado.
+      operationId: getAuthenticatedUser
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Usuario autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/users:
+    get:
+      summary: Lista usuarios internos.
+      operationId: listInternalUsers
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Usuarios cadastrados.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponse'
+        '403':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+    post:
+      summary: Cria usuario interno.
+      operationId: createInternalUser
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '200':
+          description: Usuario criado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          $ref: '#/components/responses/BusinessError'
+        '409':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/roles:
+    get:
+      summary: Lista perfis disponiveis.
+      operationId: listRoles
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Perfis cadastrados.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RoleResponse'
+        '403':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/admin/critical-actions/authorize:
+    post:
+      summary: Valida acesso a uma acao critica.
+      operationId: authorizeCriticalAction
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Acao critica autorizada.
+        '403':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/categories:
+    get:
+      summary: Lista categorias do catalogo.
+      operationId: listCategories
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: channel
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [ADMIN, PDV, SITE, WHATSAPP]
+      responses:
+        '200':
+          description: Categorias cadastradas.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoryResponse'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+    post:
+      summary: Cria categoria do catalogo.
+      operationId: createCategory
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryPayload'
+      responses:
+        '201':
+          description: Categoria criada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/categories/{id}:
+    patch:
+      summary: Atualiza categoria do catalogo.
+      operationId: updateCategory
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryPayload'
+      responses:
+        '200':
+          description: Categoria atualizada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        '404':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/products:
+    get:
+      summary: Lista produtos do catalogo.
+      operationId: listProducts
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: name
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: categoryId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Produtos cadastrados.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductResponse'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+    post:
+      summary: Cria produto do catalogo.
+      operationId: createProduct
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductPayload'
+      responses:
+        '201':
+          description: Produto criado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/products/{id}:
+    patch:
+      summary: Atualiza produto do catalogo.
+      operationId: updateProduct
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductPayload'
+      responses:
+        '200':
+          description: Produto atualizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        '404':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/products/{id}/availability:
+    patch:
+      summary: Atualiza disponibilidade real de um produto.
+      operationId: updateProductAvailability
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductAvailabilityPayload'
+      responses:
+        '200':
+          description: Disponibilidade atualizada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductAvailabilityResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/products/barcode/{barcode}:
+    get:
+      summary: Busca produto vendavel por codigo de barras.
+      operationId: findProductByBarcode
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: barcode
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Produto vendavel encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        '404':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/pdv/products:
+    get:
+      summary: Lista produtos vendaveis para o PDV.
+      operationId: listPdvProducts
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Produtos agrupados por categoria.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoryProductsResponse'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/public/menu:
+    get:
+      summary: Lista cardapio publico filtrado por disponibilidade online.
+      operationId: listPublicMenu
+      responses:
+        '200':
+          description: Produtos online agrupados por categoria.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoryProductsResponse'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/cash-register/open:
+    post:
+      summary: Abre caixa do operador autenticado.
+      operationId: openCashRegister
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CashRegisterOpenRequest'
+      responses:
+        '201':
+          description: Caixa aberto.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CashRegisterResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          $ref: '#/components/responses/BusinessError'
+        '409':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/cash-register/current:
+    get:
+      summary: Retorna caixa aberto do operador autenticado.
+      operationId: getCurrentCashRegister
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Estado atual do caixa.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentCashRegisterResponse'
+        '403':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/cash-register/{id}/movement:
+    post:
+      summary: Registra sangria ou suprimento no caixa.
+      operationId: createCashMovement
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CashMovementRequest'
+      responses:
+        '200':
+          description: Movimento registrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CashMovementResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          $ref: '#/components/responses/BusinessError'
+        '404':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/cash-register/{id}/close:
+    post:
+      summary: Fecha caixa e retorna resumo.
+      operationId: closeCashRegister
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CashRegisterCloseRequest'
+      responses:
+        '200':
+          description: Caixa fechado com resumo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CashRegisterSummaryResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          $ref: '#/components/responses/BusinessError'
+        '404':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/cash-register/{id}/summary:
+    get:
+      summary: Retorna resumo do caixa.
+      operationId: getCashRegisterSummary
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Resumo do caixa.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CashRegisterSummaryResponse'
+        '403':
+          $ref: '#/components/responses/BusinessError'
+        '404':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/stock-movements:
+    get:
+      summary: Lista movimentacoes de estoque.
+      operationId: listStockMovements
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: productId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Movimentacoes registradas.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StockMovementResponse'
+        '403':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+    post:
+      summary: Registra movimentacao de estoque local.
+      operationId: createStockMovement
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StockMovementPayload'
+      responses:
+        '201':
+          description: Movimentacao registrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockMovementResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          $ref: '#/components/responses/BusinessError'
+        '404':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/stock-movements/balances:
+    get:
+      summary: Lista saldo total de estoque por produto.
+      operationId: listStockBalances
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Saldos calculados por produto.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StockBalanceResponse'
+        '403':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/ping:
+    get:
+      summary: Verifica a disponibilidade basica da API local.
+      operationId: pingLocalApi
+      responses:
+        '200':
+          description: API local disponivel.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PingResponse'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/health:
+    get:
+      summary: Verifica a saude tecnica da API local e dependencias internas.
+      operationId: localApiTechnicalHealth
+      responses:
+        '200':
+          description: Estado tecnico consolidado da API local.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /actuator/health:
+    get:
+      summary: Health check tecnico do Spring Actuator.
+      operationId: localApiHealth
+      responses:
+        '200':
+          description: Estado tecnico da aplicacao.
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  responses:
+    ValidationError:
+      description: Requisicao invalida por erro de validacao.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    BusinessError:
+      description: Regra de negocio impediu a operacao.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    UnexpectedError:
+      description: Erro inesperado sem vazamento de detalhes internos.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+  schemas:
+    ApiError:
+      type: object
+      required:
+        - code
+        - message
+        - status
+        - path
+        - timestamp
+        - validationErrors
+      properties:
+        code:
+          type: string
+          example: VALIDATION_ERROR
+        message:
+          type: string
+          example: Campos invalidos na requisicao.
+        status:
+          type: integer
+          example: 400
+        path:
+          type: string
+          example: /api/ping
+        timestamp:
+          type: string
+          format: date-time
+        validationErrors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApiFieldError'
+    ApiFieldError:
+      type: object
+      required:
+        - field
+        - message
+      properties:
+        field:
+          type: string
+          example: name
+        message:
+          type: string
+          example: must not be blank
+    PingResponse:
+      type: object
+      required:
+        - message
+        - application
+        - environment
+        - checkedAt
+      properties:
+        message:
+          type: string
+          example: pong
+        application:
+          type: string
+          example: mnss-local-api
+        environment:
+          type: string
+          example: local
+        checkedAt:
+          type: string
+          format: date-time
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - environment
+        - offlineCriticalOperation
+        - message
+        - checkedAt
+        - components
+      properties:
+        status:
+          type: string
+          enum: [UP, DOWN, OUT_OF_SERVICE, UNKNOWN]
+          example: UP
+        environment:
+          type: string
+          example: local
+        offlineCriticalOperation:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: PDV, caixa, KDS e banco local devem operar sem internet
+        checkedAt:
+          type: string
+          format: date-time
+        components:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            db: UP
+            redis: UP
+            rabbit: UP
+    LoginRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          example: admin
+        password:
+          type: string
+          format: password
+          example: change_me
+    AuthResponse:
+      type: object
+      required:
+        - token
+        - expiresAt
+        - user
+      properties:
+        token:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        user:
+          $ref: '#/components/schemas/UserResponse'
+    CreateUserRequest:
+      type: object
+      required:
+        - name
+        - username
+        - password
+        - roles
+      properties:
+        name:
+          type: string
+          example: Operador Caixa
+        email:
+          type: string
+          example: caixa@novaalianca.local
+        username:
+          type: string
+          example: caixa01
+        password:
+          type: string
+          format: password
+        active:
+          type: boolean
+          example: true
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoleName'
+          example: [CAIXA]
+    UserResponse:
+      type: object
+      required:
+        - id
+        - name
+        - username
+        - active
+        - roles
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+        username:
+          type: string
+        active:
+          type: boolean
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoleName'
+    RoleResponse:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          $ref: '#/components/schemas/RoleName'
+        description:
+          type: string
+    CategoryPayload:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        displayOrder:
+          type: integer
+          example: 0
+        imageUrl:
+          type: string
+        active:
+          type: boolean
+        showOnline:
+          type: boolean
+        showOnPdv:
+          type: boolean
+        showOnWhatsapp:
+          type: boolean
+    CategoryResponse:
+      allOf:
+        - $ref: '#/components/schemas/CategoryPayload'
+        - type: object
+          required:
+            - id
+            - active
+            - showOnline
+            - showOnPdv
+            - showOnWhatsapp
+            - createdAt
+            - updatedAt
+          properties:
+            id:
+              type: string
+              format: uuid
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+    ProductPayload:
+      type: object
+      required:
+        - categoryId
+        - name
+        - price
+        - unitType
+        - preparationSector
+      properties:
+        categoryId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+          format: decimal
+        promotionalPrice:
+          type: number
+          format: decimal
+        costPrice:
+          type: number
+          format: decimal
+        sku:
+          type: string
+        barcode:
+          type: string
+        imageUrl:
+          type: string
+        unitType:
+          type: string
+          enum: [UNIT, KG, GRAM, LITER, ML, SLICE, PORTION, PACKAGE]
+        preparationSector:
+          type: string
+          enum: [BALCAO, CHAPA, BEBIDAS, CONFEITARIA, EXPEDICAO, DELIVERY, SEM_PREPARO]
+        preparationTimeMinutes:
+          type: integer
+        active:
+          type: boolean
+        available:
+          type: boolean
+        sellOnPdv:
+          type: boolean
+        sellOnline:
+          type: boolean
+        sellOnWhatsapp:
+          type: boolean
+    ProductResponse:
+      allOf:
+        - $ref: '#/components/schemas/ProductPayload'
+        - type: object
+          required:
+            - id
+            - active
+            - available
+            - sellOnPdv
+            - sellOnline
+            - sellOnWhatsapp
+            - createdAt
+            - updatedAt
+          properties:
+            id:
+              type: string
+              format: uuid
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+    ProductAvailabilityPayload:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          $ref: '#/components/schemas/AvailabilityStatus'
+        channel:
+          $ref: '#/components/schemas/SalesChannel'
+        availableQuantity:
+          type: number
+          format: decimal
+        reason:
+          type: string
+    ProductAvailabilityResponse:
+      allOf:
+        - $ref: '#/components/schemas/ProductAvailabilityPayload'
+        - type: object
+          required:
+            - id
+            - productId
+            - channel
+            - updatedAt
+            - syncStatus
+          properties:
+            id:
+              type: string
+              format: uuid
+            productId:
+              type: string
+              format: uuid
+            updatedBy:
+              type: string
+              format: uuid
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+            syncStatus:
+              type: string
+              enum: [PENDING, SYNCED, FAILED]
+    CategoryProductsResponse:
+      type: object
+      required:
+        - category
+        - products
+      properties:
+        category:
+          $ref: '#/components/schemas/CategoryResponse'
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductResponse'
+    AvailabilityStatus:
+      type: string
+      enum:
+        - AVAILABLE
+        - UNAVAILABLE
+        - AVAILABLE_UNTIL_STOCK_ENDS
+        - PRE_ORDER_ONLY
+        - PICKUP_ONLY
+        - DELIVERY_ONLY
+        - COUNTER_ONLY
+    SalesChannel:
+      type: string
+      enum:
+        - PDV
+        - SITE
+        - WHATSAPP
+        - ALL
+    CashRegisterOpenRequest:
+      type: object
+      required:
+        - openingAmount
+      properties:
+        openingAmount:
+          type: number
+          format: decimal
+          minimum: 0
+        notes:
+          type: string
+    CashRegisterCloseRequest:
+      type: object
+      required:
+        - closingAmount
+      properties:
+        closingAmount:
+          type: number
+          format: decimal
+          minimum: 0
+        notes:
+          type: string
+    CashMovementRequest:
+      type: object
+      required:
+        - type
+        - amount
+      properties:
+        type:
+          $ref: '#/components/schemas/CashMovementType'
+        paymentMethod:
+          $ref: '#/components/schemas/PaymentMethod'
+        amount:
+          type: number
+          format: decimal
+          minimum: 0.01
+        description:
+          type: string
+        orderId:
+          type: string
+          format: uuid
+    CashRegisterResponse:
+      type: object
+      required:
+        - id
+        - operatorId
+        - openedAt
+        - openingAmount
+        - status
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        operatorId:
+          type: string
+          format: uuid
+        openedAt:
+          type: string
+          format: date-time
+        closedAt:
+          type: string
+          format: date-time
+        openingAmount:
+          type: number
+          format: decimal
+        closingAmount:
+          type: number
+          format: decimal
+        expectedAmount:
+          type: number
+          format: decimal
+        differenceAmount:
+          type: number
+          format: decimal
+        status:
+          $ref: '#/components/schemas/CashRegisterStatus'
+        notes:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CurrentCashRegisterResponse:
+      type: object
+      required:
+        - open
+      properties:
+        open:
+          type: boolean
+        cashRegister:
+          $ref: '#/components/schemas/CashRegisterResponse'
+    CashMovementResponse:
+      allOf:
+        - $ref: '#/components/schemas/CashMovementRequest'
+        - type: object
+          required:
+            - id
+            - cashRegisterId
+            - createdBy
+            - createdAt
+            - updatedAt
+          properties:
+            id:
+              type: string
+              format: uuid
+            cashRegisterId:
+              type: string
+              format: uuid
+            createdBy:
+              type: string
+              format: uuid
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+    CashRegisterSummaryResponse:
+      type: object
+      required:
+        - cashRegister
+        - totalsByPaymentMethod
+        - saleTotal
+        - refundTotal
+        - cashInTotal
+        - cashOutTotal
+        - adjustmentTotal
+        - expectedAmount
+        - differenceAmount
+        - movements
+      properties:
+        cashRegister:
+          $ref: '#/components/schemas/CashRegisterResponse'
+        totalsByPaymentMethod:
+          type: object
+          additionalProperties:
+            type: number
+            format: decimal
+        saleTotal:
+          type: number
+          format: decimal
+        refundTotal:
+          type: number
+          format: decimal
+        cashInTotal:
+          type: number
+          format: decimal
+        cashOutTotal:
+          type: number
+          format: decimal
+        adjustmentTotal:
+          type: number
+          format: decimal
+        expectedAmount:
+          type: number
+          format: decimal
+        closingAmount:
+          type: number
+          format: decimal
+        differenceAmount:
+          type: number
+          format: decimal
+        movements:
+          type: array
+          items:
+            $ref: '#/components/schemas/CashMovementResponse'
+    CashRegisterStatus:
+      type: string
+      enum:
+        - OPEN
+        - CLOSED
+        - BLOCKED
+    CashMovementType:
+      type: string
+      enum:
+        - SALE
+        - CASH_IN
+        - CASH_OUT
+        - REFUND
+        - ADJUSTMENT
+    PaymentMethod:
+      type: string
+      enum:
+        - CASH
+        - PIX
+        - CREDIT_CARD
+        - DEBIT_CARD
+        - ONLINE_PIX
+        - ONLINE_CREDIT_CARD
+        - ONLINE_DEBIT_CARD
+        - MEAL_VOUCHER
+        - MIXED
+    StockMovementPayload:
+      type: object
+      required:
+        - productId
+        - type
+        - quantity
+      properties:
+        productId:
+          type: string
+          format: uuid
+        type:
+          $ref: '#/components/schemas/StockMovementType'
+        quantity:
+          type: number
+          format: decimal
+          minimum: 0.001
+        reason:
+          type: string
+        orderId:
+          type: string
+          format: uuid
+    StockMovementResponse:
+      allOf:
+        - $ref: '#/components/schemas/StockMovementPayload'
+        - type: object
+          required:
+            - id
+            - productName
+            - createdBy
+            - createdAt
+            - updatedAt
+          properties:
+            id:
+              type: string
+              format: uuid
+            productName:
+              type: string
+            createdBy:
+              type: string
+              format: uuid
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+    StockBalanceResponse:
+      type: object
+      required:
+        - productId
+        - productName
+        - quantity
+      properties:
+        productId:
+          type: string
+          format: uuid
+        productName:
+          type: string
+        quantity:
+          type: number
+          format: decimal
+    StockMovementType:
+      type: string
+      enum:
+        - IN
+        - OUT
+        - ADJUSTMENT
+        - SALE
+        - LOSS
+        - RETURN
+    RoleName:
+      type: string
+      enum:
+        - ADMIN
+        - GERENTE
+        - CAIXA
+        - ATENDENTE
+        - COZINHA
+        - ENTREGADOR
+        - CONSULTA

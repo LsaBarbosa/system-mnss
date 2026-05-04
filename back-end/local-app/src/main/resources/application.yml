@@ -5,6 +5,15 @@ spring:
     url: ${MNSS_LOCAL_DB_URL:jdbc:postgresql://localhost:5432/mnss_local}
     username: ${MNSS_LOCAL_DB_USER:mnss}
     password: ${MNSS_LOCAL_DB_PASSWORD:mnss}
+  rabbitmq:
+    host: ${MNSS_LOCAL_RABBITMQ_HOST:localhost}
+    port: ${MNSS_LOCAL_RABBITMQ_PORT:5672}
+    username: ${MNSS_LOCAL_RABBITMQ_USER:mnss}
+    password: ${MNSS_LOCAL_RABBITMQ_PASSWORD:mnss}
+  data:
+    redis:
+      host: ${MNSS_LOCAL_REDIS_HOST:localhost}
+      port: ${MNSS_LOCAL_REDIS_PORT:6379}
   jpa:
     hibernate:
       ddl-auto: validate
@@ -17,10 +26,24 @@ server:
   port: ${MNSS_LOCAL_API_PORT:8080}
 
 management:
+  endpoint:
+    health:
+      show-details: always
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,metrics
 
 mnss:
   environment: local
+  security:
+    enabled: ${MNSS_SECURITY_ENABLED:true}
+    token:
+      secret: ${AUTH_TOKEN_SECRET:local-dev-auth-secret-change-me}
+      ttl: ${AUTH_TOKEN_TTL:PT8H}
+    initial-admin:
+      enabled: ${MNSS_INITIAL_ADMIN_ENABLED:true}
+      name: ${MNSS_INITIAL_ADMIN_NAME:Administrador}
+      email: ${MNSS_INITIAL_ADMIN_EMAIL:admin@novaalianca.local}
+      username: ${MNSS_INITIAL_ADMIN_USERNAME:admin}
+      password: ${MNSS_INITIAL_ADMIN_PASSWORD:admin123}

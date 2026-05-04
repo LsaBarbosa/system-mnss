@@ -1,0 +1,226 @@
+<main class="catalog-shell">
+  <header class="topbar">
+    <div>
+      <p>Catalogo</p>
+      <h1>Categorias e produtos</h1>
+    </div>
+    <a routerLink="/">Console</a>
+  </header>
+
+  <mnss-error-banner />
+
+  <section class="workspace-grid">
+    <section class="editor-section" aria-label="Cadastro de categorias">
+      <form [formGroup]="categoryForm" (ngSubmit)="submitCategory()" novalidate>
+        <header>
+          <h2>{{ editingCategoryId ? 'Editar categoria' : 'Nova categoria' }}</h2>
+          <span>{{ categories.length }} cadastradas</span>
+        </header>
+
+        <p class="form-error" *ngIf="categoryError">{{ categoryError }}</p>
+
+        <label>
+          Nome
+          <input type="text" formControlName="name" />
+        </label>
+
+        <label>
+          Descricao
+          <textarea rows="3" formControlName="description"></textarea>
+        </label>
+
+        <label>
+          Ordem
+          <input type="number" formControlName="displayOrder" />
+        </label>
+
+        <fieldset>
+          <legend>Canais</legend>
+          <label>
+            <input type="checkbox" formControlName="showOnPdv" />
+            PDV
+          </label>
+          <label>
+            <input type="checkbox" formControlName="showOnline" />
+            Site
+          </label>
+          <label>
+            <input type="checkbox" formControlName="showOnWhatsapp" />
+            WhatsApp
+          </label>
+        </fieldset>
+
+        <label class="inline-option">
+          <input type="checkbox" formControlName="active" />
+          Ativa
+        </label>
+
+        <button type="submit" [disabled]="categoryForm.invalid">
+          {{ editingCategoryId ? 'Atualizar categoria' : 'Cadastrar categoria' }}
+        </button>
+      </form>
+
+      <section class="list-section" aria-label="Categorias cadastradas">
+        <article *ngFor="let category of categories">
+          <div>
+            <strong>{{ category.name }}</strong>
+            <span>Ordem {{ category.displayOrder }}</span>
+          </div>
+          <small>
+            PDV {{ category.showOnPdv ? 'sim' : 'nao' }} - Site {{ category.showOnline ? 'sim' : 'nao' }} - WhatsApp
+            {{ category.showOnWhatsapp ? 'sim' : 'nao' }}
+          </small>
+          <button type="button" (click)="editCategory(category)">Editar</button>
+        </article>
+      </section>
+    </section>
+
+    <section class="editor-section" aria-label="Cadastro de produtos">
+      <form [formGroup]="productForm" (ngSubmit)="submitProduct()" novalidate>
+        <header>
+          <h2>{{ editingProductId ? 'Editar produto' : 'Novo produto' }}</h2>
+          <span>{{ products.length }} cadastrados</span>
+        </header>
+
+        <p class="form-error" *ngIf="productError">{{ productError }}</p>
+
+        <div class="two-columns">
+          <label>
+            Categoria
+            <select formControlName="categoryId">
+              <option value="">Selecione</option>
+              <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
+            </select>
+          </label>
+
+          <label>
+            Preco
+            <input type="number" min="0" step="0.01" formControlName="price" />
+          </label>
+        </div>
+
+        <label>
+          Nome
+          <input type="text" formControlName="name" />
+        </label>
+
+        <label>
+          Descricao
+          <textarea rows="3" formControlName="description"></textarea>
+        </label>
+
+        <div class="two-columns">
+          <label>
+            Unidade
+            <select formControlName="unitType">
+              <option *ngFor="let unitType of unitTypes" [value]="unitType">{{ unitType }}</option>
+            </select>
+          </label>
+
+          <label>
+            Setor
+            <select formControlName="preparationSector">
+              <option *ngFor="let sector of preparationSectors" [value]="sector">{{ sector }}</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="two-columns">
+          <label>
+            Codigo de barras
+            <input type="text" formControlName="barcode" />
+          </label>
+
+          <label>
+            SKU
+            <input type="text" formControlName="sku" />
+          </label>
+        </div>
+
+        <fieldset>
+          <legend>Canais de venda</legend>
+          <label>
+            <input type="checkbox" formControlName="sellOnPdv" />
+            PDV
+          </label>
+          <label>
+            <input type="checkbox" formControlName="sellOnline" />
+            Site
+          </label>
+          <label>
+            <input type="checkbox" formControlName="sellOnWhatsapp" />
+            WhatsApp
+          </label>
+        </fieldset>
+
+        <div class="two-columns">
+          <label class="inline-option">
+            <input type="checkbox" formControlName="active" />
+            Ativo
+          </label>
+          <label class="inline-option">
+            <input type="checkbox" formControlName="available" />
+            Disponivel
+          </label>
+        </div>
+
+        <button type="submit" [disabled]="productForm.invalid">
+          {{ editingProductId ? 'Atualizar produto' : 'Cadastrar produto' }}
+        </button>
+      </form>
+
+      <section class="filter-band" [formGroup]="filterForm" aria-label="Filtros de produto">
+        <label>
+          Buscar
+          <input type="search" formControlName="name" />
+        </label>
+        <label>
+          Categoria
+          <select formControlName="categoryId">
+            <option value="">Todas</option>
+            <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
+          </select>
+        </label>
+      </section>
+
+      <section class="list-section" aria-label="Produtos cadastrados">
+        <article *ngFor="let product of filteredProducts">
+          <div>
+            <strong>{{ product.name }}</strong>
+            <span>{{ product.price }}</span>
+          </div>
+          <small>{{ product.unitType }} - {{ product.preparationSector }}</small>
+          <span class="availability-badge" [class.availability-badge--unavailable]="!product.available">
+            {{ product.available ? 'Disponivel' : 'Indisponivel' }}
+          </span>
+          <label class="availability-reason">
+            Motivo
+            <input
+              type="text"
+              [value]="availabilityReasons[product.id] || ''"
+              (input)="setAvailabilityReason(product.id, $any($event.target).value)"
+            />
+          </label>
+          <span class="sync-indicator" [class.sync-indicator--pending]="pendingSyncProductIds.has(product.id)">
+            {{ syncLabel(product.id) }}
+          </span>
+          <div class="product-actions">
+            <button type="button" (click)="editProduct(product)">Editar</button>
+            <button type="button" (click)="toggleAvailability(product, !product.available)">
+              {{ product.available ? 'Indisponibilizar' : 'Disponibilizar' }}
+            </button>
+          </div>
+        </article>
+      </section>
+    </section>
+  </section>
+
+  <section class="barcode-band" aria-label="Consulta por codigo de barras">
+    <label>
+      Barcode PDV
+      <input type="text" [formControl]="barcodeControl" (keydown)="onBarcodeKeydown($event)" />
+    </label>
+    <strong *ngIf="barcodeResult">{{ barcodeResult.name }} - {{ barcodeResult.price }}</strong>
+    <span *ngIf="barcodeError">{{ barcodeError }}</span>
+  </section>
+</main>

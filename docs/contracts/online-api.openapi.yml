@@ -1,0 +1,121 @@
+openapi: 3.0.3
+info:
+  title: Sistema MNSS Online API
+  version: 0.0.1
+paths:
+  /api/health:
+    get:
+      summary: Verifica a disponibilidade basica da API online.
+      operationId: onlineApiHealthStatus
+      responses:
+        '200':
+          description: API online disponivel.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /actuator/health:
+    get:
+      summary: Health check tecnico do Spring Actuator.
+      operationId: onlineActuatorHealth
+      responses:
+        '200':
+          description: Estado tecnico da aplicacao.
+components:
+  responses:
+    ValidationError:
+      description: Requisicao invalida por erro de validacao.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    BusinessError:
+      description: Regra de negocio impediu a operacao.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    UnexpectedError:
+      description: Erro inesperado sem vazamento de detalhes internos.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+  schemas:
+    ApiError:
+      type: object
+      required:
+        - code
+        - message
+        - status
+        - path
+        - timestamp
+        - validationErrors
+      properties:
+        code:
+          type: string
+          example: VALIDATION_ERROR
+        message:
+          type: string
+          example: Campos invalidos na requisicao.
+        status:
+          type: integer
+          example: 400
+        path:
+          type: string
+          example: /api/health
+        timestamp:
+          type: string
+          format: date-time
+        validationErrors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApiFieldError'
+    ApiFieldError:
+      type: object
+      required:
+        - field
+        - message
+      properties:
+        field:
+          type: string
+          example: name
+        message:
+          type: string
+          example: must not be blank
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - environment
+        - offlineCriticalOperation
+        - message
+        - checkedAt
+        - components
+      properties:
+        status:
+          type: string
+          enum: [UP, DOWN, OUT_OF_SERVICE, UNKNOWN]
+          example: UP
+        environment:
+          type: string
+          example: online
+        offlineCriticalOperation:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Canais externos, webhooks e sincronizacao via HTTPS
+        checkedAt:
+          type: string
+          format: date-time
+        components:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            db: UP
+            redis: UP
+            rabbit: UP

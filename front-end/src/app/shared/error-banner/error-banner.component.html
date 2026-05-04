@@ -1,0 +1,4 @@
+<section class="error-banner" *ngIf="message$ | async as message" role="alert" aria-live="assertive">
+  <span>{{ message }}</span>
+  <button type="button" aria-label="Fechar erro" (click)="clear()">x</button>
+</section>

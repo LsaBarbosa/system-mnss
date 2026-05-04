@@ -1,0 +1,197 @@
+.pdv-shell {
+  display: grid;
+  gap: 24px;
+  min-height: 100vh;
+  padding: 28px;
+  background: #f6f8f9;
+}
+
+.topbar,
+.topbar-actions,
+.cash-panel header,
+.cash-grid {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.topbar p,
+.topbar h1 {
+  margin: 0;
+}
+
+.topbar p {
+  color: #5d6b73;
+}
+
+.topbar h1 {
+  margin-top: 4px;
+  font-size: 1.8rem;
+}
+
+.topbar a {
+  color: #24566b;
+  font-weight: 700;
+}
+
+.cash-status {
+  border-radius: 999px;
+  padding: 0.3rem 0.75rem;
+  background: #f8e5e5;
+  color: #9b2c2c;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.cash-status--open {
+  background: #e8f5ee;
+  color: #1d6b4a;
+}
+
+.cash-panel {
+  display: grid;
+  gap: 16px;
+  border: 1px solid #d7e0e4;
+  border-radius: 8px;
+  padding: 16px;
+  background: #ffffff;
+}
+
+.cash-panel h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.cash-panel header span {
+  display: block;
+  margin-top: 4px;
+  color: #5d6b73;
+}
+
+.cash-grid {
+  align-items: stretch;
+}
+
+.cash-form {
+  display: grid;
+  flex: 1;
+  gap: 12px;
+}
+
+.cash-form label {
+  display: grid;
+  gap: 6px;
+  color: #32434b;
+  font-weight: 700;
+}
+
+.cash-form input,
+.cash-form select {
+  width: 100%;
+  border: 1px solid #cbd5da;
+  border-radius: 6px;
+  padding: 0.65rem 0.75rem;
+  color: #172126;
+  font: inherit;
+}
+
+.cash-form button {
+  min-height: 40px;
+  border: 0;
+  border-radius: 8px;
+  padding: 0 14px;
+  background: #24566b;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.cash-form button:disabled {
+  background: #91a0a7;
+}
+
+.cash-message,
+.sell-blocker {
+  margin: 0;
+  font-weight: 800;
+}
+
+.cash-message--error,
+.sell-blocker {
+  color: #9b2c2c;
+}
+
+.cash-message--success {
+  color: #1d6b4a;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  border-top: 1px solid #e5eaed;
+  padding: 10px;
+  text-align: left;
+}
+
+th {
+  color: #5d6b73;
+  font-size: 0.85rem;
+}
+
+.category-group {
+  display: grid;
+  gap: 12px;
+}
+
+.category-group h2 {
+  margin: 0;
+  color: #263a43;
+  font-size: 1.15rem;
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.product-grid button {
+  display: grid;
+  gap: 8px;
+  min-height: 92px;
+  border: 1px solid #d7e0e4;
+  border-radius: 8px;
+  padding: 12px;
+  background: #ffffff;
+  color: #172126;
+  text-align: left;
+}
+
+.product-grid button:disabled {
+  background: #edf1f3;
+  color: #69777e;
+}
+
+.product-grid strong,
+.product-grid span {
+  overflow-wrap: anywhere;
+}
+
+.product-grid span {
+  color: #1d6b4a;
+  font-weight: 800;
+}
+
+@media (max-width: 760px) {
+  .topbar,
+  .topbar-actions,
+  .cash-panel header,
+  .cash-grid {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

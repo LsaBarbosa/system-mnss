@@ -1,0 +1,161 @@
+.users-shell {
+  display: grid;
+  align-content: start;
+  gap: 24px;
+  min-height: 100vh;
+  padding: 28px;
+  background: #f7fafb;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.topbar p,
+.topbar h1,
+form h2 {
+  margin: 0;
+}
+
+.topbar p {
+  color: #5a6970;
+}
+
+.topbar h1 {
+  margin-top: 4px;
+  font-size: 1.8rem;
+}
+
+.topbar a {
+  color: #172126;
+  font-weight: 800;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
+  gap: 24px;
+}
+
+form,
+.user-list article {
+  border: 1px solid #d9e1e4;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+form {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+}
+
+label,
+fieldset {
+  display: grid;
+  gap: 6px;
+}
+
+label,
+legend {
+  color: #233239;
+  font-weight: 700;
+}
+
+input {
+  min-height: 40px;
+  border: 1px solid #cfd9dd;
+  border-radius: 8px;
+  padding: 0 10px;
+  font: inherit;
+}
+
+fieldset {
+  border: 1px solid #d9e1e4;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.role-option,
+.active-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.role-option input,
+.active-option input {
+  min-height: auto;
+}
+
+button {
+  min-height: 42px;
+  border: 0;
+  border-radius: 8px;
+  background: #172126;
+  color: #ffffff;
+  font-weight: 800;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.user-list {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+}
+
+.user-list article {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 72px;
+  padding: 14px;
+}
+
+.user-list strong,
+.user-list span {
+  display: block;
+}
+
+.user-list span {
+  margin-top: 4px;
+  color: #5f6e75;
+}
+
+ul {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+li {
+  border-radius: 8px;
+  padding: 4px 8px;
+  background: #edf3f4;
+  color: #233239;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+@media (max-width: 820px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

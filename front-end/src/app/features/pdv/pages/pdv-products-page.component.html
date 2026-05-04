@@ -1,0 +1,107 @@
+<main class="pdv-shell">
+  <header class="topbar">
+    <div>
+      <p>PDV</p>
+      <h1>Produtos vendaveis</h1>
+    </div>
+    <div class="topbar-actions">
+      <span class="cash-status" [class.cash-status--open]="currentCash.open">{{ cashStatusLabel }}</span>
+      <a routerLink="/">Console</a>
+    </div>
+  </header>
+
+  <mnss-error-banner />
+
+  <section class="cash-panel" aria-label="Controle de caixa">
+    <header>
+      <div>
+        <h2>Caixa</h2>
+        <span *ngIf="currentCash.cashRegister">Inicial {{ currentCash.cashRegister.openingAmount }}</span>
+        <span *ngIf="!currentCash.cashRegister">Sem caixa aberto</span>
+      </div>
+      <strong *ngIf="cashSummary">Esperado {{ cashSummary.expectedAmount }}</strong>
+    </header>
+
+    <p class="cash-message cash-message--error" *ngIf="cashError">{{ cashError }}</p>
+    <p class="cash-message cash-message--success" *ngIf="cashSuccess">{{ cashSuccess }}</p>
+
+    <form class="cash-form" [formGroup]="openForm" (ngSubmit)="openCash()" *ngIf="!currentCash.open" novalidate>
+      <label>
+        Valor inicial
+        <input type="number" min="0" step="0.01" formControlName="openingAmount" />
+      </label>
+      <label>
+        Observacao
+        <input type="text" formControlName="notes" />
+      </label>
+      <button type="submit" [disabled]="openForm.invalid">Abrir caixa</button>
+    </form>
+
+    <div class="cash-grid" *ngIf="currentCash.open">
+      <form class="cash-form" [formGroup]="movementForm" (ngSubmit)="registerMovement()" novalidate>
+        <label>
+          Movimento
+          <select formControlName="type">
+            <option value="CASH_OUT">Sangria</option>
+            <option value="CASH_IN">Suprimento</option>
+          </select>
+        </label>
+        <label>
+          Valor
+          <input type="number" min="0.01" step="0.01" formControlName="amount" />
+        </label>
+        <label>
+          Motivo
+          <input type="text" formControlName="description" />
+        </label>
+        <button type="submit" [disabled]="movementForm.invalid">Registrar</button>
+      </form>
+
+      <form class="cash-form" [formGroup]="closeForm" (ngSubmit)="closeCash()" novalidate>
+        <label>
+          Valor contado
+          <input type="number" min="0" step="0.01" formControlName="closingAmount" />
+        </label>
+        <strong>Diferenca {{ visualDifference }}</strong>
+        <label>
+          Justificativa
+          <input type="text" formControlName="notes" />
+        </label>
+        <button type="submit" [disabled]="closeForm.invalid">Fechar caixa</button>
+      </form>
+    </div>
+
+    <table *ngIf="cashSummary" aria-label="Resumo de caixa">
+      <thead>
+        <tr>
+          <th>Venda</th>
+          <th>Suprimento</th>
+          <th>Sangria</th>
+          <th>Esperado</th>
+          <th>Diferenca</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{{ cashSummary.saleTotal }}</td>
+          <td>{{ cashSummary.cashInTotal }}</td>
+          <td>{{ cashSummary.cashOutTotal }}</td>
+          <td>{{ cashSummary.expectedAmount }}</td>
+          <td>{{ cashSummary.differenceAmount }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <p class="sell-blocker" *ngIf="!canSell">Abra o caixa para liberar venda no PDV.</p>
+
+  <section class="category-group" *ngFor="let group of groups">
+    <h2>{{ group.category.name }}</h2>
+    <div class="product-grid">
+      <button type="button" *ngFor="let product of group.products" [disabled]="!canSell">
+        <strong>{{ product.name }}</strong>
+        <span>{{ product.price }}</span>
+      </button>
+    </div>
+  </section>
+</main>

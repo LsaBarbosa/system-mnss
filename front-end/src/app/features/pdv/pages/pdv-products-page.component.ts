@@ -243,6 +243,15 @@ export class PdvProductsPageComponent implements OnInit {
       });
   }
 
+  getPaidAmount(): string {
+    if (!this.currentSale) {
+      return '0.00';
+    }
+    const total = parseFloat(String(this.currentSale.totalAmount)) || 0;
+    const remaining = parseFloat(String(this.currentSale.remainingAmount)) || 0;
+    return (total - remaining).toFixed(2);
+  }
+
   startSale(): void {
     this.clearSaleMessages();
     if (!this.canSell) {

@@ -201,7 +201,7 @@
         </div>
         <div *ngIf="currentSale.payments && currentSale.payments.length > 0">
           <dt>Pago</dt>
-          <dd>{{ (currentSale.totalAmount - currentSale.remainingAmount).toFixed(2) }}</dd>
+          <dd>{{ getPaidAmount() }}</dd>
         </div>
         <div class="total-line" *ngIf="currentSale.payments && currentSale.payments.length > 0">
           <dt>Restante</dt>

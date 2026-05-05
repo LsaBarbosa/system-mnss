@@ -36,7 +36,7 @@ export class LoginPageComponent {
     this.authService.login(this.form.getRawValue()).subscribe({
       next: () => {
         this.submitting = false;
-        void this.router.navigateByUrl('/');
+        void this.router.navigateByUrl('/admin');
       },
       error: () => {
         this.submitting = false;

@@ -25,18 +25,21 @@ public class CatalogService {
     private final Optional<ProductAvailabilityRepository> productAvailabilityRepository;
     private final CatalogSyncEventService syncEventService;
     private final AuditService auditService;
+    private final br.com.novaalianca.mnss.localapp.domain.store.StoreInfoProperties storeInfoProperties;
 
     public CatalogService(
             Optional<CategoryRepository> categoryRepository,
             Optional<ProductRepository> productRepository,
             Optional<ProductAvailabilityRepository> productAvailabilityRepository,
             CatalogSyncEventService syncEventService,
-            AuditService auditService) {
+            AuditService auditService,
+            br.com.novaalianca.mnss.localapp.domain.store.StoreInfoProperties storeInfoProperties) {
         this.categoryRepository = categoryRepository;
         this.productRepository = productRepository;
         this.productAvailabilityRepository = productAvailabilityRepository;
         this.syncEventService = syncEventService;
         this.auditService = auditService;
+        this.storeInfoProperties = storeInfoProperties;
     }
 
     @Transactional(readOnly = true)
@@ -246,8 +249,17 @@ public class CatalogService {
     }
 
     @Transactional(readOnly = true)
-    public List<CategoryProductsResponse> listPublicMenu() {
-        return groupedProducts(CatalogChannel.SITE, null, null);
+    public List<CategoryProductsResponse> listPublicMenu(String search) {
+        return groupedProducts(CatalogChannel.SITE, search, null);
+    }
+
+    public br.com.novaalianca.mnss.localapp.domain.store.StoreInfoResponse getStoreInfo() {
+        return new br.com.novaalianca.mnss.localapp.domain.store.StoreInfoResponse(
+                storeInfoProperties.getName(),
+                storeInfoProperties.getAddress(),
+                storeInfoProperties.getHours(),
+                storeInfoProperties.getPhone(),
+                storeInfoProperties.getDescription());
     }
 
     private BusinessException notFound(String code, String message) {

@@ -388,7 +388,12 @@ class CatalogServiceTest {
         when(productAvailabilityRepository.findFirstByProductIdAndChannelOrderByUpdatedAtDesc(productId, SalesChannel.ALL))
                 .thenReturn(Optional.of(unavailable));
 
-        assertThat(service().listPublicMenu()).isEmpty();
+        assertThat(service().listPublicMenu(null)).isEmpty();
+    }
+
+    @Test
+    void shouldReturnPublicMenuWhenNoFilters() {
+        assertThat(service().listPublicMenu(null)).isEmpty();
     }
 
     @Test
@@ -462,13 +467,17 @@ class CatalogServiceTest {
         assertThat(response.barcode()).isEqualTo(barcode);
     }
 
+    @Mock
+    private br.com.novaalianca.mnss.localapp.domain.store.StoreInfoProperties storeInfoProperties;
+
     private CatalogService service() {
         return new CatalogService(
                 Optional.of(categoryRepository),
                 Optional.of(productRepository),
                 Optional.of(productAvailabilityRepository),
                 syncEventService,
-                auditService);
+                auditService,
+                storeInfoProperties);
     }
 
     private CreateProductRequest validCreateProductRequest(UUID categoryId) {

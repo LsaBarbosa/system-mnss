@@ -39,3 +39,9 @@ mnss:
   sync:
     stores:
       store-001: local-dev-sync-secret-change-me
+  store:
+    name: "Padaria e Lanchonete Nova Aliança"
+    address: "Rua Exemplo, 123 - Centro"
+    hours: "Segunda a Sábado: 06:00 as 22:00, Domingo: 06:00 as 12:00"
+    phone: "(11) 99999-9999"
+    description: "A melhor padaria da região, com pães frescos a toda hora e um cardápio completo para o seu dia a dia."

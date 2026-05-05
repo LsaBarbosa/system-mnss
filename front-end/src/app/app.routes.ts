@@ -6,14 +6,24 @@ import { CatalogAdminPageComponent } from './features/catalog/pages/catalog-admi
 import { PdvProductsPageComponent } from './features/pdv/pages/pdv-products-page.component';
 import { StockPageComponent } from './features/stock/pages/stock-page.component';
 import { UserManagementPageComponent } from './features/users/pages/user-management-page.component';
+import { CheckoutPageComponent } from './features/site-publico/pages/checkout/checkout-page.component';
+import { OrderConfirmationPageComponent } from './features/site-publico/pages/order-confirmation/order-confirmation-page.component';
 
 export const routes: Routes = [
+  {
+    path: '',
+    loadComponent: () => import('./features/site-publico/pages/site-home/site-home.component').then(m => m.SiteHomeComponent)
+  },
+  {
+    path: 'cardapio',
+    loadComponent: () => import('./features/site-publico/pages/public-menu/public-menu.component').then(m => m.PublicMenuComponent)
+  },
   {
     path: 'login',
     component: LoginPageComponent
   },
   {
-    path: '',
+    path: 'admin',
     component: AdminConsolePageComponent,
     canActivate: [authGuard]
   },

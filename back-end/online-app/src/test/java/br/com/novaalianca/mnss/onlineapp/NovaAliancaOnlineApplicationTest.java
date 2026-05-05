@@ -38,6 +38,12 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 class NovaAliancaOnlineApplicationTest {
     @MockBean
     private br.com.novaalianca.mnss.onlineapp.domain.sync.SyncEventRepository syncEventRepository;
+    @MockBean
+    private br.com.novaalianca.mnss.onlineapp.domain.catalog.OnlineCategoryRepository onlineCategoryRepository;
+    @MockBean
+    private br.com.novaalianca.mnss.onlineapp.domain.catalog.OnlineProductRepository onlineProductRepository;
+    @MockBean
+    private br.com.novaalianca.mnss.onlineapp.domain.catalog.OnlineProductAvailabilityRepository onlineProductAvailabilityRepository;
     @Autowired
     private Environment environment;
 

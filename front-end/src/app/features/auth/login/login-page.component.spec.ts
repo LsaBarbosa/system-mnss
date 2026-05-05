@@ -50,7 +50,7 @@ describe('LoginPageComponent', () => {
     fixture.componentInstance.submit();
 
     expect(authService.login).toHaveBeenCalledWith({ username: 'admin', password: 'secret' });
-    expect(router.navigateByUrl).toHaveBeenCalledWith('/');
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/admin');
   });
 
   it('shows message when login fails', () => {

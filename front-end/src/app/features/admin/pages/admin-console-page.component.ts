@@ -30,11 +30,12 @@ export class AdminConsolePageComponent implements OnInit {
   readonly navigation = [
     { label: 'PDV', route: '/pdv' },
     { label: 'Caixa', route: '/' },
-    { label: 'KDS', route: '/' },
+    { label: 'KDS', route: '/kds' },
     { label: 'Catalogo', route: '/catalog' },
     { label: 'Estoque', route: '/stock' },
     { label: 'Usuarios', route: '/users' },
-    { label: 'Sync', route: '/' }
+    { label: 'Sync', route: '/' },
+    { label: 'Site Público', route: '/cardapio' }
   ];
 
   readonly operationTiles: OperationTile[] = [

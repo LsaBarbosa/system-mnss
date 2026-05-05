@@ -15,7 +15,12 @@ class PublicMenuController {
     }
 
     @GetMapping
-    List<CategoryProductsResponse> listPublicMenu() {
-        return catalogService.listPublicMenu();
+    List<CategoryProductsResponse> listPublicMenu(@org.springframework.web.bind.annotation.RequestParam(required = false) String search) {
+        return catalogService.listPublicMenu(search);
+    }
+
+    @GetMapping("/info")
+    br.com.novaalianca.mnss.localapp.domain.store.StoreInfoResponse getStoreInfo() {
+        return catalogService.getStoreInfo();
     }
 }

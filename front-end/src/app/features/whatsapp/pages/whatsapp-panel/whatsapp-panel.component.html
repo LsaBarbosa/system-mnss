@@ -1,0 +1,66 @@
+<div class="whatsapp-shell">
+  <div class="conversation-sidebar">
+    <header class="sidebar-header">
+      <h2>Mensagens</h2>
+      <button class="icon-button" (click)="loadConversations()" title="Atualizar">
+        <i class="icon-refresh"></i>
+      </button>
+    </header>
+    
+    <div class="sidebar-content">
+      <app-conversation-list 
+        [conversations]="conversations" 
+        [selectedId]="selectedConversation?.id"
+        (selected)="selectConversation($event)">
+      </app-conversation-list>
+      
+      <div *ngIf="isLoading" class="loading-overlay">
+        <div class="spinner"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chat-workspace">
+    <div class="chat-container" *ngIf="selectedConversation; else noSelection">
+      <header class="chat-header">
+        <div class="customer-info">
+          <div class="avatar-circle">
+            {{ (selectedConversation.customerName || 'C')[0] }}
+          </div>
+          <div>
+            <h3>{{ selectedConversation.customerName || selectedConversation.customerPhone }}</h3>
+            <small>{{ selectedConversation.customerPhone }}</small>
+          </div>
+        </div>
+        
+        <div class="header-actions">
+          <button class="action-button" [class.active]="showCart" (click)="toggleCart()">
+            {{ showCart ? 'Ver Conversa' : 'Novo Pedido' }}
+          </button>
+        </div>
+      </header>
+      
+      <main class="chat-content">
+        <app-chat-view 
+          *ngIf="!showCart"
+          [messages]="messages" 
+          (sendMessage)="onSendMessage($event)">
+        </app-chat-view>
+
+        <app-assisted-cart
+          *ngIf="showCart"
+          [conversation]="selectedConversation"
+          (orderCreated)="loadConversations(); showCart = false">
+        </app-assisted-cart>
+      </main>
+    </div>
+
+    <ng-template #noSelection>
+      <div class="empty-state">
+        <div class="empty-icon">💬</div>
+        <h2>Atendimento WhatsApp</h2>
+        <p>Selecione uma conversa ao lado para iniciar o atendimento assistido.</p>
+      </div>
+    </ng-template>
+  </div>
+</div>

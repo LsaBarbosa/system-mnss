@@ -9,4 +9,5 @@ import org.springframework.stereotype.Repository;
 public interface OnlineProductRepository extends JpaRepository<OnlineProductEntity, UUID> {
     List<OnlineProductEntity> findAllByOrderByNameAsc();
     List<OnlineProductEntity> findByNameContainingIgnoreCaseOrderByNameAsc(String name);
+    List<OnlineProductEntity> findByActiveTrueAndAvailableTrueAndSellOnWhatsappTrueOrderByNameAsc();
 }

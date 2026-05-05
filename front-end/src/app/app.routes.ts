@@ -36,6 +36,14 @@ export const routes: Routes = [
     }
   },
   {
+    path: 'admin/whatsapp',
+    loadComponent: () => import('./features/whatsapp/pages/whatsapp-panel/whatsapp-panel.component').then(m => m.WhatsAppPanelComponent),
+    canActivate: [authGuard, roleGuard],
+    data: {
+      roles: ['ADMIN', 'GERENTE', 'ATENDENTE']
+    }
+  },
+  {
     path: 'users',
     component: UserManagementPageComponent,
     canActivate: [authGuard, roleGuard],

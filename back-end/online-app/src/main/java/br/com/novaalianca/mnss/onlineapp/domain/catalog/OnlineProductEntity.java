@@ -55,6 +55,9 @@ public class OnlineProductEntity extends BaseEntity {
     @Column(nullable = false)
     private boolean sellOnline;
 
+    @Column(name = "sell_on_whatsapp", nullable = false)
+    private boolean sellOnWhatsapp;
+
     protected OnlineProductEntity() {}
 
     public OnlineCategoryEntity getCategory() {
@@ -103,6 +106,10 @@ public class OnlineProductEntity extends BaseEntity {
 
     public boolean isSellOnline() {
         return sellOnline;
+    }
+
+    public boolean isSellOnWhatsapp() {
+        return sellOnWhatsapp;
     }
 
     public void updateAvailability(boolean available) {

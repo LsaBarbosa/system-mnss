@@ -47,6 +47,11 @@ public class OnlineOrderService {
 
     @Transactional
     public OnlineOrderResponse createOnlineOrder(CreateOnlineOrderRequest request) {
+        return createOnlineOrder(request, OrderOrigin.ONLINE);
+    }
+
+    @Transactional
+    public OnlineOrderResponse createOnlineOrder(CreateOnlineOrderRequest request, OrderOrigin origin) {
         OnlineCustomerEntity customer = resolveCustomer(request);
         
         if (request.deliveryType() == DeliveryType.DELIVERY && request.address() == null) {
@@ -59,7 +64,7 @@ public class OnlineOrderService {
 
         OnlineOrderEntity order = new OnlineOrderEntity(
                 customer,
-                OrderOrigin.ONLINE,
+                origin,
                 request.deliveryType(),
                 request.paymentMethod(),
                 request.notes()

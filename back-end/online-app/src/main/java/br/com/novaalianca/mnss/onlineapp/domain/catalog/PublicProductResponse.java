@@ -15,7 +15,7 @@ public record PublicProductResponse(
         UnitType unitType,
         PreparationSector preparationSector,
         Integer preparationTimeMinutes) {
-    static PublicProductResponse from(OnlineProductEntity product) {
+    public static PublicProductResponse from(OnlineProductEntity product) {
         return new PublicProductResponse(
                 product.getId(),
                 product.getName(),

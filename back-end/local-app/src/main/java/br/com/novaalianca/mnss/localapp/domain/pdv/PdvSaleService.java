@@ -1,12 +1,16 @@
 package br.com.novaalianca.mnss.localapp.domain.pdv;
 
 import br.com.novaalianca.mnss.core.catalog.SalesChannel;
+import br.com.novaalianca.mnss.localapp.domain.audit.AuditLogRequest;
+import br.com.novaalianca.mnss.localapp.domain.audit.AuditService;
 import br.com.novaalianca.mnss.localapp.domain.cash.CashRegisterRepository;
+import br.com.novaalianca.mnss.localapp.domain.cash.CashRegisterService;
 import br.com.novaalianca.mnss.localapp.domain.cash.CashRegisterStatus;
 import br.com.novaalianca.mnss.localapp.domain.catalog.AvailabilityStatus;
 import br.com.novaalianca.mnss.localapp.domain.catalog.ProductAvailabilityRepository;
 import br.com.novaalianca.mnss.localapp.domain.catalog.ProductEntity;
 import br.com.novaalianca.mnss.localapp.domain.catalog.ProductRepository;
+import br.com.novaalianca.mnss.localapp.domain.hardware.HardwareAdapterService;
 import br.com.novaalianca.mnss.localapp.domain.order.DeliveryType;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderEntity;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderItemEntity;
@@ -16,10 +20,18 @@ import br.com.novaalianca.mnss.localapp.domain.order.OrderOrigin;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderRepository;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderStatus;
 import br.com.novaalianca.mnss.localapp.domain.payment.PaymentStatus;
+import br.com.novaalianca.mnss.localapp.domain.payment.PaymentEntity;
+import br.com.novaalianca.mnss.localapp.domain.payment.PaymentMethod;
+import br.com.novaalianca.mnss.localapp.domain.payment.PaymentRepository;
+import br.com.novaalianca.mnss.localapp.domain.payment.PaymentStatus;
+import br.com.novaalianca.mnss.localapp.domain.stock.StockService;
+import br.com.novaalianca.mnss.localapp.security.user.RoleName;
 import br.com.novaalianca.mnss.sharedinfra.web.error.BusinessException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -35,18 +47,36 @@ public class PdvSaleService {
     private final Optional<OrderItemRepository> orderItemRepository;
     private final Optional<ProductRepository> productRepository;
     private final Optional<ProductAvailabilityRepository> productAvailabilityRepository;
+    private final Optional<PaymentRepository> paymentRepository;
+    private final PdvSyncEventService pdvSyncEventService;
+    private final HardwareAdapterService hardwareAdapterService;
+    private final CashRegisterService cashRegisterService;
+    private final StockService stockService;
+    private final AuditService auditService;
 
     PdvSaleService(
             Optional<CashRegisterRepository> cashRegisterRepository,
             Optional<OrderRepository> orderRepository,
             Optional<OrderItemRepository> orderItemRepository,
             Optional<ProductRepository> productRepository,
-            Optional<ProductAvailabilityRepository> productAvailabilityRepository) {
+            Optional<ProductAvailabilityRepository> productAvailabilityRepository,
+            Optional<PaymentRepository> paymentRepository,
+            PdvSyncEventService pdvSyncEventService,
+            HardwareAdapterService hardwareAdapterService,
+            CashRegisterService cashRegisterService,
+            StockService stockService,
+            AuditService auditService) {
         this.cashRegisterRepository = cashRegisterRepository;
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.productRepository = productRepository;
         this.productAvailabilityRepository = productAvailabilityRepository;
+        this.paymentRepository = paymentRepository;
+        this.pdvSyncEventService = pdvSyncEventService;
+        this.hardwareAdapterService = hardwareAdapterService;
+        this.cashRegisterService = cashRegisterService;
+        this.stockService = stockService;
+        this.auditService = auditService;
     }
 
     @Transactional
@@ -107,6 +137,118 @@ public class PdvSaleService {
         return response(sale);
     }
 
+    @Transactional
+    public PdvSaleResponse finishSale(UUID saleId) {
+        OrderEntity sale = orderRepository()
+                .findById(saleId)
+                .orElseThrow(() -> notFound("SALE_NOT_FOUND", "Venda nao encontrada."));
+        
+        if (sale.getStatus() != OrderStatus.CREATED) {
+            return response(sale);
+        }
+
+        List<OrderItemEntity> items = orderItemRepository().findByOrderIdOrderByCreatedAtAsc(sale.getId());
+        if (items.isEmpty()) {
+            throw new BusinessException("EMPTY_SALE", "Venda sem itens nao pode ser finalizada.", HttpStatus.BAD_REQUEST);
+        }
+
+        List<PaymentEntity> payments = paymentRepository().findByOrderIdOrderByCreatedAtAsc(saleId);
+        BigDecimal paidTotal = payments.stream()
+                .filter(p -> p.getStatus() == PaymentStatus.PAID)
+                .map(PaymentEntity::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal remainingAmount = sale.getTotalAmount().subtract(paidTotal);
+
+        if (remainingAmount.signum() > 0) {
+            throw new BusinessException("SALE_NOT_FULLY_PAID", "Venda nao esta totalmente paga.", HttpStatus.BAD_REQUEST);
+        }
+
+        sale.changeStatus(nextFinishedStatus(items));
+        orderRepository().save(sale);
+
+        pdvSyncEventService.recordOrderFinishedEvent(sale);
+
+        if (payments.stream().anyMatch(p -> p.getMethod() == PaymentMethod.CASH)) {
+            hardwareAdapterService.openDrawer();
+        }
+
+        hardwareAdapterService.printReceipt(sale, items, payments);
+
+        return response(sale);
+    }
+
+    @Transactional(readOnly = true)
+    public void reprintReceipt(UUID saleId) {
+        OrderEntity sale = orderRepository()
+                .findById(saleId)
+                .orElseThrow(() -> notFound("SALE_NOT_FOUND", "Venda nao encontrada."));
+        
+        List<OrderItemEntity> items = orderItemRepository().findByOrderIdOrderByCreatedAtAsc(saleId);
+        List<PaymentEntity> payments = paymentRepository().findByOrderIdOrderByCreatedAtAsc(saleId);
+        
+        hardwareAdapterService.printReceipt(sale, items, payments);
+    }
+
+    @Transactional
+    public PdvSaleResponse applyDiscount(UUID saleId, CreateDiscountRequest request, UUID actorUserId, List<String> roles) {
+        OrderEntity sale = editableSale(saleId);
+        BigDecimal discountAmount = normalizeQuantity(request.amount());
+        BigDecimal subtotal = sale.getSubtotal();
+
+        BigDecimal limit = subtotal.multiply(new BigDecimal("0.10"));
+        if (discountAmount.compareTo(limit) > 0) {
+            if (!roles.contains(RoleName.GERENTE) && !roles.contains(RoleName.ADMIN)) {
+                throw new BusinessException("DISCOUNT_LIMIT_EXCEEDED", "Desconto acima de 10% exige permissao de gerente.", HttpStatus.FORBIDDEN);
+            }
+        }
+
+        BigDecimal newTotal = subtotal.subtract(discountAmount).add(sale.getDeliveryFee());
+        if (newTotal.signum() < 0) {
+            throw new BusinessException("INVALID_DISCOUNT", "Desconto nao pode ser maior que o valor da venda.", HttpStatus.BAD_REQUEST);
+        }
+
+        sale.updateTotals(sale.getSubtotal(), discountAmount, sale.getDeliveryFee(), money(newTotal));
+        orderRepository().save(sale);
+        return response(sale);
+    }
+
+    @Transactional
+    public PdvSaleResponse cancelSale(UUID saleId, CancelSaleRequest request, UUID actorUserId) {
+        OrderEntity sale = orderRepository()
+                .findById(saleId)
+                .orElseThrow(() -> notFound("SALE_NOT_FOUND", "Venda nao encontrada."));
+
+        if (sale.getStatus() == OrderStatus.CANCELED) {
+            throw new BusinessException("SALE_ALREADY_CANCELED", "Venda ja esta cancelada.", HttpStatus.BAD_REQUEST);
+        }
+
+        sale.changeStatus(OrderStatus.CANCELED);
+        orderRepository().save(sale);
+
+        List<PaymentEntity> payments = paymentRepository().findByOrderIdOrderByCreatedAtAsc(saleId);
+        for (PaymentEntity payment : payments) {
+            if (payment.getStatus() == PaymentStatus.PAID) {
+                payment.markCanceled();
+                paymentRepository().save(payment);
+                
+                cashRegisterRepository().findFirstByOperatorIdAndStatusOrderByOpenedAtDesc(actorUserId, CashRegisterStatus.OPEN)
+                        .ifPresent(cash -> cashRegisterService.recordRefundMovement(
+                                cash.getId(), payment.getMethod(), payment.getAmount(), saleId, actorUserId));
+            }
+        }
+
+        List<OrderItemEntity> items = orderItemRepository().findByOrderIdOrderByCreatedAtAsc(saleId);
+        for (OrderItemEntity item : items) {
+            stockService.recordReturnMovement(item.getProduct().getId(), item.getQuantity(), saleId, actorUserId);
+        }
+
+        Map<String, Object> details = new LinkedHashMap<>();
+        details.put("reason", request.reason());
+        auditService.record(new AuditLogRequest(actorUserId, "SALE_CANCELED", "Order", saleId, details, null));
+
+        return response(sale);
+    }
+
     @Transactional(readOnly = true)
     public PdvSaleResponse getSale(UUID saleId) {
         return response(orderRepository()
@@ -144,7 +286,11 @@ public class PdvSaleService {
         List<PdvSaleItemResponse> items = orderItemRepository().findByOrderIdOrderByCreatedAtAsc(order.getId()).stream()
                 .map(PdvSaleItemResponse::from)
                 .toList();
-        return PdvSaleResponse.from(order, items);
+        List<PdvSalePaymentResponse> payments = paymentRepository().findByOrderIdOrderByCreatedAtAsc(order.getId()).stream()
+                .filter(p -> p.getStatus() == PaymentStatus.PAID)
+                .map(PdvSalePaymentResponse::from)
+                .toList();
+        return PdvSaleResponse.from(order, items, payments);
     }
 
     private OrderEntity editableSale(UUID saleId) {
@@ -202,6 +348,12 @@ public class PdvSaleService {
         }
     }
 
+    private OrderStatus nextFinishedStatus(List<OrderItemEntity> items) {
+        boolean requiresPreparation = items.stream()
+                .anyMatch(i -> i.getPreparationSector() != br.com.novaalianca.mnss.core.catalog.PreparationSector.SEM_PREPARO);
+        return requiresPreparation ? OrderStatus.SENT_TO_STORE : OrderStatus.FINISHED;
+    }
+
     private BigDecimal normalizeQuantity(BigDecimal quantity) {
         BigDecimal normalized = quantity == null ? DEFAULT_QUANTITY : quantity;
         if (normalized.signum() <= 0) {
@@ -243,5 +395,9 @@ public class PdvSaleService {
     private ProductAvailabilityRepository productAvailabilityRepository() {
         return productAvailabilityRepository
                 .orElseThrow(() -> new IllegalStateException("Product availability repository is not available."));
+    }
+
+    private PaymentRepository paymentRepository() {
+        return paymentRepository.orElseThrow(() -> new IllegalStateException("Payment repository is not available."));
     }
 }

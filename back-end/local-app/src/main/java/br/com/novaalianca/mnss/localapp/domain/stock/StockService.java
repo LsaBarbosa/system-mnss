@@ -107,6 +107,16 @@ public class StockService {
                 orderId), actorUserId);
     }
 
+    @Transactional
+    public StockMovementResponse recordReturnMovement(UUID productId, BigDecimal quantity, UUID orderId, UUID actorUserId) {
+        return createMovement(new CreateStockMovementRequest(
+                productId,
+                StockMovementType.RETURN,
+                quantity,
+                "Devolucao de venda",
+                orderId), actorUserId);
+    }
+
     @Transactional(readOnly = true)
     public BigDecimal calculateBalance(UUID productId) {
         requireProductId(productId);

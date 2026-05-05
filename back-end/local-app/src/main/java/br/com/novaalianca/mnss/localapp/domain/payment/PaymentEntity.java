@@ -60,6 +60,12 @@ public class PaymentEntity extends BaseEntity {
         touch();
     }
 
+    public void markCanceled() {
+        this.status = PaymentStatus.CANCELED;
+        this.canceledAt = Instant.now();
+        touch();
+    }
+
     private String normalize(String value) {
         return value == null || value.isBlank() ? null : value.trim();
     }

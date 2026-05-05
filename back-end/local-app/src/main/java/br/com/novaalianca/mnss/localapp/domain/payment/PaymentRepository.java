@@ -5,4 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PaymentRepository extends JpaRepository<PaymentEntity, UUID> {
     boolean existsByOrderIdAndStatus(UUID orderId, PaymentStatus status);
+
+    java.util.List<PaymentEntity> findByOrderIdOrderByCreatedAtAsc(UUID orderId);
 }

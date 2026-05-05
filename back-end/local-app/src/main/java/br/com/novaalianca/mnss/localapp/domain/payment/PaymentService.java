@@ -63,31 +63,53 @@ public class PaymentService {
         if (items.isEmpty()) {
             throw new BusinessException("EMPTY_SALE", "Venda sem itens nao pode ser finalizada.", HttpStatus.BAD_REQUEST);
         }
-        if (paymentRepository().existsByOrderIdAndStatus(order.getId(), PaymentStatus.PAID)) {
-            throw new BusinessException("ORDER_ALREADY_PAID", "Pedido ja possui pagamento aprovado.", HttpStatus.CONFLICT);
+        BigDecimal paidTotal = paymentRepository().findByOrderIdOrderByCreatedAtAsc(order.getId()).stream()
+                .filter(p -> p.getStatus() == PaymentStatus.PAID)
+                .map(PaymentEntity::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal remainingAmount = money(order.getTotalAmount()).subtract(paidTotal);
+
+        if (remainingAmount.signum() <= 0) {
+            throw new BusinessException("ORDER_ALREADY_PAID", "Pedido ja esta totalmente pago.", HttpStatus.CONFLICT);
         }
-        if (amount.compareTo(money(order.getTotalAmount())) != 0) {
-            throw new BusinessException("PAYMENT_AMOUNT_MISMATCH", "Valor do pagamento deve fechar o total da venda.", HttpStatus.BAD_REQUEST);
+
+        BigDecimal requestAmount = money(requirePositiveAmount(request.amount()));
+        BigDecimal amountToRecord = requestAmount;
+        BigDecimal changeAmount = BigDecimal.ZERO;
+
+        if (requestAmount.compareTo(remainingAmount) > 0) {
+            if (method == PaymentMethod.CASH) {
+                amountToRecord = remainingAmount;
+                changeAmount = requestAmount.subtract(remainingAmount);
+            } else {
+                throw new BusinessException("PAYMENT_AMOUNT_MISMATCH", "Valor do pagamento excede o saldo devedor.", HttpStatus.BAD_REQUEST);
+            }
         }
 
         CashRegisterEntity cashRegister = openCashRegister(actorUserId);
-        PaymentEntity payment = new PaymentEntity(order, method, PaymentStatus.PAID, amount);
+        PaymentEntity payment = new PaymentEntity(order, method, PaymentStatus.PAID, amountToRecord);
         payment.markPaid(request.transactionId(), request.gateway());
         PaymentEntity saved = paymentRepository().save(payment);
 
-        recordStockMovements(order, items, actorUserId);
-        cashRegisterService.recordSaleMovement(cashRegister.getId(), method, amount, order.getId(), actorUserId);
+        cashRegisterService.recordSaleMovement(cashRegister.getId(), method, amountToRecord, order.getId(), actorUserId);
 
-        order.markPaid(nextPaidStatus(items));
-        OrderEntity savedOrder = orderRepository().save(order);
+        BigDecimal newRemainingAmount = remainingAmount.subtract(amountToRecord);
+        OrderEntity savedOrder = order;
+
+        if (newRemainingAmount.signum() <= 0) {
+            recordStockMovements(order, items, actorUserId);
+            order.markPaid(nextPaidStatus(items));
+            savedOrder = orderRepository().save(order);
+        }
+
         auditService.record(new AuditLogRequest(
                 actorUserId,
                 "ORDER_PAYMENT_RECORDED",
                 "Order",
                 order.getId(),
-                paymentDetails(saved, savedOrder),
+                paymentDetails(saved, savedOrder, newRemainingAmount, changeAmount),
                 null));
-        return PaymentResponse.from(saved, savedOrder);
+        return PaymentResponse.from(saved, savedOrder, newRemainingAmount, changeAmount);
     }
 
     private OrderEntity editablePdvOrder(UUID orderId) {
@@ -152,11 +174,13 @@ public class PaymentService {
         return value.setScale(2, RoundingMode.HALF_UP);
     }
 
-    private Map<String, Object> paymentDetails(PaymentEntity payment, OrderEntity order) {
+    private Map<String, Object> paymentDetails(PaymentEntity payment, OrderEntity order, BigDecimal remainingAmount, BigDecimal changeAmount) {
         Map<String, Object> details = new LinkedHashMap<>();
         details.put("paymentId", payment.getId() == null ? null : payment.getId().toString());
         details.put("method", payment.getMethod().name());
-        details.put("amount", payment.getAmount().toPlainString());
+        details.put("recordedAmount", payment.getAmount().toPlainString());
+        details.put("remainingAmount", remainingAmount.toPlainString());
+        details.put("changeAmount", changeAmount.toPlainString());
         details.put("orderStatus", order.getStatus().name());
         details.put("paymentStatus", order.getPaymentStatus().name());
         return details;

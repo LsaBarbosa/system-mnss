@@ -7,7 +7,14 @@ import br.com.novaalianca.mnss.localapp.security.user.RoleName;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
+import br.com.novaalianca.mnss.localapp.domain.payment.CreatePaymentRequest;
+import br.com.novaalianca.mnss.localapp.domain.payment.PaymentResponse;
+import br.com.novaalianca.mnss.localapp.domain.payment.PaymentService;
+import br.com.novaalianca.mnss.localapp.security.auth.AuthenticatedUser;
+import br.com.novaalianca.mnss.localapp.security.user.RoleName;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,9 +31,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiresRole({RoleName.ADMIN, RoleName.GERENTE, RoleName.CAIXA, RoleName.ATENDENTE})
 class PdvSaleController {
     private final PdvSaleService pdvSaleService;
+    private final PaymentService paymentService;
 
-    PdvSaleController(PdvSaleService pdvSaleService) {
+    PdvSaleController(PdvSaleService pdvSaleService, PaymentService paymentService) {
         this.pdvSaleService = pdvSaleService;
+        this.paymentService = paymentService;
     }
 
     @PostMapping
@@ -68,8 +77,52 @@ class PdvSaleController {
         return pdvSaleService.removeItem(saleId, itemId);
     }
 
+    @PostMapping("/{saleId}/payment")
+    @ResponseStatus(HttpStatus.CREATED)
+    PaymentResponse pay(
+            @PathVariable UUID saleId,
+            @Valid @RequestBody CreatePaymentRequest request,
+            HttpServletRequest servletRequest) {
+        return paymentService.payOrder(saleId, request, authenticatedUserId(servletRequest));
+    }
+
+    @PostMapping("/{saleId}/finish")
+    PdvSaleResponse finishSale(@PathVariable UUID saleId) {
+        return pdvSaleService.finishSale(saleId);
+    }
+
+    @PostMapping("/{saleId}/discount")
+    PdvSaleResponse applyDiscount(
+            @PathVariable UUID saleId,
+            @Valid @RequestBody CreateDiscountRequest request,
+            HttpServletRequest servletRequest) {
+        return pdvSaleService.applyDiscount(saleId, request, authenticatedUserId(servletRequest), authenticatedUserRoles(servletRequest));
+    }
+
+    @PostMapping("/{saleId}/cancel")
+    PdvSaleResponse cancelSale(
+            @PathVariable UUID saleId,
+            @Valid @RequestBody CancelSaleRequest request,
+            HttpServletRequest servletRequest) {
+        return pdvSaleService.cancelSale(saleId, request, authenticatedUserId(servletRequest));
+    }
+
+    @PostMapping("/{saleId}/print")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void reprint(@PathVariable UUID saleId) {
+        pdvSaleService.reprintReceipt(saleId);
+    }
+
     private UUID authenticatedUserId(HttpServletRequest request) {
         Object attribute = request.getAttribute(AuthenticatedUserInterceptor.AUTHENTICATED_USER_ATTRIBUTE);
         return attribute instanceof AuthenticatedUser user ? user.id() : null;
+    }
+
+    private List<String> authenticatedUserRoles(HttpServletRequest request) {
+        Object attribute = request.getAttribute(AuthenticatedUserInterceptor.AUTHENTICATED_USER_ATTRIBUTE);
+        if (attribute instanceof AuthenticatedUser user) {
+            return user.roles().stream().map(RoleName::name).collect(Collectors.toList());
+        }
+        return List.of();
     }
 }

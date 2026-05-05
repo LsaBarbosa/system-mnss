@@ -101,6 +101,23 @@ public class CashRegisterService {
     }
 
     @Transactional
+    public CashMovementResponse recordRefundMovement(
+            UUID cashRegisterId,
+            PaymentMethod paymentMethod,
+            BigDecimal amount,
+            UUID orderId,
+            UUID actorUserId) {
+        return createMovement(
+                cashRegisterId,
+                CashMovementType.REFUND,
+                paymentMethod,
+                amount,
+                "Estorno de Venda",
+                orderId,
+                actorUserId);
+    }
+
+    @Transactional
     public CashRegisterSummaryResponse close(UUID cashRegisterId, CashRegisterCloseRequest request, UUID actorUserId) {
         requireActor(actorUserId);
         CashRegisterEntity cashRegister = findCashRegister(cashRegisterId);

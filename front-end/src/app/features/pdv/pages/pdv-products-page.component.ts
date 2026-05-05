@@ -11,6 +11,7 @@ import type { PdvProductGroup } from '../data-access/pdv-catalog.service';
 import { PdvCatalogService } from '../data-access/pdv-catalog.service';
 import { PdvSaleService } from '../data-access/pdv-sale.service';
 import type { PdvSale, PdvSaleItem } from '../data-access/pdv-sale.service';
+import { HardwareService } from '../data-access/hardware.service';
 
 @Component({
   selector: 'mnss-pdv-products-page',
@@ -24,6 +25,7 @@ export class PdvProductsPageComponent implements OnInit {
   private readonly pdvCatalogService = inject(PdvCatalogService);
   private readonly cashRegisterService = inject(CashRegisterService);
   private readonly pdvSaleService = inject(PdvSaleService);
+  private readonly hardwareService = inject(HardwareService);
 
   groups: PdvProductGroup[] = [];
   currentCash: CurrentCashRegisterResponse = { open: false, cashRegister: null };
@@ -34,7 +36,12 @@ export class PdvProductsPageComponent implements OnInit {
   cashSuccess: string | null = null;
   saleError: string | null = null;
   saleSuccess: string | null = null;
+  changeAmount: string | null = null;
   barcodeError: string | null = null;
+  hardwareSuccess: string | null = null;
+  showDiscountModal = false;
+  showCancelModal = false;
+  saleToCancel: string | null = null;
 
   readonly openForm = this.formBuilder.nonNullable.group({
     openingAmount: ['', [Validators.required, Validators.min(0)]],
@@ -63,6 +70,15 @@ export class PdvProductsPageComponent implements OnInit {
     transactionId: ['']
   });
 
+  readonly discountForm = this.formBuilder.nonNullable.group({
+    type: ['VALUE' as 'VALUE' | 'PERCENT', Validators.required],
+    amount: ['', [Validators.required, Validators.min(0)]]
+  });
+
+  readonly cancelForm = this.formBuilder.nonNullable.group({
+    reason: ['', Validators.required]
+  });
+
   readonly barcodeControl = this.formBuilder.nonNullable.control('');
 
   ngOnInit(): void {
@@ -83,8 +99,30 @@ export class PdvProductsPageComponent implements OnInit {
     return this.canSell && this.currentSale?.status === 'CREATED';
   }
 
-  get canFinalizeSale(): boolean {
+  get canRegisterPayment(): boolean {
     return this.canUseCart && (this.currentSale?.items.length ?? 0) > 0;
+  }
+
+  get canFinalizeSale(): boolean {
+    return this.canRegisterPayment && this.currentSale?.remainingAmount === '0.00';
+  }
+
+  get discountPreview(): { discount: number; total: number } | null {
+    if (!this.currentSale || this.discountForm.invalid) return null;
+    const subtotal = Number(this.currentSale.subtotal);
+    const amount = Number(this.discountForm.value.amount);
+    let discount = 0;
+    
+    if (this.discountForm.value.type === 'PERCENT') {
+      discount = (subtotal * amount) / 100;
+    } else {
+      discount = amount;
+    }
+
+    return {
+      discount,
+      total: Math.max(0, subtotal - discount + Number(this.currentSale.deliveryFee))
+    };
   }
 
   get categories(): Array<{ id: string; name: string }> {
@@ -285,11 +323,11 @@ export class PdvProductsPageComponent implements OnInit {
     });
   }
 
-  finalizeSale(): void {
+  registerPayment(): void {
     this.clearSaleMessages();
     const saleId = this.currentSale?.id;
-    if (!saleId || !this.canFinalizeSale) {
-      this.saleError = 'Venda deve ter itens para finalizar.';
+    if (!saleId || !this.canRegisterPayment) {
+      this.saleError = 'Adicione itens antes de registrar pagamento.';
       return;
     }
     if (this.paymentForm.invalid) {
@@ -307,23 +345,21 @@ export class PdvProductsPageComponent implements OnInit {
       })
       .subscribe({
         next: (payment) => {
-          if (this.currentSale) {
-            this.currentSale = {
-              ...this.currentSale,
-              status: payment.orderStatus,
-              paymentStatus: payment.orderPaymentStatus
-            };
+          this.changeAmount = Number(payment.changeAmount) > 0 ? payment.changeAmount : null;
+          
+          if (payment.remainingAmount === '0.00') {
+            this.saleSuccess = 'Pagamento concluído. Finalize a venda.';
+            this.paymentForm.reset({ method: 'CASH', amount: '', transactionId: '' });
+          } else {
+            this.saleSuccess = 'Pagamento registrado. Saldo restante: ' + payment.remainingAmount;
+            this.paymentForm.reset({ method: 'CASH', amount: payment.remainingAmount, transactionId: '' });
           }
-          this.saleSuccess = 'Venda finalizada.';
-          this.paymentForm.reset({ method: 'CASH', amount: '', transactionId: '' });
-          this.loadSales();
-          const cashRegisterId = this.currentCash.cashRegister?.id;
-          if (cashRegisterId) {
-            this.loadSummary(cashRegisterId);
-          }
+          this.pdvSaleService.getSale(saleId).subscribe((updatedSale) => {
+            this.setCurrentSale(updatedSale);
+          });
         },
-        error: () => {
-          this.saleError = 'Nao foi possivel finalizar a venda.';
+        error: (err) => {
+          this.saleError = err.error?.message || 'Nao foi possivel registrar o pagamento.';
         }
       });
   }
@@ -356,6 +392,88 @@ export class PdvProductsPageComponent implements OnInit {
         this.barcodeError = 'Produto nao encontrado para venda.';
       }
     });
+  }
+
+  finishSale(): void {
+    this.clearSaleMessages();
+    const saleId = this.currentSale?.id;
+    if (!saleId || !this.canFinalizeSale) return;
+
+    this.pdvSaleService.finish(saleId).subscribe({
+      next: (sale) => {
+        this.saleSuccess = 'Venda finalizada com sucesso.';
+        this.loadSales();
+        this.currentSale = null;
+        
+        if (sale.payments.some(p => p.method === 'CASH')) {
+          this.hardwareService.openDrawer().subscribe({
+            next: () => this.hardwareSuccess = 'Gaveta acionada automaticamente.',
+            error: () => {}
+          });
+        }
+        
+        const cashRegisterId = this.currentCash.cashRegister?.id;
+        if (cashRegisterId) {
+          this.loadSummary(cashRegisterId);
+        }
+      },
+      error: (err) => {
+        this.saleError = err.error?.message || 'Nao foi possivel finalizar a venda.';
+      }
+    });
+  }
+
+  applyDiscount(): void {
+    if (!this.currentSale || this.discountForm.invalid) return;
+    const preview = this.discountPreview;
+    if (!preview) return;
+
+    this.pdvSaleService
+      .applyDiscount(this.currentSale.id, { amount: preview.discount.toFixed(2) })
+      .subscribe({
+        next: (sale) => {
+          this.setCurrentSale(sale);
+          this.showDiscountModal = false;
+          this.saleSuccess = 'Desconto aplicado.';
+          setTimeout(() => (this.saleSuccess = null), 3000);
+        },
+        error: (err) => {
+          this.saleError = err.error?.message || 'Erro ao aplicar desconto.';
+        }
+      });
+  }
+
+  confirmCancelSale(): void {
+    if (!this.saleToCancel || this.cancelForm.invalid) return;
+
+    this.pdvSaleService.cancelSale(this.saleToCancel, { reason: this.cancelForm.controls.reason.value }).subscribe({
+      next: () => {
+        this.saleSuccess = 'Venda cancelada e valores estornados.';
+        this.showCancelModal = false;
+        this.saleToCancel = null;
+        this.cancelForm.reset();
+        this.loadSales();
+        
+        const cashRegisterId = this.currentCash.cashRegister?.id;
+        if (cashRegisterId) {
+          this.loadSummary(cashRegisterId);
+        }
+      },
+      error: (err) => {
+        this.saleError = err.error?.message || 'Nao foi possivel cancelar a venda.';
+      }
+    });
+  }
+
+  openCancelModal(saleId: string): void {
+    this.saleToCancel = saleId;
+    this.showCancelModal = true;
+  }
+
+  printReceipt(saleId: string): void {
+    // A simulação será com toast visual
+    this.hardwareSuccess = 'Comprovante enviado para impressão (simulado).';
+    setTimeout(() => this.hardwareSuccess = null, 3000);
   }
 
   private loadCash(): void {
@@ -414,6 +532,7 @@ export class PdvProductsPageComponent implements OnInit {
   private clearSaleMessages(): void {
     this.saleError = null;
     this.saleSuccess = null;
+    this.changeAmount = null;
     this.barcodeError = null;
   }
 
@@ -423,7 +542,7 @@ export class PdvProductsPageComponent implements OnInit {
 
   private setCurrentSale(sale: PdvSale): void {
     this.currentSale = sale;
-    this.paymentForm.patchValue({ amount: sale.totalAmount }, { emitEvent: false });
+    this.paymentForm.patchValue({ amount: sale.remainingAmount }, { emitEvent: false });
   }
 
   private emptyToNull(value: string): string | null {

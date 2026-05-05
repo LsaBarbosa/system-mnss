@@ -3,17 +3,22 @@ package br.com.novaalianca.mnss.localapp.domain.pdv;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import br.com.novaalianca.mnss.core.catalog.PreparationSector;
 import br.com.novaalianca.mnss.core.catalog.UnitType;
 import br.com.novaalianca.mnss.localapp.domain.cash.CashRegisterRepository;
+import br.com.novaalianca.mnss.localapp.domain.audit.AuditService;
+import br.com.novaalianca.mnss.localapp.domain.cash.CashRegisterService;
 import br.com.novaalianca.mnss.localapp.domain.cash.CashRegisterStatus;
 import br.com.novaalianca.mnss.localapp.domain.catalog.CategoryEntity;
 import br.com.novaalianca.mnss.localapp.domain.catalog.ProductAvailabilityRepository;
 import br.com.novaalianca.mnss.localapp.domain.catalog.ProductEntity;
 import br.com.novaalianca.mnss.localapp.domain.catalog.ProductRepository;
+import br.com.novaalianca.mnss.localapp.domain.hardware.HardwareAdapterService;
 import br.com.novaalianca.mnss.localapp.domain.order.DeliveryType;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderEntity;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderItemEntity;
@@ -23,6 +28,11 @@ import br.com.novaalianca.mnss.localapp.domain.order.OrderOrigin;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderRepository;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderStatus;
 import br.com.novaalianca.mnss.localapp.domain.payment.PaymentStatus;
+import br.com.novaalianca.mnss.localapp.domain.payment.PaymentRepository;
+import br.com.novaalianca.mnss.localapp.domain.payment.PaymentMethod;
+import br.com.novaalianca.mnss.localapp.domain.payment.PaymentEntity;
+import br.com.novaalianca.mnss.localapp.domain.stock.StockService;
+import br.com.novaalianca.mnss.localapp.security.user.RoleName;
 import br.com.novaalianca.mnss.sharedinfra.web.error.BusinessException;
 import java.math.BigDecimal;
 import java.util.List;
@@ -52,6 +62,24 @@ class PdvSaleServiceTest {
 
     @Mock
     private ProductAvailabilityRepository productAvailabilityRepository;
+
+    @Mock
+    private PaymentRepository paymentRepository;
+
+    @Mock
+    private PdvSyncEventService pdvSyncEventService;
+
+    @Mock
+    private HardwareAdapterService hardwareAdapterService;
+
+    @Mock
+    private CashRegisterService cashRegisterService;
+
+    @Mock
+    private StockService stockService;
+
+    @Mock
+    private AuditService auditService;
 
     @Test
     void createSaleRequiresOpenCashRegister() {
@@ -205,13 +233,151 @@ class PdvSaleServiceTest {
         assertThat(response.totalAmount()).isEqualByComparingTo("0.00");
     }
 
+    @Test
+    void finishSaleShouldFailIfEmpty() {
+        UUID saleId = UUID.randomUUID();
+        OrderEntity sale = sale(saleId);
+        when(orderRepository.findById(saleId)).thenReturn(Optional.of(sale));
+        when(orderItemRepository.findByOrderIdOrderByCreatedAtAsc(saleId)).thenReturn(List.of());
+
+        assertThatThrownBy(() -> service().finishSale(saleId))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("status", HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void finishSaleShouldFailIfUnpaid() {
+        UUID saleId = UUID.randomUUID();
+        OrderEntity sale = sale(saleId);
+        sale.updateTotals(BigDecimal.TEN, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.TEN);
+        when(orderRepository.findById(saleId)).thenReturn(Optional.of(sale));
+        when(orderItemRepository.findByOrderIdOrderByCreatedAtAsc(saleId)).thenReturn(List.of(item(sale, product(UUID.randomUUID()), UUID.randomUUID(), BigDecimal.ONE)));
+        when(paymentRepository.findByOrderIdOrderByCreatedAtAsc(saleId)).thenReturn(List.of());
+
+        assertThatThrownBy(() -> service().finishSale(saleId))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("status", HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void applyDiscountShouldApplyIfAllowed() {
+        UUID saleId = UUID.randomUUID();
+        OrderEntity sale = sale(saleId);
+        sale.updateTotals(new BigDecimal("100.00"), BigDecimal.ZERO, BigDecimal.ZERO, new BigDecimal("100.00"));
+        when(orderRepository.findById(saleId)).thenReturn(Optional.of(sale));
+        when(orderRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        PdvSaleResponse response = service().applyDiscount(saleId, new CreateDiscountRequest(new BigDecimal("5.00")), UUID.randomUUID(), List.of(RoleName.CAIXA.name()));
+
+        assertThat(response.discountAmount()).isEqualByComparingTo("5.00");
+        assertThat(response.totalAmount()).isEqualByComparingTo("95.00");
+    }
+
+    @Test
+    void applyDiscountShouldFailIfAboveLimitAndNotManager() {
+        UUID saleId = UUID.randomUUID();
+        OrderEntity sale = sale(saleId);
+        sale.updateTotals(new BigDecimal("100.00"), BigDecimal.ZERO, BigDecimal.ZERO, new BigDecimal("100.00"));
+        when(orderRepository.findById(saleId)).thenReturn(Optional.of(sale));
+
+        assertThatThrownBy(() -> service().applyDiscount(saleId, new CreateDiscountRequest(new BigDecimal("15.00")), UUID.randomUUID(), List.of(RoleName.CAIXA.name())))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("status", HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    void cancelSaleShouldAdjustStockAndCash() {
+        UUID saleId = UUID.randomUUID();
+        UUID actorId = UUID.randomUUID();
+        OrderEntity sale = sale(saleId);
+        sale.updateTotals(BigDecimal.TEN, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.TEN);
+        ProductEntity product = product(UUID.randomUUID());
+        OrderItemEntity item = item(sale, product, UUID.randomUUID(), BigDecimal.ONE);
+        
+        PaymentEntity payment = new PaymentEntity(sale, PaymentMethod.CASH, PaymentStatus.PAID, BigDecimal.TEN);
+        
+        when(orderRepository.findById(saleId)).thenReturn(Optional.of(sale));
+        when(paymentRepository.findByOrderIdOrderByCreatedAtAsc(saleId)).thenReturn(List.of(payment));
+        when(orderItemRepository.findByOrderIdOrderByCreatedAtAsc(saleId)).thenReturn(List.of(item));
+        
+        br.com.novaalianca.mnss.localapp.domain.cash.CashRegisterEntity cash = new br.com.novaalianca.mnss.localapp.domain.cash.CashRegisterEntity(actorId, BigDecimal.ZERO, CashRegisterStatus.OPEN);
+        ReflectionTestUtils.setField(cash, "id", UUID.randomUUID());
+        when(cashRegisterRepository.findFirstByOperatorIdAndStatusOrderByOpenedAtDesc(actorId, CashRegisterStatus.OPEN)).thenReturn(Optional.of(cash));
+
+        service().cancelSale(saleId, new CancelSaleRequest("Desistencia"), actorId);
+
+        assertThat(sale.getStatus()).isEqualTo(OrderStatus.CANCELED);
+        assertThat(payment.getStatus()).isEqualTo(PaymentStatus.CANCELED);
+        verify(cashRegisterService).recordRefundMovement(eq(cash.getId()), eq(PaymentMethod.CASH), eq(BigDecimal.TEN), eq(saleId), eq(actorId));
+        verify(stockService).recordReturnMovement(eq(product.getId()), eq(BigDecimal.ONE), eq(saleId), eq(actorId));
+        verify(auditService).record(any());
+    }
+
+    @Test
+    void finishSaleShouldOpenDrawerAndPrint() {
+        UUID saleId = UUID.randomUUID();
+        OrderEntity sale = sale(saleId);
+        sale.updateTotals(BigDecimal.TEN, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.TEN);
+        List<OrderItemEntity> items = List.of(item(sale, product(UUID.randomUUID()), UUID.randomUUID(), BigDecimal.ONE));
+        PaymentEntity payment = new PaymentEntity(sale, PaymentMethod.CASH, PaymentStatus.PAID, BigDecimal.TEN);
+        
+        when(orderRepository.findById(saleId)).thenReturn(Optional.of(sale));
+        when(orderItemRepository.findByOrderIdOrderByCreatedAtAsc(saleId)).thenReturn(items);
+        when(paymentRepository.findByOrderIdOrderByCreatedAtAsc(saleId)).thenReturn(List.of(payment));
+        when(orderRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        service().finishSale(saleId);
+
+        assertThat(sale.getStatus()).isEqualTo(OrderStatus.FINISHED);
+        verify(hardwareAdapterService).openDrawer();
+        verify(hardwareAdapterService).printReceipt(eq(sale), eq(items), any());
+        verify(pdvSyncEventService).recordOrderFinishedEvent(sale);
+    }
+
+    @Test
+    void finishSaleShouldNotOpenDrawerForPix() {
+        UUID saleId = UUID.randomUUID();
+        OrderEntity sale = sale(saleId);
+        sale.updateTotals(BigDecimal.TEN, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.TEN);
+        List<OrderItemEntity> items = List.of(item(sale, product(UUID.randomUUID()), UUID.randomUUID(), BigDecimal.ONE));
+        PaymentEntity payment = new PaymentEntity(sale, PaymentMethod.PIX, PaymentStatus.PAID, BigDecimal.TEN);
+        
+        when(orderRepository.findById(saleId)).thenReturn(Optional.of(sale));
+        when(orderItemRepository.findByOrderIdOrderByCreatedAtAsc(saleId)).thenReturn(items);
+        when(paymentRepository.findByOrderIdOrderByCreatedAtAsc(saleId)).thenReturn(List.of(payment));
+
+        service().finishSale(saleId);
+
+        verify(hardwareAdapterService, never()).openDrawer();
+        verify(hardwareAdapterService).printReceipt(eq(sale), eq(items), any());
+    }
+
+    @Test
+    void reprintReceiptShouldInvokeHardware() {
+        UUID saleId = UUID.randomUUID();
+        OrderEntity sale = sale(saleId);
+        when(orderRepository.findById(saleId)).thenReturn(Optional.of(sale));
+        when(orderItemRepository.findByOrderIdOrderByCreatedAtAsc(saleId)).thenReturn(List.of());
+        when(paymentRepository.findByOrderIdOrderByCreatedAtAsc(saleId)).thenReturn(List.of());
+
+        service().reprintReceipt(saleId);
+
+        verify(hardwareAdapterService).printReceipt(eq(sale), any(), any());
+    }
+
     private PdvSaleService service() {
         return new PdvSaleService(
                 Optional.of(cashRegisterRepository),
                 Optional.of(orderRepository),
                 Optional.of(orderItemRepository),
                 Optional.of(productRepository),
-                Optional.of(productAvailabilityRepository));
+                Optional.of(productAvailabilityRepository),
+                Optional.of(paymentRepository),
+                pdvSyncEventService,
+                hardwareAdapterService,
+                cashRegisterService,
+                stockService,
+                auditService);
     }
 
     private OrderEntity sale(UUID saleId) {

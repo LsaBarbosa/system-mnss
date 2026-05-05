@@ -146,6 +146,7 @@
 
       <p class="cash-message cash-message--error" *ngIf="saleError">{{ saleError }}</p>
       <p class="cash-message cash-message--success" *ngIf="saleSuccess">{{ saleSuccess }}</p>
+      <p class="cash-message cash-message--success" *ngIf="changeAmount">Troco a devolver: <strong>{{ changeAmount }}</strong></p>
 
       <section class="cart-items" *ngIf="currentSale && currentSale.items.length > 0">
         <article *ngFor="let item of currentSale.items">
@@ -175,6 +176,12 @@
       <p class="empty-cart" *ngIf="!currentSale">Inicie uma venda para montar o carrinho.</p>
       <p class="empty-cart" *ngIf="currentSale && currentSale.items.length === 0">Carrinho vazio.</p>
 
+      <div class="sale-actions" *ngIf="currentSale">
+        <button type="button" class="discount-btn" [disabled]="!canUseCart" (click)="showDiscountModal = true">
+          Aplicar Desconto
+        </button>
+      </div>
+
       <dl class="totals-panel" *ngIf="currentSale">
         <div>
           <dt>Subtotal</dt>
@@ -192,9 +199,26 @@
           <dt>Total</dt>
           <dd>{{ currentSale.totalAmount }}</dd>
         </div>
+        <div *ngIf="currentSale.payments && currentSale.payments.length > 0">
+          <dt>Pago</dt>
+          <dd>{{ (currentSale.totalAmount - currentSale.remainingAmount).toFixed(2) }}</dd>
+        </div>
+        <div class="total-line" *ngIf="currentSale.payments && currentSale.payments.length > 0">
+          <dt>Restante</dt>
+          <dd>{{ currentSale.remainingAmount }}</dd>
+        </div>
       </dl>
 
-      <form class="cash-form" [formGroup]="paymentForm" (ngSubmit)="finalizeSale()" *ngIf="currentSale" novalidate>
+      <section class="payments-list" *ngIf="currentSale && currentSale.payments && currentSale.payments.length > 0">
+        <h3>Pagamentos realizados</h3>
+        <ul>
+          <li *ngFor="let p of currentSale.payments">
+            {{ p.method }}: {{ p.amount }}
+          </li>
+        </ul>
+      </section>
+
+      <form class="cash-form" [formGroup]="paymentForm" (ngSubmit)="registerPayment()" *ngIf="currentSale" novalidate>
         <label>
           Pagamento
           <select formControlName="method">
@@ -213,10 +237,66 @@
           Autorizacao
           <input type="text" formControlName="transactionId" />
         </label>
-        <button type="submit" [disabled]="paymentForm.invalid || !canFinalizeSale">Finalizar venda</button>
+        <button type="submit" [disabled]="paymentForm.invalid || !canRegisterPayment || currentSale.remainingAmount === '0.00'">Registrar pagamento</button>
       </form>
+
+      <div class="finalize-action" *ngIf="currentSale && currentSale.remainingAmount === '0.00'">
+        <button type="button" class="finalize-btn" [disabled]="!canFinalizeSale" (click)="finishSale()">Finalizar Venda</button>
+      </div>
     </aside>
   </section>
+
+  <div class="hardware-toast" *ngIf="hardwareSuccess">
+    <p>{{ hardwareSuccess }}</p>
+  </div>
+
+  <dialog class="modal discount-modal" [open]="showDiscountModal">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h3>Aplicar Desconto</h3>
+      <form [formGroup]="discountForm" (ngSubmit)="applyDiscount()">
+        <div class="discount-type-toggle">
+          <label>
+            <input type="radio" formControlName="type" value="VALUE" /> R$
+          </label>
+          <label>
+            <input type="radio" formControlName="type" value="PERCENT" /> %
+          </label>
+        </div>
+
+        <label>
+          {{ discountForm.value.type === 'VALUE' ? 'Valor (R$)' : 'Percentual (%)' }}
+          <input type="number" formControlName="amount" step="0.01" />
+        </label>
+
+        <div class="discount-preview" *ngIf="discountPreview">
+          <p>Subtotal: {{ currentSale?.subtotal | currency : 'BRL' }}</p>
+          <p>Desconto: {{ discountPreview.discount | currency : 'BRL' }}</p>
+          <p class="new-total">Novo Total: {{ discountPreview.total | currency : 'BRL' }}</p>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" (click)="showDiscountModal = false">Cancelar</button>
+          <button type="submit" [disabled]="discountForm.invalid">Aplicar</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <div class="modal-overlay" *ngIf="showCancelModal" (click)="showCancelModal = false">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h3>Cancelar Venda</h3>
+      <form [formGroup]="cancelForm" (ngSubmit)="confirmCancelSale()">
+        <label>
+          Motivo do Cancelamento
+          <textarea formControlName="reason" rows="3" placeholder="Obrigatório"></textarea>
+        </label>
+        <div class="modal-actions">
+          <button type="button" (click)="showCancelModal = false">Fechar</button>
+          <button type="submit" [disabled]="cancelForm.invalid" class="danger">Confirmar Cancelamento</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <section class="cash-panel" aria-label="Historico de vendas">
     <header>
@@ -231,18 +311,25 @@
         <tr>
           <th>Pedido</th>
           <th>Status</th>
-          <th>Pagamento</th>
           <th>Total</th>
+          <th>Acoes</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let sale of salesHistory">
-          <td>{{ sale.orderNumber || sale.id }}</td>
-          <td>{{ sale.status }}</td>
-          <td>{{ sale.paymentStatus }}</td>
+          <td>{{ sale.orderNumber }}</td>
+          <td>
+            {{ sale.status }}
+            <span *ngIf="sale.status === 'FINISHED'" class="badge warning" title="Pendente de Sync">Sync Pendente</span>
+          </td>
           <td>{{ sale.totalAmount }}</td>
+          <td class="history-actions">
+            <button type="button" *ngIf="sale.status === 'FINISHED'" (click)="printReceipt(sale.id)">Imprimir</button>
+            <button type="button" class="danger-btn" *ngIf="(sale.status === 'FINISHED' || sale.status === 'SENT_TO_STORE') && (roles.includes('GERENTE') || roles.includes('ADMIN'))" (click)="openCancelModal(sale.id)">Cancelar</button>
+          </td>
         </tr>
       </tbody>
+
     </table>
   </section>
 </main>

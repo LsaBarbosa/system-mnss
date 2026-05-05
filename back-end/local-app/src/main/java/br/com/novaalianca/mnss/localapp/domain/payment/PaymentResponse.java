@@ -18,9 +18,12 @@ public record PaymentResponse(
         Instant canceledAt,
         OrderStatus orderStatus,
         PaymentStatus orderPaymentStatus,
+        BigDecimal recordedAmount,
+        BigDecimal remainingAmount,
+        BigDecimal changeAmount,
         Instant createdAt,
         Instant updatedAt) {
-    static PaymentResponse from(PaymentEntity payment, OrderEntity order) {
+    static PaymentResponse from(PaymentEntity payment, OrderEntity order, BigDecimal remainingAmount, BigDecimal changeAmount) {
         return new PaymentResponse(
                 payment.getId(),
                 payment.getOrder().getId(),
@@ -33,6 +36,9 @@ public record PaymentResponse(
                 payment.getCanceledAt(),
                 order.getStatus(),
                 order.getPaymentStatus(),
+                payment.getAmount(),
+                remainingAmount,
+                changeAmount,
                 payment.getCreatedAt(),
                 payment.getUpdatedAt());
     }

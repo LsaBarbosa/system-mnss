@@ -22,9 +22,19 @@ public record PdvSaleResponse(
         BigDecimal deliveryFee,
         BigDecimal totalAmount,
         List<PdvSaleItemResponse> items,
+        List<PdvSalePaymentResponse> payments,
+        BigDecimal remainingAmount,
         Instant createdAt,
         Instant updatedAt) {
-    static PdvSaleResponse from(OrderEntity order, List<PdvSaleItemResponse> items) {
+    static PdvSaleResponse from(OrderEntity order, List<PdvSaleItemResponse> items, List<PdvSalePaymentResponse> payments) {
+        BigDecimal paidTotal = payments.stream()
+                .map(PdvSalePaymentResponse::amount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal remainingAmount = order.getTotalAmount().subtract(paidTotal);
+        if (remainingAmount.signum() < 0) {
+            remainingAmount = BigDecimal.ZERO;
+        }
+
         return new PdvSaleResponse(
                 order.getId(),
                 order.getOrderNumber(),
@@ -37,6 +47,8 @@ public record PdvSaleResponse(
                 order.getDeliveryFee(),
                 order.getTotalAmount(),
                 items,
+                payments,
+                remainingAmount,
                 order.getCreatedAt(),
                 order.getUpdatedAt());
     }

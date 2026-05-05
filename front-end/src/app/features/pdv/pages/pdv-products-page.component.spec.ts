@@ -7,6 +7,7 @@ import { CashRegisterService } from '../data-access/cash-register.service';
 import { PdvCatalogService } from '../data-access/pdv-catalog.service';
 import { PdvSaleService } from '../data-access/pdv-sale.service';
 import type { PdvSale } from '../data-access/pdv-sale.service';
+import { HardwareService } from '../data-access/hardware.service';
 import { PdvProductsPageComponent } from './pdv-products-page.component';
 
 describe('PdvProductsPageComponent', () => {
@@ -14,6 +15,7 @@ describe('PdvProductsPageComponent', () => {
   let pdvCatalogService: jasmine.SpyObj<PdvCatalogService>;
   let cashRegisterService: jasmine.SpyObj<CashRegisterService>;
   let pdvSaleService: jasmine.SpyObj<PdvSaleService>;
+  let hardwareService: jasmine.SpyObj<HardwareService>;
 
   beforeEach(async () => {
     pdvCatalogService = jasmine.createSpyObj<PdvCatalogService>('PdvCatalogService', [
@@ -33,8 +35,13 @@ describe('PdvProductsPageComponent', () => {
       'addItem',
       'updateItem',
       'removeItem',
-      'pay'
+      'pay',
+      'finish',
+      'applyDiscount',
+      'cancelSale',
+      'getSale'
     ]);
+    hardwareService = jasmine.createSpyObj<HardwareService>('HardwareService', ['openDrawer']);
     pdvCatalogService.listProducts.and.returnValue(
       of([
         {
@@ -60,7 +67,9 @@ describe('PdvProductsPageComponent', () => {
         orderId: '44444444-4444-4444-4444-444444444444',
         method: 'PIX',
         status: 'PAID',
-        amount: '1.20',
+        recordedAmount: '1.20',
+        remainingAmount: '0.00',
+        changeAmount: '0.00',
         transactionId: null,
         gateway: null,
         paidAt: '2026-05-04T12:06:00Z',
@@ -71,6 +80,11 @@ describe('PdvProductsPageComponent', () => {
         updatedAt: '2026-05-04T12:06:00Z'
       })
     );
+    pdvSaleService.finish.and.returnValue(of(sale([])));
+    pdvSaleService.applyDiscount.and.returnValue(of(sale([])));
+    pdvSaleService.cancelSale.and.returnValue(of(sale([])));
+    pdvSaleService.getSale.and.returnValue(of(sale([])));
+    hardwareService.openDrawer.and.returnValue(of(undefined));
 
     await TestBed.configureTestingModule({
       imports: [PdvProductsPageComponent],
@@ -78,7 +92,8 @@ describe('PdvProductsPageComponent', () => {
         provideRouter([]),
         { provide: PdvCatalogService, useValue: pdvCatalogService },
         { provide: CashRegisterService, useValue: cashRegisterService },
-        { provide: PdvSaleService, useValue: pdvSaleService }
+        { provide: PdvSaleService, useValue: pdvSaleService },
+        { provide: HardwareService, useValue: hardwareService }
       ]
     }).compileComponents();
 
@@ -211,11 +226,11 @@ describe('PdvProductsPageComponent', () => {
     expect(fixture.componentInstance.currentSale?.items).toEqual([]);
   });
 
-  it('finalizes sale with payment and refreshes history and cash summary', () => {
+  it('registers payment and finalizes sale when remaining amount is zero', () => {
     fixture.componentInstance.currentSale = sale([saleItem()]);
     fixture.componentInstance.paymentForm.patchValue({ method: 'PIX', amount: '1.20', transactionId: 'tx-1' });
 
-    fixture.componentInstance.finalizeSale();
+    fixture.componentInstance.registerPayment();
 
     expect(pdvSaleService.pay).toHaveBeenCalledWith('44444444-4444-4444-4444-444444444444', {
       method: 'PIX',
@@ -223,19 +238,51 @@ describe('PdvProductsPageComponent', () => {
       transactionId: 'tx-1',
       gateway: null
     });
-    expect(fixture.componentInstance.currentSale?.paymentStatus).toBe('PAID');
-    expect(fixture.componentInstance.saleSuccess).toBe('Venda finalizada.');
-    expect(cashRegisterService.summary).toHaveBeenCalledWith(mockCashRegister.id);
+    expect(fixture.componentInstance.saleSuccess).toContain('Pagamento concluído');
   });
 
-  it('does not finalize empty cart', () => {
+  it('finishes sale and triggers hardware', () => {
+    const s = sale([saleItem()]);
+    s.remainingAmount = '0.00';
+    s.payments = [{ id: '1', method: 'CASH', amount: '1.20' }];
+    fixture.componentInstance.currentSale = s;
+    pdvSaleService.finish.and.returnValue(of(s));
+
+    fixture.componentInstance.finishSale();
+
+    expect(pdvSaleService.finish).toHaveBeenCalled();
+    expect(hardwareService.openDrawer).toHaveBeenCalled();
+    expect(fixture.componentInstance.currentSale).toBeNull();
+  });
+
+  it('applies discount', () => {
+    fixture.componentInstance.currentSale = sale([saleItem()]);
+    fixture.componentInstance.discountForm.patchValue({ type: 'VALUE', amount: '0.10' });
+
+    fixture.componentInstance.applyDiscount();
+
+    expect(pdvSaleService.applyDiscount).toHaveBeenCalledWith('44444444-4444-4444-4444-444444444444', { amount: '0.10' });
+    expect(fixture.componentInstance.saleSuccess).toBe('Desconto aplicado.');
+  });
+
+  it('cancels sale', () => {
+    fixture.componentInstance.saleToCancel = '44444444-4444-4444-4444-444444444444';
+    fixture.componentInstance.cancelForm.patchValue({ reason: 'Teste cancelamento' });
+
+    fixture.componentInstance.confirmCancelSale();
+
+    expect(pdvSaleService.cancelSale).toHaveBeenCalledWith('44444444-4444-4444-4444-444444444444', { reason: 'Teste cancelamento' });
+    expect(fixture.componentInstance.saleSuccess).toContain('Venda cancelada');
+  });
+
+  it('does not register payment for empty cart', () => {
     fixture.componentInstance.currentSale = sale([]);
     fixture.componentInstance.paymentForm.patchValue({ method: 'CASH', amount: '0.00', transactionId: '' });
 
-    fixture.componentInstance.finalizeSale();
+    fixture.componentInstance.registerPayment();
 
     expect(pdvSaleService.pay).not.toHaveBeenCalled();
-    expect(fixture.componentInstance.saleError).toBe('Venda deve ter itens para finalizar.');
+    expect(fixture.componentInstance.saleError).toBe('Adicione itens antes de registrar pagamento.');
   });
 
   it('filters products by search form', () => {
@@ -299,6 +346,8 @@ describe('PdvProductsPageComponent', () => {
       deliveryFee: '0.00',
       totalAmount: subtotal,
       items,
+      payments: [],
+      remainingAmount: subtotal,
       createdAt: '2026-05-04T12:00:00Z',
       updatedAt: '2026-05-04T12:05:00Z'
     };

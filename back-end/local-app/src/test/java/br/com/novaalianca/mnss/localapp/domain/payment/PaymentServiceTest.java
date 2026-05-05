@@ -74,7 +74,7 @@ class PaymentServiceTest {
         CashRegisterEntity cashRegister = cashRegister(actorId, cashRegisterId);
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
         when(orderItemRepository.findByOrderIdOrderByCreatedAtAsc(orderId)).thenReturn(List.of(item));
-        when(paymentRepository.existsByOrderIdAndStatus(orderId, PaymentStatus.PAID)).thenReturn(false);
+        when(paymentRepository.findByOrderIdOrderByCreatedAtAsc(orderId)).thenReturn(List.of());
         when(cashRegisterRepository.findFirstByOperatorIdAndStatusOrderByOpenedAtDesc(actorId, CashRegisterStatus.OPEN))
                 .thenReturn(Optional.of(cashRegister));
         when(paymentRepository.save(any(PaymentEntity.class))).thenAnswer(invocation -> {
@@ -106,6 +106,7 @@ class PaymentServiceTest {
         OrderItemEntity item = item(order, product, BigDecimal.ONE);
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
         when(orderItemRepository.findByOrderIdOrderByCreatedAtAsc(orderId)).thenReturn(List.of(item));
+        when(paymentRepository.findByOrderIdOrderByCreatedAtAsc(orderId)).thenReturn(List.of());
         when(cashRegisterRepository.findFirstByOperatorIdAndStatusOrderByOpenedAtDesc(actorId, CashRegisterStatus.OPEN))
                 .thenReturn(Optional.of(cashRegister(actorId, UUID.randomUUID())));
         when(paymentRepository.save(any(PaymentEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -127,6 +128,7 @@ class PaymentServiceTest {
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
         when(orderItemRepository.findByOrderIdOrderByCreatedAtAsc(orderId))
                 .thenReturn(List.of(item(order, product(UUID.randomUUID(), PreparationSector.SEM_PREPARO), BigDecimal.ONE)));
+        when(paymentRepository.findByOrderIdOrderByCreatedAtAsc(orderId)).thenReturn(List.of());
 
         assertThatThrownBy(() -> service().payOrder(
                         orderId,
@@ -146,7 +148,8 @@ class PaymentServiceTest {
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
         when(orderItemRepository.findByOrderIdOrderByCreatedAtAsc(orderId))
                 .thenReturn(List.of(item(order, product(UUID.randomUUID(), PreparationSector.SEM_PREPARO), BigDecimal.ONE)));
-        when(paymentRepository.existsByOrderIdAndStatus(orderId, PaymentStatus.PAID)).thenReturn(true);
+        PaymentEntity pastPayment = new PaymentEntity(order, PaymentMethod.CASH, PaymentStatus.PAID, new BigDecimal("9.90"));
+        when(paymentRepository.findByOrderIdOrderByCreatedAtAsc(orderId)).thenReturn(List.of(pastPayment));
 
         assertThatThrownBy(() -> service().payOrder(
                         orderId,
@@ -165,6 +168,7 @@ class PaymentServiceTest {
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
         when(orderItemRepository.findByOrderIdOrderByCreatedAtAsc(orderId))
                 .thenReturn(List.of(item(order, product(UUID.randomUUID(), PreparationSector.SEM_PREPARO), BigDecimal.ONE)));
+        when(paymentRepository.findByOrderIdOrderByCreatedAtAsc(orderId)).thenReturn(List.of());
         when(cashRegisterRepository.findFirstByOperatorIdAndStatusOrderByOpenedAtDesc(actorId, CashRegisterStatus.OPEN))
                 .thenReturn(Optional.empty());
 
@@ -201,6 +205,7 @@ class PaymentServiceTest {
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
         when(orderItemRepository.findByOrderIdOrderByCreatedAtAsc(orderId))
                 .thenReturn(List.of(item(order, product(UUID.randomUUID(), PreparationSector.SEM_PREPARO), BigDecimal.ONE)));
+        when(paymentRepository.findByOrderIdOrderByCreatedAtAsc(orderId)).thenReturn(List.of());
         when(cashRegisterRepository.findFirstByOperatorIdAndStatusOrderByOpenedAtDesc(actorId, CashRegisterStatus.OPEN))
                 .thenReturn(Optional.of(cashRegister(actorId, UUID.randomUUID())));
         when(paymentRepository.save(any(PaymentEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -219,6 +224,56 @@ class PaymentServiceTest {
         assertThat(captor.getValue().getPaidAt()).isNotNull();
         verify(auditService).record(any(AuditLogRequest.class));
         verify(stockService).recordSaleMovement(any(), eq(BigDecimal.ONE), eq(orderId), eq(actorId));
+    }
+
+    @Test
+    void paymentCalculatesChangeForCashMethod() {
+        UUID actorId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
+        OrderEntity order = sale(orderId, new BigDecimal("10.00"));
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+        when(orderItemRepository.findByOrderIdOrderByCreatedAtAsc(orderId))
+                .thenReturn(List.of(item(order, product(UUID.randomUUID(), PreparationSector.SEM_PREPARO), BigDecimal.ONE)));
+        when(paymentRepository.findByOrderIdOrderByCreatedAtAsc(orderId)).thenReturn(List.of());
+        when(cashRegisterRepository.findFirstByOperatorIdAndStatusOrderByOpenedAtDesc(actorId, CashRegisterStatus.OPEN))
+                .thenReturn(Optional.of(cashRegister(actorId, UUID.randomUUID())));
+        when(paymentRepository.save(any(PaymentEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(orderRepository.save(any(OrderEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        PaymentResponse response = service().payOrder(
+                orderId,
+                new CreatePaymentRequest(PaymentMethod.CASH, new BigDecimal("15.00"), null, null),
+                actorId);
+
+        assertThat(response.remainingAmount()).isEqualByComparingTo("0.00");
+        assertThat(response.changeAmount()).isEqualByComparingTo("5.00");
+        assertThat(response.recordedAmount()).isEqualByComparingTo("10.00");
+    }
+
+    @Test
+    void paymentSupportsPartialPayments() {
+        UUID actorId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
+        OrderEntity order = sale(orderId, new BigDecimal("50.00"));
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+        when(orderItemRepository.findByOrderIdOrderByCreatedAtAsc(orderId))
+                .thenReturn(List.of(item(order, product(UUID.randomUUID(), PreparationSector.SEM_PREPARO), BigDecimal.ONE)));
+        when(paymentRepository.findByOrderIdOrderByCreatedAtAsc(orderId)).thenReturn(List.of());
+        when(cashRegisterRepository.findFirstByOperatorIdAndStatusOrderByOpenedAtDesc(actorId, CashRegisterStatus.OPEN))
+                .thenReturn(Optional.of(cashRegister(actorId, UUID.randomUUID())));
+        when(paymentRepository.save(any(PaymentEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        PaymentResponse response = service().payOrder(
+                orderId,
+                new CreatePaymentRequest(PaymentMethod.CREDIT_CARD, new BigDecimal("20.00"), null, null),
+                actorId);
+
+        assertThat(response.remainingAmount()).isEqualByComparingTo("30.00");
+        assertThat(response.changeAmount()).isEqualByComparingTo("0.00");
+        assertThat(response.recordedAmount()).isEqualByComparingTo("20.00");
+        assertThat(response.orderStatus()).isEqualTo(OrderStatus.CREATED);
+        verify(orderRepository, never()).save(any());
+        verify(stockService, never()).recordSaleMovement(any(), any(), any(), any());
     }
 
     private PaymentService service() {

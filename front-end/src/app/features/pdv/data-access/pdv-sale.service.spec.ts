@@ -62,7 +62,7 @@ describe('PdvSaleService', () => {
     service.pay(mockOrder.id, { method: 'PIX', amount: '2.40', transactionId: 'tx-1' }).subscribe((payment) => {
       expect(payment.orderPaymentStatus).toBe('PAID');
     });
-    const paymentRequest = httpTestingController.expectOne(`/api/orders/${mockOrder.id}/payments`);
+    const paymentRequest = httpTestingController.expectOne(`/api/pdv/sales/${mockOrder.id}/payment`);
     expect(paymentRequest.request.method).toBe('POST');
     expect(paymentRequest.request.body).toEqual({ method: 'PIX', amount: '2.40', transactionId: 'tx-1' });
     paymentRequest.flush({
@@ -70,7 +70,9 @@ describe('PdvSaleService', () => {
       orderId: mockOrder.id,
       method: 'PIX',
       status: 'PAID',
-      amount: '2.40',
+      recordedAmount: '2.40',
+      remainingAmount: '0.00',
+      changeAmount: '0.00',
       transactionId: 'tx-1',
       gateway: null,
       paidAt: mockOrder.updatedAt,
@@ -80,6 +82,27 @@ describe('PdvSaleService', () => {
       createdAt: mockOrder.createdAt,
       updatedAt: mockOrder.updatedAt
     });
+
+    service.finish(mockOrder.id).subscribe((saleResponse) => {
+      expect(saleResponse.status).toBe('FINISHED');
+    });
+    const finishRequest = httpTestingController.expectOne(`/api/pdv/sales/${mockOrder.id}/finish`);
+    expect(finishRequest.request.method).toBe('POST');
+    finishRequest.flush({ ...sale(), status: 'FINISHED' });
+
+    service.applyDiscount(mockOrder.id, { amount: '1.00' }).subscribe((saleResponse) => {
+      expect(saleResponse.discountAmount).toBe('1.00');
+    });
+    const discountRequest = httpTestingController.expectOne(`/api/pdv/sales/${mockOrder.id}/discount`);
+    expect(discountRequest.request.method).toBe('POST');
+    discountRequest.flush({ ...sale(), discountAmount: '1.00' });
+
+    service.cancelSale(mockOrder.id, { reason: 'Teste' }).subscribe((saleResponse) => {
+      expect(saleResponse.status).toBe('CANCELED');
+    });
+    const cancelRequest = httpTestingController.expectOne(`/api/pdv/sales/${mockOrder.id}/cancel`);
+    expect(cancelRequest.request.method).toBe('POST');
+    cancelRequest.flush({ ...sale(), status: 'CANCELED' });
   });
 
   function sale(): PdvSale {
@@ -94,6 +117,8 @@ describe('PdvSaleService', () => {
       discountAmount: '0.00',
       deliveryFee: '0.00',
       totalAmount: '1.20',
+      payments: [],
+      remainingAmount: '1.20',
       createdAt: mockOrder.createdAt,
       updatedAt: mockOrder.updatedAt,
       items: [

@@ -30,6 +30,20 @@ export interface PdvSaleItem {
   updatedAt: IsoDateTime;
 }
 
+export interface PdvSalePayment {
+  id: Uuid;
+  method: PaymentMethod;
+  amount: DecimalString;
+}
+
+export interface CreateDiscountPayload {
+  amount: string;
+}
+
+export interface CancelSalePayload {
+  reason: string;
+}
+
 export interface PdvSale {
   id: Uuid;
   orderNumber: number | null;
@@ -42,6 +56,8 @@ export interface PdvSale {
   deliveryFee: DecimalString;
   totalAmount: DecimalString;
   items: PdvSaleItem[];
+  payments: PdvSalePayment[];
+  remainingAmount: DecimalString;
   createdAt: IsoDateTime;
   updatedAt: IsoDateTime;
 }
@@ -68,7 +84,9 @@ export interface PaymentResponse {
   orderId: Uuid;
   method: PaymentMethod;
   status: PaymentStatus;
-  amount: DecimalString;
+  recordedAmount: DecimalString;
+  remainingAmount: DecimalString;
+  changeAmount: DecimalString;
   transactionId: string | null;
   gateway: string | null;
   paidAt: IsoDateTime | null;
@@ -108,7 +126,23 @@ export class PdvSaleService {
   }
 
   pay(saleId: Uuid, payload: CreatePaymentPayload): Observable<PaymentResponse> {
-    return this.httpClient.post<PaymentResponse>(`${this.apiBaseUrl}/orders/${saleId}/payments`, payload);
+    return this.httpClient.post<PaymentResponse>(`/api/pdv/sales/${saleId}/payment`, payload);
+  }
+
+  finish(saleId: Uuid): Observable<PdvSale> {
+    return this.httpClient.post<PdvSale>(`/api/pdv/sales/${saleId}/finish`, {});
+  }
+
+  applyDiscount(saleId: Uuid, payload: CreateDiscountPayload): Observable<PdvSale> {
+    return this.httpClient.post<PdvSale>(`/api/pdv/sales/${saleId}/discount`, payload);
+  }
+
+  cancelSale(saleId: Uuid, payload: CancelSalePayload): Observable<PdvSale> {
+    return this.httpClient.post<PdvSale>(`/api/pdv/sales/${saleId}/cancel`, payload);
+  }
+
+  reprintReceipt(saleId: Uuid): Observable<void> {
+    return this.httpClient.post<void>(`/api/pdv/sales/${saleId}/print`, {});
   }
 
   private get apiBaseUrl(): string {

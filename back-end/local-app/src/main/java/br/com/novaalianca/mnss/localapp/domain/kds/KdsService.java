@@ -211,6 +211,7 @@ public class KdsService {
                 ticket.getId(),
                 ticket.getOrder().getId(),
                 ticket.getTicketNumber(),
+                ticket.getOrder().getOrigin(),
                 ticket.getSector(),
                 ticket.getStatus(),
                 ticket.getCreatedAt(),

@@ -7,5 +7,6 @@ public enum SyncEventStatus {
     FAILED,
     RETRYING,
     DEAD_LETTER,
-    IGNORED
+    IGNORED,
+    RECEIVED_BY_STORE
 }

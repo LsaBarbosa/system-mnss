@@ -103,6 +103,25 @@ public class SyncEventEntity extends BaseEntity {
         touch();
     }
 
+    public void markAsReceivedByStore() {
+        this.status = SyncEventStatus.RECEIVED_BY_STORE;
+        this.processedAt = Instant.now();
+        touch();
+    }
+
+    public void markAsIgnored(String reason) {
+        this.status = SyncEventStatus.IGNORED;
+        this.lastError = reason;
+        touch();
+    }
+
+    public void resetStatus() {
+        this.status = SyncEventStatus.PENDING;
+        this.lastError = null;
+        this.nextRetryAt = null;
+        touch();
+    }
+
     public String getIdempotencyKey() { return idempotencyKey; }
     public SyncDirection getDirection() { return direction; }
     public SyncEnvironment getSourceEnvironment() { return sourceEnvironment; }

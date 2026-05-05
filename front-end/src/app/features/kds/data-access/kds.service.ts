@@ -24,6 +24,7 @@ export interface KdsTicket {
   id: string;
   orderId: string;
   ticketNumber: number;
+  origin: string;
   sector: string;
   status: KdsTicketStatus;
   createdAt: string;

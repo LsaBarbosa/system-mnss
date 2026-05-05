@@ -20,4 +20,20 @@ public class SyncConfiguration {
     public SyncOutboxWorker syncOutboxWorker(SyncEventRepository repository, RestTemplate restTemplate, ObjectMapper objectMapper) {
         return new SyncOutboxWorker(repository, restTemplate, objectMapper);
     }
+
+    @Bean
+    public SyncInboxService syncInboxService(
+            br.com.novaalianca.mnss.localapp.domain.order.OrderRepository orderRepository,
+            br.com.novaalianca.mnss.localapp.domain.order.OrderItemRepository orderItemRepository,
+            br.com.novaalianca.mnss.localapp.domain.customer.CustomerRepository customerRepository,
+            br.com.novaalianca.mnss.localapp.domain.catalog.ProductRepository productRepository,
+            br.com.novaalianca.mnss.localapp.domain.kds.KdsService kdsService,
+            ObjectMapper objectMapper) {
+        return new SyncInboxService(orderRepository, orderItemRepository, customerRepository, productRepository, kdsService, objectMapper);
+    }
+
+    @Bean
+    public SyncPullWorker syncPullWorker(SyncInboxService inboxService, RestTemplate restTemplate) {
+        return new SyncPullWorker(inboxService, restTemplate);
+    }
 }

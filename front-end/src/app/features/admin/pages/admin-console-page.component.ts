@@ -34,7 +34,7 @@ export class AdminConsolePageComponent implements OnInit {
     { label: 'Catalogo', route: '/catalog' },
     { label: 'Estoque', route: '/stock' },
     { label: 'Usuarios', route: '/users' },
-    { label: 'Sync', route: '/' },
+    { label: 'Sync', route: '/admin/sync' },
     { label: 'Site Público', route: '/cardapio' }
   ];
 

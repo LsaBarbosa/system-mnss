@@ -1,0 +1,73 @@
+<div class="sync-container">
+  <header class="page-header">
+    <div class="title-group">
+      <h1>Painel de Sincronização</h1>
+      <p>Monitoramento de eventos Local ⟷ Online</p>
+    </div>
+    <button class="btn btn-primary" (click)="loadData()">
+      <span class="icon">🔄</span> Atualizar
+    </button>
+  </header>
+
+  <div class="stats-grid">
+    <div class="stat-card pending">
+      <div class="stat-value">{{ statusCounts['PENDING'] || 0 }}</div>
+      <div class="stat-label">Pendentes</div>
+    </div>
+
+    <div class="stat-card failed">
+      <div class="stat-value">{{ statusCounts['FAILED'] || 0 }}</div>
+      <div class="stat-label">Falhas</div>
+    </div>
+
+    <div class="stat-card success">
+      <div class="stat-value">{{ (statusCounts['SYNCED'] || 0) + (statusCounts['RECEIVED_BY_STORE'] || 0) }}</div>
+      <div class="stat-label">Sucesso</div>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <table class="sync-table">
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Evento</th>
+          <th>Direção</th>
+          <th>Status</th>
+          <th class="actions-cell">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let event of events">
+          <td>{{ event.createdAt | date:'short' }}</td>
+          <td>
+            <div class="event-info">
+              <span class="event-type">{{ event.eventType }}</span>
+              <span class="aggregate-type">{{ event.aggregateType }}</span>
+            </div>
+          </td>
+          <td>
+            <span class="direction-tag" [class]="event.direction">
+              {{ event.direction === 'LOCAL_TO_ONLINE' ? 'Local ➔ Online' : 'Online ➔ Local' }}
+            </span>
+          </td>
+          <td>
+            <span class="status-badge" [ngClass]="getStatusClass(event.status)">
+              {{ event.status }}
+            </span>
+          </td>
+          <td class="actions-cell">
+            <div class="button-group">
+              <button class="btn-icon" (click)="viewPayload(event)" title="Ver Payload">👁️</button>
+              <button class="btn-icon btn-reprocess" *ngIf="event.status === 'FAILED'" (click)="reprocess(event)" title="Reprocessar">🔄</button>
+              <button class="btn-icon btn-ignore" *ngIf="event.status === 'FAILED'" (click)="ignore(event)" title="Ignorar">🚫</button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="events.length === 0">
+          <td colspan="5" class="empty-state">Nenhum evento encontrado.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

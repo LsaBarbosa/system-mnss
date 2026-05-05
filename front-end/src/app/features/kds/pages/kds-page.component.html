@@ -39,6 +39,7 @@
           <div class="ticket-card" [style.border-left-color]="getWaitTimeColor(getWaitTime(ticket.createdAt))">
             <div class="card-header">
               <span class="ticket-number">#{{ ticket.ticketNumber }}</span>
+              <span class="origin-badge" [class]="ticket.origin">{{ ticket.origin }}</span>
               <span class="wait-time" [style.color]="getWaitTimeColor(getWaitTime(ticket.createdAt))">
                 {{ getWaitTime(ticket.createdAt) }} min
               </span>
@@ -81,6 +82,7 @@
           <div class="ticket-card in-prep">
             <div class="card-header">
               <span class="ticket-number">#{{ ticket.ticketNumber }}</span>
+              <span class="origin-badge" [class]="ticket.origin">{{ ticket.origin }}</span>
               <span class="wait-time">{{ getWaitTime(ticket.createdAt) }} min</span>
             </div>
             <div class="card-body">
@@ -117,6 +119,7 @@
           <div class="ticket-card is-ready">
             <div class="card-header">
               <span class="ticket-number">#{{ ticket.ticketNumber }}</span>
+              <span class="origin-badge" [class]="ticket.origin">{{ ticket.origin }}</span>
               <span class="status-badge">PRONTO</span>
             </div>
             <div class="card-body">

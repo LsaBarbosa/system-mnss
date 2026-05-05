@@ -166,8 +166,15 @@ public class OnlineOrderService {
         Map<String, Object> payload = new java.util.LinkedHashMap<>();
         payload.put("orderId", order.getId().toString());
         payload.put("orderNumber", order.getOrderNumber());
+        payload.put("status", order.getStatus().name());
+        payload.put("paymentStatus", order.getPaymentStatus().name());
+        payload.put("deliveryType", order.getDeliveryType().name());
+        payload.put("paymentMethod", order.getPaymentMethod().name());
+        payload.put("subtotal", order.getSubtotal());
+        payload.put("discountAmount", order.getDiscountAmount());
+        payload.put("deliveryFee", order.getDeliveryFee());
         payload.put("totalAmount", order.getTotalAmount());
-        payload.put("deliveryType", order.getDeliveryType());
+        payload.put("notes", order.getNotes());
         
         java.util.List<Map<String, Object>> items = order.getItems().stream()
                 .map(item -> {
@@ -177,6 +184,7 @@ public class OnlineOrderService {
                     itemMap.put("quantity", item.getQuantity());
                     itemMap.put("unitPrice", item.getUnitPrice());
                     itemMap.put("totalPrice", item.getTotalPrice());
+                    itemMap.put("observation", item.getObservation());
                     return itemMap;
                 }).toList();
         payload.put("items", items);

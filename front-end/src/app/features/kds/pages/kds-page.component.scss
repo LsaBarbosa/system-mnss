@@ -176,6 +176,20 @@
       color: #f8fafc;
     }
 
+    .origin-badge {
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+      background: #475569;
+      color: white;
+
+      &.SITE { background: #8b5cf6; }
+      &.WHATSAPP { background: #10b981; }
+      &.PDV { background: #3b82f6; }
+    }
+
     .wait-time {
       font-weight: 700;
       font-size: 0.875rem;

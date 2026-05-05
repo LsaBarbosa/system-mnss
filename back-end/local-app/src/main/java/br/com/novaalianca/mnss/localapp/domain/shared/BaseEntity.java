@@ -41,6 +41,10 @@ public abstract class BaseEntity {
         updatedAt = Instant.now();
     }
 
+    public void assignId(UUID id) {
+        this.id = id;
+    }
+
     public UUID getId() {
         return id;
     }

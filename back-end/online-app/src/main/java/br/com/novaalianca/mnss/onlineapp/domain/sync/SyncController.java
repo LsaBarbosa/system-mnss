@@ -93,4 +93,83 @@ public class SyncController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @GetMapping("/pending")
+    public ResponseEntity<java.util.List<SyncEventEntity>> getPendingEvents(
+            @RequestHeader("X-Store-ID") String storeId,
+            @RequestHeader("X-Signature") String signature) {
+
+        // Validate Store
+        String secret = storeSecrets.get(storeId);
+        if (secret == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        // Validate Signature (Pull request signature validation)
+        // In this case, we can sign the storeId + "pull" or similar
+        String dataToSign = storeId + ":pull";
+        if (!HmacUtils.verifyHmac(dataToSign, signature, secret)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        return ResponseEntity.ok(repository.findByStatusAndDirection(SyncEventStatus.PENDING, SyncDirection.ONLINE_TO_LOCAL));
+    }
+
+    @PostMapping("/events/{id}/ack")
+    public ResponseEntity<Void> acknowledgeEvent(
+            @PathVariable UUID id,
+            @RequestHeader("X-Store-ID") String storeId,
+            @RequestHeader("X-Signature") String signature) {
+
+        // Validate Store
+        String secret = storeSecrets.get(storeId);
+        if (secret == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        // Validate Signature
+        String dataToSign = id.toString() + ":ack";
+        if (!HmacUtils.verifyHmac(dataToSign, signature, secret)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        return repository.findById(id).map(event -> {
+            event.markAsReceivedByStore();
+            repository.save(event);
+            return ResponseEntity.ok().<Void>build();
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/events")
+    public ResponseEntity<java.util.List<SyncEventEntity>> listEvents() {
+        return ResponseEntity.ok(repository.findAllByOrderByCreatedAtDesc());
+    }
+
+    @GetMapping("/status")
+    public ResponseEntity<Map<String, Long>> getSyncStatus() {
+        // Simplified status counts for dashboard
+        java.util.List<SyncEventEntity> all = repository.findAll();
+        Map<String, Long> counts = all.stream()
+                .collect(java.util.stream.Collectors.groupingBy(e -> e.getStatus().name(), java.util.stream.Collectors.counting()));
+        return ResponseEntity.ok(counts);
+    }
+
+    @PostMapping("/events/{id}/reprocess")
+    public ResponseEntity<Void> reprocessEvent(@PathVariable UUID id) {
+        return repository.findById(id).map(event -> {
+            event.resetStatus();
+            repository.save(event);
+            return ResponseEntity.ok().<Void>build();
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/events/{id}/ignore")
+    public ResponseEntity<Void> ignoreEvent(@PathVariable UUID id, @RequestBody Map<String, String> body) {
+        String reason = body.getOrDefault("reason", "No reason provided");
+        return repository.findById(id).map(event -> {
+            event.markAsIgnored(reason);
+            repository.save(event);
+            return ResponseEntity.ok().<Void>build();
+        }).orElse(ResponseEntity.notFound().build());
+    }
 }

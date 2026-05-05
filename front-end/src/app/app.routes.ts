@@ -28,6 +28,14 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'admin/sync',
+    loadComponent: () => import('./features/admin/pages/sync-dashboard/sync-dashboard.component').then(m => m.SyncDashboardComponent),
+    canActivate: [authGuard, roleGuard],
+    data: {
+      roles: ['ADMIN', 'GERENTE']
+    }
+  },
+  {
     path: 'users',
     component: UserManagementPageComponent,
     canActivate: [authGuard, roleGuard],

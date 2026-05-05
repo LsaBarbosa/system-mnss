@@ -28,6 +28,10 @@ public abstract class BaseEntity {
         this.updatedAt = Instant.now();
     }
 
+    public void assignId(UUID id) {
+        this.id = Objects.requireNonNull(id, "id must not be null");
+    }
+
     public void touch() {
         this.updatedAt = Instant.now();
     }

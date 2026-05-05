@@ -1,7 +1,7 @@
 package br.com.novaalianca.mnss.localapp.domain.order;
 
 import br.com.novaalianca.mnss.localapp.domain.customer.CustomerEntity;
-import br.com.novaalianca.mnss.localapp.domain.payment.PaymentStatus;
+import br.com.novaalianca.mnss.core.payment.PaymentStatus;
 import br.com.novaalianca.mnss.localapp.domain.shared.BaseEntity;
 import br.com.novaalianca.mnss.localapp.domain.shared.DomainValidation;
 import jakarta.persistence.Column;

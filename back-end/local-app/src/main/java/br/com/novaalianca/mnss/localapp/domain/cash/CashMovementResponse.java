@@ -1,6 +1,6 @@
 package br.com.novaalianca.mnss.localapp.domain.cash;
 
-import br.com.novaalianca.mnss.localapp.domain.payment.PaymentMethod;
+import br.com.novaalianca.mnss.core.payment.PaymentMethod;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;

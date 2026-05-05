@@ -162,19 +162,24 @@ textarea {
   }
 }
 
-.delivery-options {
+.delivery-options, .payment-options {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
   margin-bottom: 24px;
 
-  .delivery-card {
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+
+  .delivery-card, .payment-card {
     cursor: pointer;
     border: 2px solid #eee;
     border-radius: 12px;
     padding: 16px;
     transition: all 0.2s;
     position: relative;
+    background: white;
 
     input {
       position: absolute;
@@ -204,6 +209,11 @@ textarea {
           color: #7f8c8d;
         }
       }
+    }
+
+    &:hover {
+      border-color: #3498db;
+      background-color: rgba(52, 152, 219, 0.02);
     }
 
     &.active {

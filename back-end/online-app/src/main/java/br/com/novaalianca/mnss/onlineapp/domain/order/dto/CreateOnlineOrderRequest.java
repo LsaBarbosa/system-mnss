@@ -21,5 +21,8 @@ public record CreateOnlineOrderRequest(
         @NotEmpty(message = "O pedido deve ter pelo menos um item")
         List<OnlineOrderItemRequest> items,
 
-        String notes
+        String notes,
+
+        @NotNull(message = "A forma de pagamento é obrigatória")
+        br.com.novaalianca.mnss.core.payment.PaymentMethod paymentMethod
 ) {}

@@ -1,6 +1,6 @@
 package br.com.novaalianca.mnss.localapp.domain.cash;
 
-import br.com.novaalianca.mnss.localapp.domain.payment.PaymentMethod;
+import br.com.novaalianca.mnss.core.payment.PaymentMethod;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;

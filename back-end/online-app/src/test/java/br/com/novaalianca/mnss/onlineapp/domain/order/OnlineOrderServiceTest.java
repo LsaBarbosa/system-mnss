@@ -67,7 +67,8 @@ class OnlineOrderServiceTest {
                 DeliveryType.PICKUP,
                 null,
                 List.of(itemReq),
-                "Order notes"
+                "Order notes",
+                br.com.novaalianca.mnss.core.payment.PaymentMethod.CASH
         );
 
         OnlineProductEntity product = mock(OnlineProductEntity.class);
@@ -95,10 +96,50 @@ class OnlineOrderServiceTest {
         assertNotNull(response);
         assertEquals(OrderStatus.SENT_TO_STORE, response.status());
         assertEquals(new BigDecimal("20.00"), response.totalAmount());
+        assertEquals(br.com.novaalianca.mnss.core.payment.PaymentMethod.CASH, response.paymentMethod());
         
         verify(customerRepository).save(any(OnlineCustomerEntity.class));
         verify(orderRepository).save(any(OnlineOrderEntity.class));
         verify(syncEventRepository).save(any(SyncEventEntity.class));
+    }
+
+    @Test
+    void shouldCreateOnlineOrderWithPaymentPending() {
+        // Given
+        UUID productId = UUID.randomUUID();
+        CustomerRequest customerReq = new CustomerRequest("John Doe", "123456789", "john@example.com", null);
+        OnlineOrderItemRequest itemReq = new OnlineOrderItemRequest(productId, BigDecimal.ONE, null);
+        CreateOnlineOrderRequest request = new CreateOnlineOrderRequest(
+                customerReq,
+                DeliveryType.PICKUP,
+                null,
+                List.of(itemReq),
+                null,
+                br.com.novaalianca.mnss.core.payment.PaymentMethod.ONLINE_PIX
+        );
+
+        OnlineProductEntity product = mock(OnlineProductEntity.class);
+        lenient().when(product.getId()).thenReturn(productId);
+        lenient().when(product.getName()).thenReturn("Burger");
+        lenient().when(product.getPrice()).thenReturn(new BigDecimal("20.00"));
+        lenient().when(product.isActive()).thenReturn(true);
+        lenient().when(product.isSellOnline()).thenReturn(true);
+        lenient().when(product.isAvailable()).thenReturn(true);
+
+        when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+        when(customerRepository.findByPhone(any())).thenReturn(Optional.empty());
+        when(customerRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
+        when(orderRepository.save(any())).thenAnswer(i -> (OnlineOrderEntity) i.getArguments()[0]);
+
+        // When
+        OnlineOrderResponse response = orderService.createOnlineOrder(request);
+
+        // Then
+        assertNotNull(response);
+        assertEquals(OrderStatus.PAYMENT_PENDING, response.status());
+        assertEquals(br.com.novaalianca.mnss.core.payment.PaymentMethod.ONLINE_PIX, response.paymentMethod());
+        
+        verify(syncEventRepository, never()).save(any());
     }
 
     @Test
@@ -112,7 +153,8 @@ class OnlineOrderServiceTest {
                 DeliveryType.PICKUP,
                 null,
                 List.of(itemReq),
-                null
+                null,
+                br.com.novaalianca.mnss.core.payment.PaymentMethod.CASH
         );
 
         OnlineProductEntity product = mock(OnlineProductEntity.class);

@@ -1,4 +1,4 @@
-package br.com.novaalianca.mnss.localapp.domain.payment;
+package br.com.novaalianca.mnss.core.payment;
 
 public enum PaymentMethod {
     CASH,

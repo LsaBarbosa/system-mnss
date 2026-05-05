@@ -33,6 +33,7 @@ export interface CreateOrderRequest {
   address?: AddressRequest;
   items: OrderItemRequest[];
   notes?: string;
+  paymentMethod: string;
 }
 
 export interface OrderResponse {
@@ -41,6 +42,7 @@ export interface OrderResponse {
   status: string;
   paymentStatus: string;
   deliveryType: string;
+  paymentMethod: string;
   subtotal: number;
   discountAmount: number;
   deliveryFee: number;
@@ -64,5 +66,9 @@ export class OrderService {
 
   createOrder(request: CreateOrderRequest): Observable<OrderResponse> {
     return this.http.post<OrderResponse>(this.apiUrl, request);
+  }
+
+  getOrder(id: string): Observable<OrderResponse> {
+    return this.http.get<OrderResponse>(`${this.apiUrl}/${id}`);
   }
 }

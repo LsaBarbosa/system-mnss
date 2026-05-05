@@ -1,0 +1,190 @@
+.payment-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.payment-card {
+  background: white;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 450px;
+  padding: 40px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+  text-align: center;
+  animation: slideIn 0.5s ease-out;
+
+  @keyframes slideIn {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .header {
+    margin-bottom: 32px;
+
+    .pix-logo {
+      background: #32bcad;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 1.2rem;
+      display: inline-block;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      color: #2c3e50;
+      margin: 0 0 8px;
+    }
+
+    p {
+      color: #7f8c8d;
+      margin: 0;
+    }
+  }
+
+  .qr-code-section {
+    margin-bottom: 32px;
+
+    .qr-frame {
+      background: #f8f9fa;
+      padding: 16px;
+      border-radius: 16px;
+      display: inline-block;
+      margin-bottom: 16px;
+      border: 1px solid #eee;
+
+      img {
+        width: 200px;
+        height: 200px;
+        display: block;
+      }
+    }
+
+    .instruction {
+      font-size: 0.95rem;
+      color: #34495e;
+      font-weight: 500;
+    }
+  }
+
+  .copy-paste-section {
+    margin-bottom: 32px;
+    text-align: left;
+
+    p {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #7f8c8d;
+      margin-bottom: 8px;
+    }
+
+    .copy-box {
+      display: flex;
+      gap: 8px;
+
+      input {
+        flex: 1;
+        padding: 12px;
+        background: #f1f2f6;
+        border: 1px solid #dfe4ea;
+        border-radius: 8px;
+        font-family: monospace;
+        font-size: 0.85rem;
+        color: #2f3542;
+      }
+
+      button {
+        background: #2c3e50;
+        color: white;
+        border: none;
+        padding: 0 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+
+        &:hover {
+          background: #1a252f;
+        }
+      }
+    }
+  }
+
+  .status-section {
+    background: rgba(52, 152, 219, 0.05);
+    padding: 16px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: #3498db;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  .footer {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #eee;
+
+    p {
+      margin: 0;
+      color: #7f8c8d;
+      
+      strong {
+        color: #2c3e50;
+        font-size: 1.2rem;
+      }
+    }
+  }
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(52, 152, 219, 0.2);
+  border-top-color: #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+
+  &.large {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 16px;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-state, .error-state {
+  text-align: center;
+  color: #2c3e50;
+  
+  h2 { margin: 16px 0 8px; }
+  p { color: #7f8c8d; }
+  
+  .icon { font-size: 3rem; }
+}
+
+.retry-btn {
+  display: inline-block;
+  margin-top: 24px;
+  background: #3498db;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: opacity 0.2s;
+
+  &:hover { opacity: 0.9; }
+}

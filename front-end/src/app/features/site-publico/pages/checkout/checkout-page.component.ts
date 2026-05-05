@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Router, RouterModule } from '@angular/router';
 import { CartService, CartItem } from '../../services/cart.service';
 import { OrderService, CreateOrderRequest } from '../../services/order.service';
+import { OnlinePaymentService } from '../../services/online-payment.service';
 import { Observable } from 'rxjs';
 
 @Component({
@@ -23,6 +24,7 @@ export class CheckoutPageComponent implements OnInit {
     private fb: FormBuilder,
     private cartService: CartService,
     private orderService: OrderService,
+    private paymentService: OnlinePaymentService,
     private router: Router
   ) {
     this.cartItems$ = this.cartService.items$;
@@ -45,7 +47,8 @@ export class CheckoutPageComponent implements OnInit {
         complement: [''],
         reference: ['']
       }),
-      notes: ['']
+      notes: [''],
+      paymentMethod: ['CASH', Validators.required]
     });
   }
 
@@ -84,13 +87,18 @@ export class CheckoutPageComponent implements OnInit {
           quantity: item.quantity,
           observation: item.observation
         })),
-        notes: formValue.notes
+        paymentMethod: formValue.paymentMethod
       };
 
       this.orderService.createOrder(request).subscribe({
         next: (response) => {
           this.cartService.clear();
-          this.router.navigate(['/pedido-confirmado', response.id]);
+          
+          if (response.paymentMethod === 'ONLINE_PIX') {
+            this.router.navigate(['/pagamento', response.id]);
+          } else {
+            this.router.navigate(['/pedido-confirmado', response.id]);
+          }
         },
         error: (err) => {
           this.isSubmitting = false;

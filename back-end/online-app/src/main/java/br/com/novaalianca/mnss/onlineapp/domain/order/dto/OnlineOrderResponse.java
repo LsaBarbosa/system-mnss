@@ -2,7 +2,7 @@ package br.com.novaalianca.mnss.onlineapp.domain.order.dto;
 
 import br.com.novaalianca.mnss.onlineapp.domain.order.DeliveryType;
 import br.com.novaalianca.mnss.onlineapp.domain.order.OrderStatus;
-import br.com.novaalianca.mnss.onlineapp.domain.order.PaymentStatus;
+import br.com.novaalianca.mnss.core.payment.PaymentStatus;
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -15,5 +15,6 @@ public record OnlineOrderResponse(
         BigDecimal subtotal,
         BigDecimal discountAmount,
         BigDecimal deliveryFee,
-        BigDecimal totalAmount
+        BigDecimal totalAmount,
+        br.com.novaalianca.mnss.core.payment.PaymentMethod paymentMethod
 ) {}

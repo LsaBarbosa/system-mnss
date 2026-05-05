@@ -14,6 +14,8 @@ import br.com.novaalianca.mnss.localapp.domain.order.OrderOrigin;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderRepository;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderStatus;
 import br.com.novaalianca.mnss.localapp.domain.stock.StockService;
+import br.com.novaalianca.mnss.core.payment.PaymentMethod;
+import br.com.novaalianca.mnss.core.payment.PaymentStatus;
 import br.com.novaalianca.mnss.sharedinfra.web.error.BusinessException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;

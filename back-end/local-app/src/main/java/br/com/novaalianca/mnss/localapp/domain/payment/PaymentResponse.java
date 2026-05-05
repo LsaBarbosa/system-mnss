@@ -2,6 +2,8 @@ package br.com.novaalianca.mnss.localapp.domain.payment;
 
 import br.com.novaalianca.mnss.localapp.domain.order.OrderEntity;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderStatus;
+import br.com.novaalianca.mnss.core.payment.PaymentMethod;
+import br.com.novaalianca.mnss.core.payment.PaymentStatus;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;

@@ -9,6 +9,8 @@ import br.com.novaalianca.mnss.onlineapp.domain.customer.OnlineCustomerRepositor
 import br.com.novaalianca.mnss.onlineapp.domain.order.dto.CreateOnlineOrderRequest;
 import br.com.novaalianca.mnss.onlineapp.domain.order.dto.OnlineOrderItemRequest;
 import br.com.novaalianca.mnss.onlineapp.domain.order.dto.OnlineOrderResponse;
+import br.com.novaalianca.mnss.core.payment.PaymentMethod;
+import br.com.novaalianca.mnss.core.payment.PaymentStatus;
 import br.com.novaalianca.mnss.onlineapp.domain.sync.SyncEventRepository;
 import br.com.novaalianca.mnss.sync.SyncDirection;
 import br.com.novaalianca.mnss.sync.SyncEnvironment;
@@ -59,6 +61,7 @@ public class OnlineOrderService {
                 customer,
                 OrderOrigin.ONLINE,
                 request.deliveryType(),
+                request.paymentMethod(),
                 request.notes()
         );
 
@@ -74,12 +77,23 @@ public class OnlineOrderService {
             order.addItem(item);
         }
 
-        // Set status to SENT_TO_STORE since payment is on delivery/pickup for this sprint
-        order.updateStatus(OrderStatus.SENT_TO_STORE);
+        // Determine status and sync based on payment method
+        br.com.novaalianca.mnss.core.payment.PaymentMethod method = request.paymentMethod();
+        boolean isOnlinePayment = method == br.com.novaalianca.mnss.core.payment.PaymentMethod.ONLINE_PIX 
+                || method == br.com.novaalianca.mnss.core.payment.PaymentMethod.ONLINE_CREDIT_CARD 
+                || method == br.com.novaalianca.mnss.core.payment.PaymentMethod.ONLINE_DEBIT_CARD;
+
+        if (isOnlinePayment) {
+            order.updateStatus(OrderStatus.PAYMENT_PENDING);
+        } else {
+            order.updateStatus(OrderStatus.SENT_TO_STORE);
+        }
 
         order = orderRepository.save(order);
 
-        createSyncEvent(order);
+        if (!isOnlinePayment) {
+            createSyncEvent(order);
+        }
 
         return new OnlineOrderResponse(
                 order.getId(),
@@ -90,7 +104,27 @@ public class OnlineOrderService {
                 order.getSubtotal(),
                 order.getDiscountAmount(),
                 order.getDeliveryFee(),
-                order.getTotalAmount()
+                order.getTotalAmount(),
+                order.getPaymentMethod()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public OnlineOrderResponse getOrder(UUID id) {
+        OnlineOrderEntity order = orderRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found: " + id));
+
+        return new OnlineOrderResponse(
+                order.getId(),
+                order.getOrderNumber(),
+                order.getStatus(),
+                order.getPaymentStatus(),
+                order.getDeliveryType(),
+                order.getSubtotal(),
+                order.getDiscountAmount(),
+                order.getDeliveryFee(),
+                order.getTotalAmount(),
+                order.getPaymentMethod()
         );
     }
 

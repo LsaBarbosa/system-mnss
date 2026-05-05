@@ -1,0 +1,45 @@
+<div class="payment-container">
+  <div class="payment-card" *ngIf="!loading && !error">
+    <div class="header">
+      <span class="pix-logo">Pix</span>
+      <h1>Pagamento Instantâneo</h1>
+      <p>Finalize seu pedido com Pix</p>
+    </div>
+
+    <div class="qr-code-section">
+      <div class="qr-frame">
+        <img [src]="'data:image/png;base64,' + payment?.qrCodeBase64" alt="QR Code Pix" *ngIf="payment?.qrCodeBase64">
+      </div>
+      <p class="instruction">Aponte a câmera do seu celular para o QR Code acima</p>
+    </div>
+
+    <div class="copy-paste-section">
+      <p>Ou use o Pix Copia e Cola:</p>
+      <div class="copy-box">
+        <input type="text" [value]="payment?.qrCodeCopyPaste" readonly>
+        <button (click)="copyPixKey()">Copiar</button>
+      </div>
+    </div>
+
+    <div class="status-section">
+      <div class="spinner"></div>
+      <span>Aguardando confirmação do pagamento...</span>
+    </div>
+
+    <div class="footer">
+      <p>Valor total: <strong>{{ payment?.amount | currency:'BRL' }}</strong></p>
+    </div>
+  </div>
+
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner large"></div>
+    <p>Gerando sua cobrança...</p>
+  </div>
+
+  <div class="error-state" *ngIf="error">
+    <span class="icon">⚠️</span>
+    <h2>Ops!</h2>
+    <p>{{ error }}</p>
+    <a routerLink="/checkout" class="retry-btn">Voltar ao Checkout</a>
+  </div>
+</div>

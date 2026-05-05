@@ -4,7 +4,7 @@ import br.com.novaalianca.mnss.localapp.domain.order.DeliveryType;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderEntity;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderOrigin;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderStatus;
-import br.com.novaalianca.mnss.localapp.domain.payment.PaymentStatus;
+import br.com.novaalianca.mnss.core.payment.PaymentStatus;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;

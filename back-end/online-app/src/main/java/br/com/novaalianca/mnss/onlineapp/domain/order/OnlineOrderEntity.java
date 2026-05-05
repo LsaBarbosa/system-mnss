@@ -1,6 +1,7 @@
 package br.com.novaalianca.mnss.onlineapp.domain.order;
 
 import br.com.novaalianca.mnss.onlineapp.domain.customer.OnlineCustomerEntity;
+import br.com.novaalianca.mnss.core.payment.PaymentStatus;
 import br.com.novaalianca.mnss.sharedinfra.domain.BaseEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -44,6 +45,10 @@ public class OnlineOrderEntity extends BaseEntity {
     @Column(name = "delivery_type", nullable = false, length = 50)
     private DeliveryType deliveryType;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method", nullable = false, length = 50)
+    private br.com.novaalianca.mnss.core.payment.PaymentMethod paymentMethod;
+
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal subtotal = BigDecimal.ZERO;
 
@@ -69,13 +74,15 @@ public class OnlineOrderEntity extends BaseEntity {
 
     protected OnlineOrderEntity() {}
 
-    public OnlineOrderEntity(OnlineCustomerEntity customer, OrderOrigin origin, DeliveryType deliveryType, String notes) {
+    public OnlineOrderEntity(OnlineCustomerEntity customer, OrderOrigin origin, DeliveryType deliveryType, br.com.novaalianca.mnss.core.payment.PaymentMethod paymentMethod, String notes) {
         if (origin == null) throw new IllegalArgumentException("Origin is required");
         if (deliveryType == null) throw new IllegalArgumentException("DeliveryType is required");
+        if (paymentMethod == null) throw new IllegalArgumentException("PaymentMethod is required");
         
         this.customer = customer;
         this.origin = origin;
         this.deliveryType = deliveryType;
+        this.paymentMethod = paymentMethod;
         this.notes = notes;
         this.status = OrderStatus.CREATED;
         this.paymentStatus = PaymentStatus.PENDING;
@@ -115,6 +122,7 @@ public class OnlineOrderEntity extends BaseEntity {
     public OrderStatus getStatus() { return status; }
     public PaymentStatus getPaymentStatus() { return paymentStatus; }
     public DeliveryType getDeliveryType() { return deliveryType; }
+    public br.com.novaalianca.mnss.core.payment.PaymentMethod getPaymentMethod() { return paymentMethod; }
     public BigDecimal getSubtotal() { return subtotal; }
     public BigDecimal getDiscountAmount() { return discountAmount; }
     public BigDecimal getDeliveryFee() { return deliveryFee; }

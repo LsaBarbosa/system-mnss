@@ -98,10 +98,40 @@
           </div>
         </section>
 
-        <!-- Seção: Notas -->
+        <!-- Seção: Pagamento -->
         <section class="checkout-section">
           <div class="section-header">
             <span class="step-number">3</span>
+            <h2>Forma de Pagamento</h2>
+          </div>
+          <div class="payment-options">
+            <label class="payment-card" [class.active]="checkoutForm.get('paymentMethod')?.value === 'CASH'">
+              <input type="radio" formControlName="paymentMethod" value="CASH">
+              <div class="card-content">
+                <span class="icon">💵</span>
+                <div class="text">
+                  <strong>Pagar na Entrega/Retirada</strong>
+                  <span>Dinheiro ou Cartão</span>
+                </div>
+              </div>
+            </label>
+            <label class="payment-card" [class.active]="checkoutForm.get('paymentMethod')?.value === 'ONLINE_PIX'">
+              <input type="radio" formControlName="paymentMethod" value="ONLINE_PIX">
+              <div class="card-content">
+                <span class="icon">⚡</span>
+                <div class="text">
+                  <strong>Pix Online</strong>
+                  <span>Pague agora com QR Code</span>
+                </div>
+              </div>
+            </label>
+          </div>
+        </section>
+
+        <!-- Seção: Notas -->
+        <section class="checkout-section">
+          <div class="section-header">
+            <span class="step-number">4</span>
             <h2>Observações adicionais</h2>
           </div>
           <textarea formControlName="notes" rows="3" placeholder="Alguma observação sobre o pedido?"></textarea>
@@ -141,7 +171,8 @@
             <span *ngIf="!isSubmitting">Confirmar Pedido</span>
             <span *ngIf="isSubmitting" class="loader">Processando...</span>
           </button>
-          <p class="payment-notice">Pagamento será feito na entrega/retirada</p>
+          <p class="payment-notice" *ngIf="checkoutForm.get('paymentMethod')?.value === 'CASH'">Pagamento será feito na entrega/retirada</p>
+          <p class="payment-notice" *ngIf="checkoutForm.get('paymentMethod')?.value === 'ONLINE_PIX'">Você será direcionado para o pagamento Pix</p>
         </div>
       </aside>
     </form>

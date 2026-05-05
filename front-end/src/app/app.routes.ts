@@ -68,6 +68,18 @@ export const routes: Routes = [
     }
   },
   {
+    path: 'checkout',
+    component: CheckoutPageComponent
+  },
+  {
+    path: 'pedido-confirmado/:id',
+    component: OrderConfirmationPageComponent
+  },
+  {
+    path: 'pagamento/:orderId',
+    loadComponent: () => import('./features/site-publico/pages/payment-page/payment-page.component').then(m => m.PaymentPageComponent)
+  },
+  {
     path: '**',
     redirectTo: ''
   }

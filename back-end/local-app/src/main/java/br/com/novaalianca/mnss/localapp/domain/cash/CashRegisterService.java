@@ -4,7 +4,7 @@ import br.com.novaalianca.mnss.localapp.domain.audit.AuditLogRequest;
 import br.com.novaalianca.mnss.localapp.domain.audit.AuditService;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderEntity;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderRepository;
-import br.com.novaalianca.mnss.localapp.domain.payment.PaymentMethod;
+import br.com.novaalianca.mnss.core.payment.PaymentMethod;
 import br.com.novaalianca.mnss.sharedinfra.web.error.BusinessException;
 import java.math.BigDecimal;
 import java.util.EnumMap;

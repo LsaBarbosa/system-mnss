@@ -6,6 +6,7 @@
     </div>
     <div class="topbar-actions">
       <span class="cash-status" [class.cash-status--open]="currentCash.open">{{ cashStatusLabel }}</span>
+      <button type="button" class="topbar-button" [disabled]="!canSell" (click)="startSale()">Nova venda</button>
       <a routerLink="/">Console</a>
     </div>
   </header>
@@ -95,13 +96,153 @@
 
   <p class="sell-blocker" *ngIf="!canSell">Abra o caixa para liberar venda no PDV.</p>
 
-  <section class="category-group" *ngFor="let group of groups">
-    <h2>{{ group.category.name }}</h2>
-    <div class="product-grid">
-      <button type="button" *ngFor="let product of group.products" [disabled]="!canSell">
-        <strong>{{ product.name }}</strong>
-        <span>{{ product.price }}</span>
-      </button>
-    </div>
+  <section class="sale-workspace">
+    <section class="catalog-panel" aria-label="Produtos do PDV">
+      <form class="product-search" [formGroup]="productFilterForm" (ngSubmit)="searchProducts()" novalidate>
+        <label>
+          Buscar
+          <input type="search" formControlName="name" />
+        </label>
+        <label>
+          Categoria
+          <select formControlName="categoryId">
+            <option value="">Todas</option>
+            <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
+          </select>
+        </label>
+        <button type="submit">Filtrar</button>
+      </form>
+
+      <label class="barcode-field">
+        Codigo de barras
+        <input type="text" [formControl]="barcodeControl" (keydown)="onBarcodeKeydown($event)" />
+      </label>
+      <p class="cash-message cash-message--error" *ngIf="barcodeError">{{ barcodeError }}</p>
+
+      <section class="category-group" *ngFor="let group of groups">
+        <h2>{{ group.category.name }}</h2>
+        <div class="product-grid">
+          <button
+            type="button"
+            *ngFor="let product of group.products"
+            [disabled]="!canUseCart"
+            (click)="addProduct(product)"
+          >
+            <strong>{{ product.name }}</strong>
+            <span>{{ product.price }}</span>
+          </button>
+        </div>
+      </section>
+    </section>
+
+    <aside class="cart-panel" aria-label="Carrinho da venda">
+      <header>
+        <div>
+          <p>Venda atual</p>
+          <h2>{{ currentSale ? 'Carrinho' : 'Sem venda' }}</h2>
+        </div>
+        <span *ngIf="currentSale">{{ currentSale.items.length }} itens</span>
+      </header>
+
+      <p class="cash-message cash-message--error" *ngIf="saleError">{{ saleError }}</p>
+      <p class="cash-message cash-message--success" *ngIf="saleSuccess">{{ saleSuccess }}</p>
+
+      <section class="cart-items" *ngIf="currentSale && currentSale.items.length > 0">
+        <article *ngFor="let item of currentSale.items">
+          <div>
+            <strong>{{ item.productNameSnapshot }}</strong>
+            <span>{{ item.unitPrice }} un.</span>
+          </div>
+          <div class="quantity-controls">
+            <button type="button" (click)="decreaseItem(item)" [disabled]="!canDecrease(item)">-</button>
+            <input
+              type="number"
+              min="0.001"
+              step="0.001"
+              [disabled]="!canUseCart"
+              [value]="item.quantity"
+              (change)="updateItemQuantity(item, $any($event.target).value)"
+            />
+            <button type="button" (click)="increaseItem(item)" [disabled]="!canUseCart">+</button>
+          </div>
+          <strong>{{ item.totalPrice }}</strong>
+          <button type="button" class="remove-button" [disabled]="!canUseCart" (click)="removeItem(item)">
+            Remover
+          </button>
+        </article>
+      </section>
+
+      <p class="empty-cart" *ngIf="!currentSale">Inicie uma venda para montar o carrinho.</p>
+      <p class="empty-cart" *ngIf="currentSale && currentSale.items.length === 0">Carrinho vazio.</p>
+
+      <dl class="totals-panel" *ngIf="currentSale">
+        <div>
+          <dt>Subtotal</dt>
+          <dd>{{ currentSale.subtotal }}</dd>
+        </div>
+        <div>
+          <dt>Desconto</dt>
+          <dd>{{ currentSale.discountAmount }}</dd>
+        </div>
+        <div>
+          <dt>Taxas</dt>
+          <dd>{{ currentSale.deliveryFee }}</dd>
+        </div>
+        <div class="total-line">
+          <dt>Total</dt>
+          <dd>{{ currentSale.totalAmount }}</dd>
+        </div>
+      </dl>
+
+      <form class="cash-form" [formGroup]="paymentForm" (ngSubmit)="finalizeSale()" *ngIf="currentSale" novalidate>
+        <label>
+          Pagamento
+          <select formControlName="method">
+            <option value="CASH">Dinheiro</option>
+            <option value="PIX">PIX</option>
+            <option value="CREDIT_CARD">Credito</option>
+            <option value="DEBIT_CARD">Debito</option>
+            <option value="MEAL_VOUCHER">Vale refeicao</option>
+          </select>
+        </label>
+        <label>
+          Valor
+          <input type="number" min="0.01" step="0.01" formControlName="amount" />
+        </label>
+        <label>
+          Autorizacao
+          <input type="text" formControlName="transactionId" />
+        </label>
+        <button type="submit" [disabled]="paymentForm.invalid || !canFinalizeSale">Finalizar venda</button>
+      </form>
+    </aside>
+  </section>
+
+  <section class="cash-panel" aria-label="Historico de vendas">
+    <header>
+      <div>
+        <h2>Historico de vendas</h2>
+        <span>{{ salesHistory.length }} vendas</span>
+      </div>
+    </header>
+
+    <table *ngIf="salesHistory.length > 0">
+      <thead>
+        <tr>
+          <th>Pedido</th>
+          <th>Status</th>
+          <th>Pagamento</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let sale of salesHistory">
+          <td>{{ sale.orderNumber || sale.id }}</td>
+          <td>{{ sale.status }}</td>
+          <td>{{ sale.paymentStatus }}</td>
+          <td>{{ sale.totalAmount }}</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 </main>

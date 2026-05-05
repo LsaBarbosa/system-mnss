@@ -340,6 +340,18 @@ paths:
       operationId: listPdvProducts
       security:
         - bearerAuth: []
+      parameters:
+        - name: name
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: categoryId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
       responses:
         '200':
           description: Produtos agrupados por categoria.
@@ -349,6 +361,231 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/CategoryProductsResponse'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/pdv/products/barcode/{barcode}:
+    get:
+      summary: Busca produto vendavel para o PDV por codigo de barras.
+      operationId: findPdvProductByBarcode
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: barcode
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Produto vendavel encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        '404':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/pdv/sales:
+    get:
+      summary: Lista vendas presenciais do PDV.
+      operationId: listPdvSales
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Vendas PDV encontradas.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PdvSaleResponse'
+        '403':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+    post:
+      summary: Inicia venda presencial no PDV.
+      operationId: createPdvSale
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Venda criada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PdvSaleResponse'
+        '400':
+          $ref: '#/components/responses/BusinessError'
+        '403':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/pdv/sales/{saleId}:
+    get:
+      summary: Retorna venda presencial do PDV.
+      operationId: getPdvSale
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: saleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Venda encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PdvSaleResponse'
+        '404':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/pdv/sales/{saleId}/items:
+    post:
+      summary: Adiciona produto ao carrinho da venda PDV.
+      operationId: addPdvSaleItem
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: saleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePdvSaleItemRequest'
+      responses:
+        '201':
+          description: Carrinho atualizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PdvSaleResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          $ref: '#/components/responses/BusinessError'
+        '404':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/pdv/sales/{saleId}/items/{itemId}:
+    patch:
+      summary: Altera quantidade de um item da venda PDV.
+      operationId: updatePdvSaleItem
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: saleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchPdvSaleItemRequest'
+      responses:
+        '200':
+          description: Carrinho atualizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PdvSaleResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          $ref: '#/components/responses/BusinessError'
+        '404':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+    delete:
+      summary: Remove item do carrinho da venda PDV.
+      operationId: removePdvSaleItem
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: saleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Carrinho atualizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PdvSaleResponse'
+        '403':
+          $ref: '#/components/responses/BusinessError'
+        '404':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/orders/{orderId}/payments:
+    post:
+      summary: Registra pagamento e finaliza venda local.
+      operationId: createOrderPayment
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePaymentRequest'
+      responses:
+        '201':
+          description: Pagamento registrado e venda finalizada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          $ref: '#/components/responses/BusinessError'
+        '404':
+          $ref: '#/components/responses/BusinessError'
+        '409':
+          $ref: '#/components/responses/BusinessError'
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/public/menu:
@@ -991,6 +1228,191 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ProductResponse'
+    CreatePdvSaleItemRequest:
+      type: object
+      required:
+        - productId
+      properties:
+        productId:
+          type: string
+          format: uuid
+        quantity:
+          type: number
+          format: decimal
+          minimum: 0.001
+          example: 1
+        observation:
+          type: string
+    PatchPdvSaleItemRequest:
+      type: object
+      required:
+        - quantity
+      properties:
+        quantity:
+          type: number
+          format: decimal
+          minimum: 0.001
+          example: 2
+    PdvSaleResponse:
+      type: object
+      required:
+        - id
+        - origin
+        - status
+        - paymentStatus
+        - deliveryType
+        - subtotal
+        - discountAmount
+        - deliveryFee
+        - totalAmount
+        - items
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        orderNumber:
+          type: integer
+          format: int64
+        origin:
+          $ref: '#/components/schemas/OrderOrigin'
+        status:
+          $ref: '#/components/schemas/OrderStatus'
+        paymentStatus:
+          $ref: '#/components/schemas/PaymentStatus'
+        deliveryType:
+          $ref: '#/components/schemas/DeliveryType'
+        subtotal:
+          type: number
+          format: decimal
+        discountAmount:
+          type: number
+          format: decimal
+        deliveryFee:
+          type: number
+          format: decimal
+        totalAmount:
+          type: number
+          format: decimal
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PdvSaleItemResponse'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    PdvSaleItemResponse:
+      type: object
+      required:
+        - id
+        - orderId
+        - productNameSnapshot
+        - quantity
+        - unitPrice
+        - totalPrice
+        - status
+        - preparationSector
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        orderId:
+          type: string
+          format: uuid
+        productId:
+          type: string
+          format: uuid
+        productNameSnapshot:
+          type: string
+        quantity:
+          type: number
+          format: decimal
+        unitPrice:
+          type: number
+          format: decimal
+        totalPrice:
+          type: number
+          format: decimal
+        observation:
+          type: string
+        status:
+          $ref: '#/components/schemas/OrderItemStatus'
+        preparationSector:
+          $ref: '#/components/schemas/PreparationSector'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreatePaymentRequest:
+      type: object
+      required:
+        - method
+        - amount
+      properties:
+        method:
+          $ref: '#/components/schemas/PaymentMethod'
+        amount:
+          type: number
+          format: decimal
+          minimum: 0.01
+        transactionId:
+          type: string
+        gateway:
+          type: string
+    PaymentResponse:
+      type: object
+      required:
+        - id
+        - orderId
+        - method
+        - status
+        - amount
+        - orderStatus
+        - orderPaymentStatus
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        orderId:
+          type: string
+          format: uuid
+        method:
+          $ref: '#/components/schemas/PaymentMethod'
+        status:
+          $ref: '#/components/schemas/PaymentStatus'
+        amount:
+          type: number
+          format: decimal
+        transactionId:
+          type: string
+        gateway:
+          type: string
+        paidAt:
+          type: string
+          format: date-time
+        canceledAt:
+          type: string
+          format: date-time
+        orderStatus:
+          $ref: '#/components/schemas/OrderStatus'
+        orderPaymentStatus:
+          $ref: '#/components/schemas/PaymentStatus'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
     AvailabilityStatus:
       type: string
       enum:
@@ -1008,6 +1430,66 @@ components:
         - SITE
         - WHATSAPP
         - ALL
+    OrderOrigin:
+      type: string
+      enum:
+        - PDV
+        - SITE
+        - WHATSAPP
+        - ADMIN
+        - MANUAL
+        - INTEGRATION
+    OrderStatus:
+      type: string
+      enum:
+        - CREATED
+        - PAYMENT_PENDING
+        - PAID
+        - SENT_TO_STORE
+        - RECEIVED_BY_STORE
+        - ACCEPTED
+        - IN_PREPARATION
+        - READY
+        - OUT_FOR_DELIVERY
+        - DELIVERED
+        - FINISHED
+        - CANCELED
+    PaymentStatus:
+      type: string
+      enum:
+        - PENDING
+        - AUTHORIZED
+        - PAID
+        - REFUSED
+        - CANCELED
+        - REFUNDED
+        - EXPIRED
+    DeliveryType:
+      type: string
+      enum:
+        - COUNTER
+        - PICKUP
+        - DELIVERY
+        - LOCAL_CONSUMPTION
+    OrderItemStatus:
+      type: string
+      enum:
+        - CREATED
+        - WAITING_PREPARATION
+        - IN_PREPARATION
+        - READY
+        - DELIVERED
+        - CANCELED
+    PreparationSector:
+      type: string
+      enum:
+        - BALCAO
+        - CHAPA
+        - BEBIDAS
+        - CONFEITARIA
+        - EXPEDICAO
+        - DELIVERY
+        - SEM_PREPARO
     CashRegisterOpenRequest:
       type: object
       required:

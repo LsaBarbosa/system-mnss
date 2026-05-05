@@ -52,6 +52,18 @@ public class PaymentEntity extends BaseEntity {
         this.amount = DomainValidation.requireNonNegative(amount, "amount");
     }
 
+    public void markPaid(String transactionId, String gateway) {
+        this.status = PaymentStatus.PAID;
+        this.transactionId = normalize(transactionId);
+        this.gateway = normalize(gateway);
+        this.paidAt = Instant.now();
+        touch();
+    }
+
+    private String normalize(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
+    }
+
     public OrderEntity getOrder() {
         return order;
     }

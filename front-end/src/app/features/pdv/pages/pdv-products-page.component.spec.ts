@@ -5,21 +5,35 @@ import { of } from 'rxjs';
 import { mockCashMovement, mockCashRegister, mockCategory, mockProduct } from '../../../shared/models/domain.mocks';
 import { CashRegisterService } from '../data-access/cash-register.service';
 import { PdvCatalogService } from '../data-access/pdv-catalog.service';
+import { PdvSaleService } from '../data-access/pdv-sale.service';
+import type { PdvSale } from '../data-access/pdv-sale.service';
 import { PdvProductsPageComponent } from './pdv-products-page.component';
 
 describe('PdvProductsPageComponent', () => {
   let fixture: ComponentFixture<PdvProductsPageComponent>;
   let pdvCatalogService: jasmine.SpyObj<PdvCatalogService>;
   let cashRegisterService: jasmine.SpyObj<CashRegisterService>;
+  let pdvSaleService: jasmine.SpyObj<PdvSaleService>;
 
   beforeEach(async () => {
-    pdvCatalogService = jasmine.createSpyObj<PdvCatalogService>('PdvCatalogService', ['listProducts']);
+    pdvCatalogService = jasmine.createSpyObj<PdvCatalogService>('PdvCatalogService', [
+      'listProducts',
+      'findProductByBarcode'
+    ]);
     cashRegisterService = jasmine.createSpyObj<CashRegisterService>('CashRegisterService', [
       'open',
       'current',
       'createMovement',
       'close',
       'summary'
+    ]);
+    pdvSaleService = jasmine.createSpyObj<PdvSaleService>('PdvSaleService', [
+      'listSales',
+      'createSale',
+      'addItem',
+      'updateItem',
+      'removeItem',
+      'pay'
     ]);
     pdvCatalogService.listProducts.and.returnValue(
       of([
@@ -34,13 +48,37 @@ describe('PdvProductsPageComponent', () => {
     cashRegisterService.open.and.returnValue(of(mockCashRegister));
     cashRegisterService.createMovement.and.returnValue(of(mockCashMovement));
     cashRegisterService.close.and.returnValue(of(cashSummary()));
+    pdvCatalogService.findProductByBarcode.and.returnValue(of(mockProduct));
+    pdvSaleService.createSale.and.returnValue(of(sale([])));
+    pdvSaleService.listSales.and.returnValue(of([sale([saleItem()])]));
+    pdvSaleService.addItem.and.returnValue(of(sale([saleItem()])));
+    pdvSaleService.updateItem.and.returnValue(of(sale([{ ...saleItem(), quantity: '2.000', totalPrice: '2.40' }])));
+    pdvSaleService.removeItem.and.returnValue(of(sale([])));
+    pdvSaleService.pay.and.returnValue(
+      of({
+        id: 'payment-id',
+        orderId: '44444444-4444-4444-4444-444444444444',
+        method: 'PIX',
+        status: 'PAID',
+        amount: '1.20',
+        transactionId: null,
+        gateway: null,
+        paidAt: '2026-05-04T12:06:00Z',
+        canceledAt: null,
+        orderStatus: 'PAID',
+        orderPaymentStatus: 'PAID',
+        createdAt: '2026-05-04T12:06:00Z',
+        updatedAt: '2026-05-04T12:06:00Z'
+      })
+    );
 
     await TestBed.configureTestingModule({
       imports: [PdvProductsPageComponent],
       providers: [
         provideRouter([]),
         { provide: PdvCatalogService, useValue: pdvCatalogService },
-        { provide: CashRegisterService, useValue: cashRegisterService }
+        { provide: CashRegisterService, useValue: cashRegisterService },
+        { provide: PdvSaleService, useValue: pdvSaleService }
       ]
     }).compileComponents();
 
@@ -60,6 +98,12 @@ describe('PdvProductsPageComponent', () => {
 
     expect(fixture.nativeElement.textContent).toContain('Caixa aberto');
     expect(fixture.nativeElement.textContent).toContain('Esperado 45.00');
+  });
+
+  it('loads sale history for PDV orders', () => {
+    expect(pdvSaleService.listSales).toHaveBeenCalled();
+    expect(fixture.componentInstance.salesHistory.length).toBe(1);
+    expect(fixture.nativeElement.textContent).toContain('Historico de vendas');
   });
 
   it('requires initial amount before opening cash register', () => {
@@ -126,6 +170,95 @@ describe('PdvProductsPageComponent', () => {
     });
   });
 
+  it('starts sale and initializes cart', () => {
+    fixture.componentInstance.startSale();
+
+    expect(pdvSaleService.createSale).toHaveBeenCalled();
+    expect(fixture.componentInstance.currentSale?.items).toEqual([]);
+  });
+
+  it('clicking product adds item and updates subtotal', () => {
+    fixture.componentInstance.currentSale = sale([]);
+
+    fixture.componentInstance.addProduct(mockProduct);
+
+    expect(pdvSaleService.addItem).toHaveBeenCalledWith('44444444-4444-4444-4444-444444444444', {
+      productId: mockProduct.id,
+      quantity: '1.000'
+    });
+    expect(fixture.componentInstance.currentSale?.subtotal).toBe('1.20');
+  });
+
+  it('updates quantity and visual total from returned payload', () => {
+    const item = saleItem();
+    fixture.componentInstance.currentSale = sale([item]);
+
+    fixture.componentInstance.increaseItem(item);
+
+    expect(pdvSaleService.updateItem).toHaveBeenCalledWith(fixture.componentInstance.currentSale?.id, item.id, {
+      quantity: '2.000'
+    });
+    expect(fixture.componentInstance.currentSale?.items[0].totalPrice).toBe('2.40');
+  });
+
+  it('removes item from cart', () => {
+    const item = saleItem();
+    fixture.componentInstance.currentSale = sale([item]);
+
+    fixture.componentInstance.removeItem(item);
+
+    expect(pdvSaleService.removeItem).toHaveBeenCalledWith(fixture.componentInstance.currentSale?.id, item.id);
+    expect(fixture.componentInstance.currentSale?.items).toEqual([]);
+  });
+
+  it('finalizes sale with payment and refreshes history and cash summary', () => {
+    fixture.componentInstance.currentSale = sale([saleItem()]);
+    fixture.componentInstance.paymentForm.patchValue({ method: 'PIX', amount: '1.20', transactionId: 'tx-1' });
+
+    fixture.componentInstance.finalizeSale();
+
+    expect(pdvSaleService.pay).toHaveBeenCalledWith('44444444-4444-4444-4444-444444444444', {
+      method: 'PIX',
+      amount: '1.20',
+      transactionId: 'tx-1',
+      gateway: null
+    });
+    expect(fixture.componentInstance.currentSale?.paymentStatus).toBe('PAID');
+    expect(fixture.componentInstance.saleSuccess).toBe('Venda finalizada.');
+    expect(cashRegisterService.summary).toHaveBeenCalledWith(mockCashRegister.id);
+  });
+
+  it('does not finalize empty cart', () => {
+    fixture.componentInstance.currentSale = sale([]);
+    fixture.componentInstance.paymentForm.patchValue({ method: 'CASH', amount: '0.00', transactionId: '' });
+
+    fixture.componentInstance.finalizeSale();
+
+    expect(pdvSaleService.pay).not.toHaveBeenCalled();
+    expect(fixture.componentInstance.saleError).toBe('Venda deve ter itens para finalizar.');
+  });
+
+  it('filters products by search form', () => {
+    fixture.componentInstance.productFilterForm.patchValue({ name: 'pao', categoryId: mockCategory.id });
+
+    fixture.componentInstance.searchProducts();
+
+    expect(pdvCatalogService.listProducts).toHaveBeenCalledWith({ name: 'pao', categoryId: mockCategory.id });
+  });
+
+  it('scanner by Enter finds barcode and adds item', () => {
+    fixture.componentInstance.currentSale = sale([]);
+    fixture.componentInstance.barcodeControl.setValue('789100');
+    const event = new KeyboardEvent('keydown', { key: 'Enter' });
+    spyOn(event, 'preventDefault');
+
+    fixture.componentInstance.onBarcodeKeydown(event);
+
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(pdvCatalogService.findProductByBarcode).toHaveBeenCalledWith('789100');
+    expect(pdvSaleService.addItem).toHaveBeenCalled();
+  });
+
   function cashSummary() {
     return {
       cashRegister: mockCashRegister,
@@ -149,6 +282,42 @@ describe('PdvProductsPageComponent', () => {
       closingAmount: null,
       differenceAmount: '0.00',
       movements: [mockCashMovement]
+    };
+  }
+
+  function sale(items: PdvSale['items']): PdvSale {
+    const subtotal = items.reduce((total, item) => total + Number(item.totalPrice), 0).toFixed(2);
+    return {
+      id: '44444444-4444-4444-4444-444444444444',
+      orderNumber: 12,
+      origin: 'PDV',
+      status: 'CREATED',
+      paymentStatus: 'PENDING',
+      deliveryType: 'LOCAL_CONSUMPTION',
+      subtotal,
+      discountAmount: '0.00',
+      deliveryFee: '0.00',
+      totalAmount: subtotal,
+      items,
+      createdAt: '2026-05-04T12:00:00Z',
+      updatedAt: '2026-05-04T12:05:00Z'
+    };
+  }
+
+  function saleItem(): PdvSale['items'][number] {
+    return {
+      id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+      orderId: '44444444-4444-4444-4444-444444444444',
+      productId: mockProduct.id,
+      productNameSnapshot: mockProduct.name,
+      quantity: '1.000',
+      unitPrice: '1.20',
+      totalPrice: '1.20',
+      observation: null,
+      status: 'CREATED',
+      preparationSector: 'SEM_PREPARO',
+      createdAt: '2026-05-04T12:00:00Z',
+      updatedAt: '2026-05-04T12:05:00Z'
     };
   }
 });

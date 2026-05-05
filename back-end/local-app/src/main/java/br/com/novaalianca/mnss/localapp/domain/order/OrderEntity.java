@@ -85,6 +85,21 @@ public class OrderEntity extends BaseEntity {
         this.discountAmount = DomainValidation.requireNonNegative(discountAmount, "discountAmount");
         this.deliveryFee = DomainValidation.requireNonNegative(deliveryFee, "deliveryFee");
         this.totalAmount = DomainValidation.requireNonNegative(totalAmount, "totalAmount");
+        touch();
+    }
+
+    public void changeStatus(OrderStatus status) {
+        this.status = Objects.requireNonNull(status, "status must not be null");
+        touch();
+    }
+
+    public void markPaid(OrderStatus nextStatus) {
+        if (nextStatus != OrderStatus.PAID && nextStatus != OrderStatus.SENT_TO_STORE) {
+            throw new IllegalArgumentException("paid order status must be PAID or SENT_TO_STORE");
+        }
+        this.paymentStatus = PaymentStatus.PAID;
+        this.status = nextStatus;
+        touch();
     }
 
     public Long getOrderNumber() {

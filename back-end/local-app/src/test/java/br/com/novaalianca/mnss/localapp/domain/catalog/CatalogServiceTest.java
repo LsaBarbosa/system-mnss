@@ -409,6 +409,59 @@ class CatalogServiceTest {
         assertThat(response.getFirst().products()).extracting(ProductResponse::id).containsExactly(sellable.getId());
     }
 
+    @Test
+    void pdvProductsCanBeFilteredByNameAndCategory() {
+        UUID bakeryId = UUID.randomUUID();
+        UUID drinksId = UUID.randomUUID();
+        CategoryEntity bakery = category(bakeryId, "Paes");
+        CategoryEntity drinks = category(drinksId, "Bebidas");
+        ProductEntity filtered = product(bakery, UUID.randomUUID());
+        filtered.update(null, "Pao integral", null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+        ProductEntity otherName = product(bakery, UUID.randomUUID());
+        otherName.update(null, "Baguete", null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+        ProductEntity otherCategory = product(drinks, UUID.randomUUID());
+        otherCategory.update(null, "Pao liquido", null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+        when(categoryRepository.findAllByOrderByDisplayOrderAscNameAsc()).thenReturn(List.of(bakery, drinks));
+        when(productRepository.findAllByOrderByNameAsc()).thenReturn(List.of(filtered, otherName, otherCategory));
+
+        List<CategoryProductsResponse> response = service().listPdvProducts("integral", bakeryId);
+
+        assertThat(response).hasSize(1);
+        assertThat(response.getFirst().category().id()).isEqualTo(bakeryId);
+        assertThat(response.getFirst().products()).extracting(ProductResponse::id).containsExactly(filtered.getId());
+    }
+
+    @Test
+    void sellableBarcodeSearchRejectsMissingOrNotSellableProduct() {
+        String barcode = "789100000001";
+        ProductEntity inactive = product();
+        inactive.update(null, null, null, null, null, null, null, barcode, null, null, null, null, false, null, null, null, null);
+        when(productRepository.findByBarcode("missing")).thenReturn(Optional.empty());
+        when(productRepository.findByBarcode(barcode)).thenReturn(Optional.of(inactive));
+
+        assertThatThrownBy(() -> service().findSellableProductByBarcode("missing"))
+                .isInstanceOf(BusinessException.class)
+                .extracting("status")
+                .isEqualTo(HttpStatus.NOT_FOUND);
+        assertThatThrownBy(() -> service().findSellableProductByBarcode(barcode))
+                .isInstanceOf(BusinessException.class)
+                .extracting("status")
+                .isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void sellableBarcodeSearchReturnsProductSnapshot() {
+        String barcode = "789100000001";
+        ProductEntity product = product();
+        product.update(null, null, null, null, null, null, null, barcode, null, null, null, null, null, null, null, null, null);
+        when(productRepository.findByBarcode(barcode)).thenReturn(Optional.of(product));
+
+        ProductResponse response = service().findSellableProductByBarcode(barcode);
+
+        assertThat(response.id()).isEqualTo(product.getId());
+        assertThat(response.barcode()).isEqualTo(barcode);
+    }
+
     private CatalogService service() {
         return new CatalogService(
                 Optional.of(categoryRepository),

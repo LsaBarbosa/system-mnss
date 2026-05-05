@@ -13,6 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Objects;
 
 @Entity
@@ -60,6 +61,19 @@ public class OrderItemEntity extends BaseEntity {
             BigDecimal totalPrice,
             OrderItemStatus status,
             PreparationSector preparationSector) {
+        this(order, product, productNameSnapshot, quantity, unitPrice, totalPrice, status, preparationSector, null);
+    }
+
+    public OrderItemEntity(
+            OrderEntity order,
+            ProductEntity product,
+            String productNameSnapshot,
+            BigDecimal quantity,
+            BigDecimal unitPrice,
+            BigDecimal totalPrice,
+            OrderItemStatus status,
+            PreparationSector preparationSector,
+            String observation) {
         this.order = Objects.requireNonNull(order, "order must not be null");
         this.product = product;
         this.productNameSnapshot = DomainValidation.requireText(productNameSnapshot, "productNameSnapshot");
@@ -68,6 +82,20 @@ public class OrderItemEntity extends BaseEntity {
         this.totalPrice = DomainValidation.requireNonNegative(totalPrice, "totalPrice");
         this.status = Objects.requireNonNull(status, "status must not be null");
         this.preparationSector = Objects.requireNonNull(preparationSector, "preparationSector must not be null");
+        this.observation = normalizeObservation(observation);
+    }
+
+    public void changeQuantity(BigDecimal quantity) {
+        this.quantity = DomainValidation.requirePositive(quantity, "quantity");
+        this.totalPrice = this.unitPrice.multiply(this.quantity).setScale(2, RoundingMode.HALF_UP);
+        touch();
+    }
+
+    private String normalizeObservation(String observation) {
+        if (observation == null || observation.isBlank()) {
+            return null;
+        }
+        return observation.trim();
     }
 
     public OrderEntity getOrder() {

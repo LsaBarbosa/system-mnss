@@ -3,4 +3,6 @@ package br.com.novaalianca.mnss.localapp.domain.payment;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface PaymentRepository extends JpaRepository<PaymentEntity, UUID> {}
+public interface PaymentRepository extends JpaRepository<PaymentEntity, UUID> {
+    boolean existsByOrderIdAndStatus(UUID orderId, PaymentStatus status);
+}

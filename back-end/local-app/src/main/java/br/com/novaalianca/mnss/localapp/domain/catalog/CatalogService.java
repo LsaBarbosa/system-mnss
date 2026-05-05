@@ -237,12 +237,17 @@ public class CatalogService {
 
     @Transactional(readOnly = true)
     public List<CategoryProductsResponse> listPdvProducts() {
-        return groupedProducts(CatalogChannel.PDV);
+        return listPdvProducts(null, null);
+    }
+
+    @Transactional(readOnly = true)
+    public List<CategoryProductsResponse> listPdvProducts(String name, UUID categoryId) {
+        return groupedProducts(CatalogChannel.PDV, name, categoryId);
     }
 
     @Transactional(readOnly = true)
     public List<CategoryProductsResponse> listPublicMenu() {
-        return groupedProducts(CatalogChannel.SITE);
+        return groupedProducts(CatalogChannel.SITE, null, null);
     }
 
     private BusinessException notFound(String code, String message) {
@@ -255,12 +260,14 @@ public class CatalogService {
         }
     }
 
-    private List<CategoryProductsResponse> groupedProducts(CatalogChannel channel) {
+    private List<CategoryProductsResponse> groupedProducts(CatalogChannel channel, String name, UUID categoryId) {
         List<CategoryEntity> categories = categoryRepository().findAllByOrderByDisplayOrderAscNameAsc().stream()
                 .filter(category -> isCategoryVisible(category, channel))
+                .filter(category -> categoryId == null || categoryId.equals(category.getId()))
                 .toList();
         Map<UUID, List<ProductResponse>> productsByCategory = productRepository().findAllByOrderByNameAsc().stream()
                 .filter(product -> isProductVisible(product, channel))
+                .filter(product -> matchesProductFilters(product, name, categoryId))
                 .collect(Collectors.groupingBy(
                         product -> product.getCategory().getId(),
                         LinkedHashMap::new,
@@ -274,6 +281,15 @@ public class CatalogService {
                                 .toList()))
                 .filter(categoryProducts -> !categoryProducts.products().isEmpty())
                 .toList();
+    }
+
+    private boolean matchesProductFilters(ProductEntity product, String name, UUID categoryId) {
+        boolean matchesName = name == null
+                || name.isBlank()
+                || product.getName().toLowerCase().contains(name.trim().toLowerCase());
+        boolean matchesCategory = categoryId == null
+                || (product.getCategory() != null && categoryId.equals(product.getCategory().getId()));
+        return matchesName && matchesCategory;
     }
 
     private boolean isCategoryVisible(CategoryEntity category, CatalogChannel channel) {

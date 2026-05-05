@@ -41,6 +41,12 @@ class OpenApiEndpointTest {
                 .andExpect(jsonPath("$.paths['/api/cash-register/{id}/summary']").exists())
                 .andExpect(jsonPath("$.paths['/api/stock-movements']").exists())
                 .andExpect(jsonPath("$.paths['/api/stock-movements/balances']").exists())
+                .andExpect(jsonPath("$.paths['/api/pdv/sales']").exists())
+                .andExpect(jsonPath("$.paths['/api/pdv/sales/{saleId}']").exists())
+                .andExpect(jsonPath("$.paths['/api/pdv/sales/{saleId}/items']").exists())
+                .andExpect(jsonPath("$.paths['/api/pdv/sales/{saleId}/items/{itemId}']").exists())
+                .andExpect(jsonPath("$.paths['/api/pdv/products/barcode/{barcode}']").exists())
+                .andExpect(jsonPath("$.paths['/api/orders/{orderId}/payments']").exists())
                 .andExpect(jsonPath("$.paths['/api/public/menu']").exists());
     }
 }

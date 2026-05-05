@@ -87,8 +87,8 @@ class PdvSaleController {
     }
 
     @PostMapping("/{saleId}/finish")
-    PdvSaleResponse finishSale(@PathVariable UUID saleId) {
-        return pdvSaleService.finishSale(saleId);
+    PdvSaleResponse finishSale(@PathVariable UUID saleId, HttpServletRequest servletRequest) {
+        return pdvSaleService.finishSale(saleId, authenticatedUserId(servletRequest));
     }
 
     @PostMapping("/{saleId}/discount")

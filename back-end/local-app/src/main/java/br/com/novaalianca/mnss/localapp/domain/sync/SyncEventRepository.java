@@ -13,4 +13,5 @@ public interface SyncEventRepository extends JpaRepository<SyncEventEntity, UUID
     List<SyncEventEntity> findByStatusAndDirection(SyncEventStatus status, SyncDirection direction);
     List<SyncEventEntity> findByStatusInAndNextRetryAtBefore(List<SyncEventStatus> statuses, Instant now);
     Optional<SyncEventEntity> findFirstByAggregateIdOrderByCreatedAtDesc(UUID aggregateId);
+    long countByStatus(SyncEventStatus status);
 }

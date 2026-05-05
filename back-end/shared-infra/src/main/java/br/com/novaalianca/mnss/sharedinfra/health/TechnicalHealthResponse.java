@@ -8,6 +8,7 @@ public record TechnicalHealthResponse(
         String environment,
         boolean offlineCriticalOperation,
         String message,
-        Instant checkedAt,
+        String version,
+        Instant timestamp,
         Map<String, String> components) {
 }

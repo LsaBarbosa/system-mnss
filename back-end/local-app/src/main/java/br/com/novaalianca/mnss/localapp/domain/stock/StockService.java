@@ -87,6 +87,13 @@ public class StockService {
                 actorUserId);
         StockMovementEntity saved = stockMovementRepository().save(movement);
         syncEventService.recordStockMovementEvent(saved, balanceAfter);
+
+        if (product.isStockControlled() && product.isAvailable() && balanceAfter.signum() <= 0) {
+            product.changeAvailability(false);
+            productRepository().save(product);
+            syncEventService.recordProductAvailabilityEvent(product);
+        }
+
         auditService.record(new AuditLogRequest(
                 actorUserId,
                 "STOCK_MOVEMENT_CREATED",

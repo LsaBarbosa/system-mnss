@@ -1,26 +1,14 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/bash
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ENV_FILE="${ENV_FILE:-${SCRIPT_DIR}/../.env}"
+BACKUP_DIR="/backup"
+DATE=$(date +"%Y-%m-%d_%H-%M-%S")
+CONTAINER="postgres-local"
+DB="nova_alianca_local"
+USER="user"
 
-if [[ -f "${ENV_FILE}" ]]; then
-  set -a
-  . "${ENV_FILE}"
-  set +a
-fi
+mkdir -p $BACKUP_DIR
 
-BACKUP_DIR="${BACKUP_DIR:-${SCRIPT_DIR}/../postgres/backup}"
-CONTAINER="${POSTGRES_CONTAINER:-postgres-local}"
-DB="${POSTGRES_DB:-nova_alianca_local}"
-USER="${POSTGRES_USER:-nova_alianca}"
-RETENTION_DAYS="${BACKUP_RETENTION_DAYS:-15}"
-DATE="$(date +"%Y-%m-%d_%H-%M-%S")"
-TARGET="${BACKUP_DIR}/${DB}_${DATE}.dump"
+docker exec $CONTAINER pg_dump -U $USER $DB > "$BACKUP_DIR/backup_$DATE.sql"
 
-mkdir -p "${BACKUP_DIR}"
-
-docker exec "${CONTAINER}" pg_dump -U "${USER}" --format=custom --no-owner --no-privileges "${DB}" > "${TARGET}"
-find "${BACKUP_DIR}" -type f -name "${DB}_*.dump" -mtime +"${RETENTION_DAYS}" -delete
-
-printf 'Backup local criado: %s\n' "${TARGET}"
+# Manter apenas 15 dias
+find $BACKUP_DIR -type f -name "*.sql" -mtime +15 -delete

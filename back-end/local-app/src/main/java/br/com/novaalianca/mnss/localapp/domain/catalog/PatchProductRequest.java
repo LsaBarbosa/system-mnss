@@ -23,4 +23,5 @@ public record PatchProductRequest(
         Boolean available,
         Boolean sellOnPdv,
         Boolean sellOnline,
-        Boolean sellOnWhatsapp) {}
+        Boolean sellOnWhatsapp,
+        Boolean stockControlled) {}

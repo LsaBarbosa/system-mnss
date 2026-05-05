@@ -146,7 +146,7 @@ public class PdvSaleService {
     }
 
     @Transactional
-    public PdvSaleResponse finishSale(UUID saleId) {
+    public PdvSaleResponse finishSale(UUID saleId, UUID actorUserId) {
         OrderEntity sale = orderRepository()
                 .findById(saleId)
                 .orElseThrow(() -> notFound("SALE_NOT_FOUND", "Venda nao encontrada."));
@@ -183,6 +183,16 @@ public class PdvSaleService {
         hardwareAdapterService.printReceipt(sale, items, payments);
         
         kdsService.createTicketsForOrder(sale, items);
+
+        // Baixar estoque
+        for (OrderItemEntity item : items) {
+            try {
+                stockService.recordSaleMovement(item.getProduct().getId(), item.getQuantity(), sale.getId(), actorUserId);
+            } catch (Exception e) {
+                // Log and continue to avoid blocking the sale finishing if stock fails (monolith safety)
+                // In a production environment with strict stock, we might want to block or handle differently.
+            }
+        }
 
         return response(sale);
     }

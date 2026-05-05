@@ -137,7 +137,8 @@ public class CatalogService {
                 request.available(),
                 request.sellOnPdv(),
                 request.sellOnline(),
-                request.sellOnWhatsapp());
+                request.sellOnWhatsapp(),
+                request.stockControlled());
         ProductEntity saved = productRepository().save(product);
         syncEventService.recordProductEvent("PRODUCT_CREATED", saved);
         auditService.record(new AuditLogRequest(actorUserId, "PRODUCT_CREATED", "Product", saved.getId(), Map.of(), null));
@@ -171,7 +172,8 @@ public class CatalogService {
                 request.available(),
                 request.sellOnPdv(),
                 request.sellOnline(),
-                request.sellOnWhatsapp());
+                request.sellOnWhatsapp(),
+                request.stockControlled());
         ProductEntity saved = productRepository().save(product);
         boolean priceChanged = request.price() != null && previousPrice.compareTo(request.price()) != 0;
         syncEventService.recordProductEvent(priceChanged ? "PRODUCT_PRICE_CHANGED" : "PRODUCT_UPDATED", saved);

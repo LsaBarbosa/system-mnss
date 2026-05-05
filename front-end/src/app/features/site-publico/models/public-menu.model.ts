@@ -13,6 +13,7 @@ export interface PublicProductResponse {
   price: number;
   promotionalPrice: number | null;
   imageUrl: string | null;
+  available: boolean;
 }
 
 export interface PublicCategoryResponse {

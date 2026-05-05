@@ -104,4 +104,9 @@ public class OnlineProductEntity extends BaseEntity {
     public boolean isSellOnline() {
         return sellOnline;
     }
+
+    public void updateAvailability(boolean available) {
+        this.available = available;
+        touch();
+    }
 }

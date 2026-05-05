@@ -77,7 +77,7 @@ public class SyncController {
                     (String) body.get("aggregateType"),
                     (String) body.get("eventType"),
                     (Map<String, Object>) body.get("payload"),
-                    SyncEventStatus.SYNCED
+                    SyncEventStatus.PENDING
             );
             
             String aggregateIdStr = (String) body.get("aggregateId");

@@ -1,131 +1,63 @@
-name: nova-alianca-local
-
 services:
-  nova-alianca-local-api:
-    build:
-      context: ../../back-end
-      dockerfile: Dockerfile
-      args:
-        APP_MODULE: local-app
-    image: nova-alianca/local-api:latest
-    container_name: nova-alianca-local-api
-    depends_on:
-      postgres-local:
-        condition: service_healthy
-      rabbitmq-local:
-        condition: service_healthy
-      redis-local:
-        condition: service_healthy
-    environment:
-      SPRING_PROFILES_ACTIVE: local
-      DB_HOST: postgres-local
-      DB_PORT: 5432
-      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
-      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
-      RABBITMQ_HOST: rabbitmq-local
-      RABBITMQ_PORT: 5672
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:?RABBITMQ_DEFAULT_USER is required}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:?RABBITMQ_DEFAULT_PASS is required}
-      REDIS_HOST: redis-local
-      REDIS_PORT: 6379
-      LOCAL_API_PORT: 8080
-      AUTH_TOKEN_SECRET: ${AUTH_TOKEN_SECRET:?AUTH_TOKEN_SECRET is required}
-      AUTH_TOKEN_TTL: ${AUTH_TOKEN_TTL:-PT8H}
-      MNSS_INITIAL_ADMIN_USERNAME: ${MNSS_INITIAL_ADMIN_USERNAME:?MNSS_INITIAL_ADMIN_USERNAME is required}
-      MNSS_INITIAL_ADMIN_PASSWORD: ${MNSS_INITIAL_ADMIN_PASSWORD:?MNSS_INITIAL_ADMIN_PASSWORD is required}
-      MNSS_INITIAL_ADMIN_EMAIL: ${MNSS_INITIAL_ADMIN_EMAIL:-admin@novaalianca.local}
-      ONLINE_SYNC_BASE_URL: ${ONLINE_SYNC_BASE_URL:?ONLINE_SYNC_BASE_URL is required}
-      STORE_ID: ${STORE_ID:?STORE_ID is required}
-      STORE_SECRET: ${STORE_SECRET:?STORE_SECRET is required}
-    expose:
-      - "8080"
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q '\"status\":\"UP\"'"]
-      interval: 20s
-      timeout: 5s
-      retries: 10
-
-  nova-alianca-local-front:
-    build:
-      context: ../../front-end
-      dockerfile: Dockerfile
-      args:
-        BUILD_CONFIGURATION: local
-    image: nova-alianca/local-front:latest
-    container_name: nova-alianca-local-front
-    expose:
-      - "80"
-    restart: unless-stopped
-
-  postgres-local:
+  postgres:
     image: postgres:17-alpine
     container_name: postgres-local
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
-      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
-    expose:
-      - "5432"
+      POSTGRES_DB: nova_alianca_local
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
     volumes:
-      - postgres_local_data:/var/lib/postgresql/data
-      - ./postgres/backup:/backup
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:?POSTGRES_USER is required} -d ${POSTGRES_DB:?POSTGRES_DB is required}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts:/backup
 
-  rabbitmq-local:
+  rabbitmq:
     image: rabbitmq:4-management-alpine
     container_name: rabbitmq-local
+    ports:
+      - "5672:5672"
+      - "15672:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:?RABBITMQ_DEFAULT_USER is required}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:?RABBITMQ_DEFAULT_PASS is required}
-    expose:
-      - "5672"
-      - "15672"
-    volumes:
-      - rabbitmq_local_data:/var/lib/rabbitmq
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
 
-  redis-local:
+  redis:
     image: redis:8-alpine
     container_name: redis-local
-    command: ["redis-server", "--appendonly", "yes"]
-    expose:
-      - "6379"
-    volumes:
-      - redis_local_data:/data
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+
+  local-app:
+    build:
+      context: ../../back-end
+      dockerfile: local-app/Dockerfile
+    container_name: nova-alianca-local-api
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/nova_alianca_local
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_DATA_REDIS_HOST: redis
+      MNSS_SYNC_ONLINE_URL: http://online-app:8081
+    depends_on:
+      - postgres
+      - rabbitmq
+      - redis
 
   nginx-local:
-    image: nginx:1.27-alpine
+    image: nginx:stable-alpine
     container_name: nginx-local
     depends_on:
-      nova-alianca-local-api:
-        condition: service_healthy
-      nova-alianca-local-front:
-        condition: service_started
+      - local-app
     ports:
-      - "${NGINX_HTTP_PORT:-80}:80"
+      - "80:80"
     volumes:
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d
     restart: unless-stopped
 
 volumes:
-  postgres_local_data:
-  rabbitmq_local_data:
-  redis_local_data:
+  postgres_data:

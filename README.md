@@ -55,21 +55,35 @@ PATH=/home/kronos/.nvm/versions/node/v24.14.1/bin:$PATH npm test
 PATH=/home/kronos/.nvm/versions/node/v24.14.1/bin:$PATH npm run build
 ```
 
-Infra local:
+## Implantação e Operação
+
+### Ambiente Local (Loja)
+O ambiente local é otimizado para resiliência e operação offline.
 
 ```bash
-cp infra/local/.env.example infra/local/.env
-docker compose -f infra/local/docker-compose.yml --env-file infra/local/.env up -d
-infra/local/scripts/backup-postgres.sh
+cd infra/local
+docker compose up -d
+# Verificar saúde
+curl http://localhost:8080/api/health
+# Backup manual
+./scripts/backup-postgres.sh
 ```
 
-O ambiente local cria os perfis iniciais e um usuario admin a partir das variaveis
-`MNSS_INITIAL_ADMIN_USERNAME` e `MNSS_INITIAL_ADMIN_PASSWORD`.
-
-Infra online base:
+### Ambiente Online (VPS)
+O ambiente online centraliza os pedidos do site e webhooks.
 
 ```bash
-cp infra/online/.env.example infra/online/.env
-docker compose -f infra/online/docker-compose.yml --env-file infra/online/.env up -d
-infra/online/scripts/backup-postgres.sh
+cd infra/online
+docker compose up -d
+# Verificar saúde
+curl http://localhost:8081/api/health
 ```
+
+## Monitoramento de Saúde
+Os endpoints de saúde estão disponíveis em:
+- **Geral**: `/api/health` (Status técnico de DB, Redis, Rabbit e Versão)
+- **Sincronização**: `/api/sync/health` (Contagem de eventos e falhas)
+- **Versão**: `/api/version`
+
+Consulte `docs/homologacao-mvp.md` para o roteiro completo de validação pós-deploy.
+

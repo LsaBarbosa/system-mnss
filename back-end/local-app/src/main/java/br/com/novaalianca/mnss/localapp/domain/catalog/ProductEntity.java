@@ -71,6 +71,9 @@ public class ProductEntity extends BaseEntity {
     @Column(nullable = false)
     private boolean sellOnWhatsapp = true;
 
+    @Column(nullable = false)
+    private boolean stockControlled = true;
+
     protected ProductEntity() {}
 
     public ProductEntity(
@@ -103,7 +106,8 @@ public class ProductEntity extends BaseEntity {
             Boolean available,
             Boolean sellOnPdv,
             Boolean sellOnline,
-            Boolean sellOnWhatsapp) {
+            Boolean sellOnWhatsapp,
+            Boolean stockControlled) {
         if (category != null) {
             this.category = category;
         }
@@ -154,6 +158,9 @@ public class ProductEntity extends BaseEntity {
         }
         if (sellOnWhatsapp != null) {
             this.sellOnWhatsapp = sellOnWhatsapp;
+        }
+        if (stockControlled != null) {
+            this.stockControlled = stockControlled;
         }
         touch();
     }
@@ -229,5 +236,9 @@ public class ProductEntity extends BaseEntity {
 
     public boolean isSellOnWhatsapp() {
         return sellOnWhatsapp;
+    }
+
+    public boolean isStockControlled() {
+        return stockControlled;
     }
 }

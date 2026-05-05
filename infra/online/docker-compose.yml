@@ -1,153 +1,65 @@
-name: nova-alianca-online
-
 services:
-  nova-alianca-online-api:
-    build:
-      context: ../../back-end
-      dockerfile: Dockerfile
-      args:
-        APP_MODULE: online-app
-    image: nova-alianca/online-api:latest
-    container_name: nova-alianca-online-api
-    depends_on:
-      postgres-online:
-        condition: service_healthy
-      rabbitmq-online:
-        condition: service_healthy
-      redis-online:
-        condition: service_healthy
-    environment:
-      SPRING_PROFILES_ACTIVE: online
-      DB_HOST: postgres-online
-      DB_PORT: 5432
-      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
-      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
-      RABBITMQ_HOST: rabbitmq-online
-      RABBITMQ_PORT: 5672
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:?RABBITMQ_DEFAULT_USER is required}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:?RABBITMQ_DEFAULT_PASS is required}
-      REDIS_HOST: redis-online
-      REDIS_PORT: 6379
-      ONLINE_API_PORT: 8080
-      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
-      SYNC_MASTER_SECRET: ${SYNC_MASTER_SECRET:?SYNC_MASTER_SECRET is required}
-      SITE_URL: ${SITE_URL:?SITE_URL is required}
-      API_URL: ${API_URL:?API_URL is required}
-      ADMIN_URL: ${ADMIN_URL:?ADMIN_URL is required}
-    expose:
-      - "8080"
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q '\"status\":\"UP\"'"]
-      interval: 20s
-      timeout: 5s
-      retries: 10
-
-  nova-alianca-site:
-    build:
-      context: ../../front-end
-      dockerfile: Dockerfile
-      args:
-        BUILD_CONFIGURATION: online
-    image: nova-alianca/site:latest
-    container_name: nova-alianca-site
-    expose:
-      - "80"
-    restart: unless-stopped
-
-  nova-alianca-admin:
-    build:
-      context: ../../front-end
-      dockerfile: Dockerfile
-      args:
-        BUILD_CONFIGURATION: online
-    image: nova-alianca/admin:latest
-    container_name: nova-alianca-admin
-    expose:
-      - "80"
-    restart: unless-stopped
-
   postgres-online:
     image: postgres:17-alpine
     container_name: postgres-online
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
-      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
-    expose:
-      - "5432"
+      POSTGRES_DB: nova_alianca_online
+      POSTGRES_USER: online_user
+      POSTGRES_PASSWORD: online_password
+    ports:
+      - "5433:5432"
     volumes:
       - postgres_online_data:/var/lib/postgresql/data
-      - ./postgres/backup:/backup
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:?POSTGRES_USER is required} -d ${POSTGRES_DB:?POSTGRES_DB is required}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - ./scripts:/backup
 
   rabbitmq-online:
     image: rabbitmq:4-management-alpine
     container_name: rabbitmq-online
+    ports:
+      - "5673:5672"
+      - "15673:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:?RABBITMQ_DEFAULT_USER is required}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:?RABBITMQ_DEFAULT_PASS is required}
-    expose:
-      - "5672"
-      - "15672"
-    volumes:
-      - rabbitmq_online_data:/var/lib/rabbitmq
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
+      RABBITMQ_DEFAULT_USER: online_user
+      RABBITMQ_DEFAULT_PASS: online_password
 
   redis-online:
     image: redis:8-alpine
     container_name: redis-online
-    command: ["redis-server", "--appendonly", "yes"]
-    expose:
-      - "6379"
-    volumes:
-      - redis_online_data:/data
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    command: redis-server --appendonly yes
+    ports:
+      - "6380:6379"
+
+  online-app:
+    build:
+      context: ../../back-end
+      dockerfile: online-app/Dockerfile
+    container_name: nova-alianca-online-api
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-online:5432/nova_alianca_online
+      SPRING_DATASOURCE_USERNAME: online_user
+      SPRING_DATASOURCE_PASSWORD: online_password
+      SPRING_RABBITMQ_HOST: rabbitmq-online
+      SPRING_DATA_REDIS_HOST: redis-online
+    depends_on:
+      - postgres-online
+      - rabbitmq-online
+      - redis-online
 
   nginx:
-    image: nginx:1.27-alpine
+    image: nginx:stable-alpine
     container_name: nginx
     depends_on:
-      nova-alianca-online-api:
-        condition: service_healthy
-      nova-alianca-site:
-        condition: service_started
-      nova-alianca-admin:
-        condition: service_started
+      - online-app
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d
       - ./certbot/www:/var/www/certbot
       - ./certbot/conf:/etc/letsencrypt
     restart: unless-stopped
 
-  certbot:
-    image: certbot/certbot:v2.11.0
-    profiles:
-      - certbot
-    volumes:
-      - ./certbot/www:/var/www/certbot
-      - ./certbot/conf:/etc/letsencrypt
-
 volumes:
   postgres_online_data:
-  rabbitmq_online_data:
-  redis_online_data:

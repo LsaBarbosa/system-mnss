@@ -11,10 +11,12 @@ import org.springframework.boot.actuate.health.HealthEndpoint;
 public class TechnicalHealthService {
     private final HealthEndpoint healthEndpoint;
     private final Clock clock;
+    private final String version;
 
-    public TechnicalHealthService(HealthEndpoint healthEndpoint, Clock clock) {
+    public TechnicalHealthService(HealthEndpoint healthEndpoint, Clock clock, String version) {
         this.healthEndpoint = healthEndpoint;
         this.clock = clock;
+        this.version = version;
     }
 
     public TechnicalHealthResponse inspect(
@@ -27,6 +29,7 @@ public class TechnicalHealthService {
                 environment,
                 offlineCriticalOperation,
                 message,
+                version,
                 Instant.now(clock),
                 collectComponentStatuses(health));
     }

@@ -13,6 +13,9 @@ import { CartService } from '../../services/cart.service';
       <div *ngIf="!product.imageUrl" class="product-placeholder">
         <span class="icon">🍽️</span>
       </div>
+      <div class="out-of-stock-badge" *ngIf="!product.available">
+        ESGOTADO
+      </div>
       <div class="product-header">
         <h3 class="product-title">{{ product.name }}</h3>
       </div>
@@ -26,8 +29,8 @@ import { CartService } from '../../services/cart.service';
             {{ product.promotionalPrice | currency:'BRL' }}
           </span>
         </div>
-        <button class="add-button" (click)="addToCart()">
-          Adicionar
+        <button class="add-button" [disabled]="!product.available" (click)="addToCart()">
+          {{ product.available ? 'Adicionar' : 'Indisponível' }}
         </button>
       </div>
     </div>
@@ -150,6 +153,27 @@ import { CartService } from '../../services/cart.service';
       &:active {
         transform: scale(0.98);
       }
+
+      &:disabled {
+        background: #bdc3c7;
+        box-shadow: none;
+        cursor: not-allowed;
+        transform: none;
+      }
+    }
+
+    .out-of-stock-badge {
+      position: absolute;
+      top: 15px;
+      right: -30px;
+      background-color: #e74c3c;
+      color: white;
+      padding: 5px 40px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      transform: rotate(45deg);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      z-index: 1;
     }
   `]
 })

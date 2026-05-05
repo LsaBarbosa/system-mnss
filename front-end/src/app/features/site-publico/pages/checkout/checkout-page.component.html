@@ -1,0 +1,149 @@
+<div class="checkout-container">
+  <header class="checkout-header">
+    <div class="container">
+      <a routerLink="/cardapio" class="back-link">
+        <span class="icon">←</span> Voltar ao cardápio
+      </a>
+      <h1>Finalizar Pedido</h1>
+    </div>
+  </header>
+
+  <main class="container">
+    <form [formGroup]="checkoutForm" (ngSubmit)="onSubmit()" class="checkout-content">
+      <div class="checkout-forms">
+        <!-- Seção: Seus Dados -->
+        <section class="checkout-section" formGroupName="customer">
+          <div class="section-header">
+            <span class="step-number">1</span>
+            <h2>Seus Dados</h2>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="name">Nome Completo *</label>
+              <input type="text" id="name" formControlName="name" placeholder="Como devemos te chamar?">
+              <div class="error" *ngIf="checkoutForm.get('customer.name')?.touched && checkoutForm.get('customer.name')?.invalid">
+                Nome é obrigatório
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="phone">Telefone / WhatsApp *</label>
+              <input type="text" id="phone" formControlName="phone" placeholder="(00) 00000-0000">
+              <div class="error" *ngIf="checkoutForm.get('customer.phone')?.touched && checkoutForm.get('customer.phone')?.invalid">
+                Telefone é obrigatório
+              </div>
+            </div>
+            <div class="form-group full-width">
+              <label for="email">E-mail (opcional)</label>
+              <input type="email" id="email" formControlName="email" placeholder="Para receber atualizações do pedido">
+            </div>
+          </div>
+        </section>
+
+        <!-- Seção: Entrega -->
+        <section class="checkout-section">
+          <div class="section-header">
+            <span class="step-number">2</span>
+            <h2>Como deseja receber?</h2>
+          </div>
+          <div class="delivery-options">
+            <label class="delivery-card" [class.active]="checkoutForm.get('deliveryType')?.value === 'PICKUP'">
+              <input type="radio" formControlName="deliveryType" value="PICKUP">
+              <div class="card-content">
+                <span class="icon">🛍️</span>
+                <div class="text">
+                  <strong>Retirada</strong>
+                  <span>Você retira na loja</span>
+                </div>
+              </div>
+            </label>
+            <label class="delivery-card" [class.active]="checkoutForm.get('deliveryType')?.value === 'DELIVERY'">
+              <input type="radio" formControlName="deliveryType" value="DELIVERY">
+              <div class="card-content">
+                <span class="icon">🛵</span>
+                <div class="text">
+                  <strong>Entrega</strong>
+                  <span>Levamos até você</span>
+                </div>
+              </div>
+            </label>
+          </div>
+
+          <!-- Campos de Endereço (Condicional) -->
+          <div class="address-form" *ngIf="checkoutForm.get('deliveryType')?.value === 'DELIVERY'" formGroupName="address">
+            <div class="form-grid">
+              <div class="form-group full-width">
+                <label for="street">Rua *</label>
+                <input type="text" id="street" formControlName="street" placeholder="Nome da rua ou avenida">
+                <div class="error" *ngIf="checkoutForm.get('address.street')?.touched && checkoutForm.get('address.street')?.invalid">
+                  Rua é obrigatória para entrega
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="number">Número</label>
+                <input type="text" id="number" formControlName="number">
+              </div>
+              <div class="form-group">
+                <label for="neighborhood">Bairro</label>
+                <input type="text" id="neighborhood" formControlName="neighborhood">
+              </div>
+              <div class="form-group">
+                <label for="complement">Complemento</label>
+                <input type="text" id="complement" formControlName="complement" placeholder="Apt, Bloco, etc">
+              </div>
+              <div class="form-group">
+                <label for="reference">Ponto de Referência</label>
+                <input type="text" id="reference" formControlName="reference">
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Seção: Notas -->
+        <section class="checkout-section">
+          <div class="section-header">
+            <span class="step-number">3</span>
+            <h2>Observações adicionais</h2>
+          </div>
+          <textarea formControlName="notes" rows="3" placeholder="Alguma observação sobre o pedido?"></textarea>
+        </section>
+      </div>
+
+      <!-- Resumo Lateral -->
+      <aside class="order-summary">
+        <div class="summary-card">
+          <h3>Resumo do Pedido</h3>
+          <div class="items-list">
+            <div class="item" *ngFor="let item of cartItems$ | async">
+              <div class="item-info">
+                <span class="quantity">{{ item.quantity }}x</span>
+                <span class="name">{{ item.name }}</span>
+              </div>
+              <span class="price">{{ (item.price * item.quantity) | currency:'BRL' }}</span>
+            </div>
+          </div>
+          
+          <div class="totals">
+            <div class="total-row">
+              <span>Subtotal</span>
+              <span>{{ subtotal$ | async | currency:'BRL' }}</span>
+            </div>
+            <div class="total-row" *ngIf="checkoutForm.get('deliveryType')?.value === 'DELIVERY'">
+              <span>Taxa de Entrega</span>
+              <span class="free">Grátis</span>
+            </div>
+            <div class="total-row grand-total">
+              <span>Total</span>
+              <span>{{ subtotal$ | async | currency:'BRL' }}</span>
+            </div>
+          </div>
+
+          <button type="submit" class="submit-button" [disabled]="isSubmitting || checkoutForm.invalid">
+            <span *ngIf="!isSubmitting">Confirmar Pedido</span>
+            <span *ngIf="isSubmitting" class="loader">Processando...</span>
+          </button>
+          <p class="payment-notice">Pagamento será feito na entrega/retirada</p>
+        </div>
+      </aside>
+    </form>
+  </main>
+</div>

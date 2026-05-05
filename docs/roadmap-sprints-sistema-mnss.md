@@ -360,27 +360,7 @@
 
 ---
 
-## Sprint 13 — Sincronização base local → online
-
-**Épicos:** EP-11  
-**Objetivo:** criar outbox local e envio seguro de eventos locais para o online.
-
-**Referências e motivo:**
-- SYNC define Outbox + Inbox + Retry, evento idempotente, HTTPS e HMAC.
-- PDV define que venda finalizada gera evento de sincronização.
-- ARQ proíbe expor PostgreSQL/RabbitMQ/Redis na internet.
-
-| ID | História pequena | Back-end | Front-end | Testes unitários back-end | Testes unitários front-end | Docs |
-|---|---|---|---|---|---|---|
-| S13-H01 | Como sistema, quero registrar SyncEvent. | Serviço `SyncEventService.createPending`. | Mostrar status de sync na venda. | Evento tem UUID, tipo, entidade, payload, status PENDING. | Badge exibe PENDING/SYNCED/FAILED. | SYNC, BD |
-| S13-H02 | Como worker local, quero enviar evento para online. | Worker consome PENDING e chama `POST /api/sync/events`. | Nenhuma tela nova; status atualiza. | Envio sucesso marca SYNCED; falha marca RETRYING/FAILED. | Tela reflete mudança de status mockada. | SYNC |
-| S13-H03 | Como API online, quero receber evento local. | Endpoint online valida payload e salva. | Admin online lista eventos recebidos futuramente. | Evento duplicado não reprocessa; assinatura inválida retorna 401. | Tabela de eventos mockados renderiza. | SYNC, ARQ |
-| S13-H04 | Como sistema, quero assinar payload com HMAC. | Implementar assinatura com `STORE_ID` e `STORE_SECRET`. | Nenhuma tela. | Assinatura válida passa; payload alterado falha; timestamp antigo pode falhar. | N/A. | SYNC |
-| S13-H05 | Como sistema, quero retry inicial. | Implementar política 1m/5m/15m/1h. | Exibir retry count no painel futuro. | Retry incrementa contador; excedeu tentativas vira FAILED. | Componente mostra contador mockado. | SYNC |
-
-**Critério de aceite da sprint:** venda local finalizada gera evento, worker tenta enviar e não bloqueia operação local.
-
----
+## /
 
 ## Sprint 14 — Site e cardápio público
 

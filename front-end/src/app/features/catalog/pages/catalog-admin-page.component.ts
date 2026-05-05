@@ -12,13 +12,14 @@ import type {
   Uuid
 } from '../../../shared/models/domain.models';
 import { ErrorBannerComponent } from '../../../shared/error-banner/error-banner.component';
+import { SyncStatusBadgeComponent } from '../../../shared/sync-status-badge/sync-status-badge.component';
 import { CatalogAdminService } from '../data-access/catalog-admin.service';
 import type { CategoryPayload, ProductPayload } from '../data-access/catalog-admin.service';
 
 @Component({
   selector: 'mnss-catalog-admin-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, ErrorBannerComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, ErrorBannerComponent, SyncStatusBadgeComponent],
   templateUrl: './catalog-admin-page.component.html',
   styleUrl: './catalog-admin-page.component.scss'
 })
@@ -245,11 +246,11 @@ export class CatalogAdminPageComponent implements OnInit {
       });
   }
 
-  syncLabel(productId: Uuid): string {
+  getSyncStatus(productId: Uuid): any {
     if (this.failedSyncProductIds.has(productId)) {
-      return 'Sync falhou';
+      return 'FAILED';
     }
-    return this.pendingSyncProductIds.has(productId) ? 'Pendente de sincronizacao' : 'Sincronizado';
+    return this.pendingSyncProductIds.has(productId) ? 'PENDING' : 'SYNCED';
   }
 
   private loadCatalog(): void {

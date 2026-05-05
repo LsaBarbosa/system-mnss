@@ -30,6 +30,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import br.com.novaalianca.mnss.localapp.config.JpaConfiguration;
 
 @DataJpaTest(properties = {
     "spring.jpa.hibernate.ddl-auto=validate",
@@ -37,7 +38,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
     "mnss.security.enabled=false"
 })
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import(AuditService.class)
+@Import({AuditService.class, JpaConfiguration.class})
 @Testcontainers(disabledWithoutDocker = true)
 class CoreRepositoryTest {
     @Container

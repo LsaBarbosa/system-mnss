@@ -439,15 +439,20 @@ th {
   }
 }
 
-.badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 800;
-  
-  &.warning {
-    background: #fff3cd;
-    color: #856404;
-  }
+.status-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.order-status-label {
+  font-weight: 700;
+  color: #32434b;
+  font-size: 0.9rem;
+}
+
+.history-actions {
+  display: flex;
+  gap: 8px;
 }

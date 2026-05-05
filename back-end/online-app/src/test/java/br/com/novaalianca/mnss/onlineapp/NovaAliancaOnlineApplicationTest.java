@@ -9,6 +9,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.ActiveProfiles;
 
+import org.springframework.boot.test.mock.mockito.MockBean;
+
 @ActiveProfiles("online")
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.NONE,
@@ -30,9 +32,12 @@ import org.springframework.test.context.ActiveProfiles;
             "SYNC_MASTER_SECRET=change_me",
             "SITE_URL=https://padarianovaalianca.com.br",
             "API_URL=https://api.padarianovaalianca.com.br",
-            "ADMIN_URL=https://admin.padarianovaalianca.com.br"
+            "ADMIN_URL=https://admin.padarianovaalianca.com.br",
+            "mnss.sync.stores={'test-store':'change_me'}"
         })
 class NovaAliancaOnlineApplicationTest {
+    @MockBean
+    private br.com.novaalianca.mnss.onlineapp.domain.sync.SyncEventRepository syncEventRepository;
     @Autowired
     private Environment environment;
 

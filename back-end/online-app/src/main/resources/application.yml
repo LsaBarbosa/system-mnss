@@ -36,3 +36,6 @@ management:
 
 mnss:
   environment: online
+  sync:
+    stores:
+      store-001: local-dev-sync-secret-change-me

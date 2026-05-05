@@ -319,8 +319,10 @@
         <tr *ngFor="let sale of salesHistory">
           <td>{{ sale.orderNumber }}</td>
           <td>
-            {{ sale.status }}
-            <span *ngIf="sale.status === 'FINISHED'" class="badge warning" title="Pendente de Sync">Sync Pendente</span>
+            <div class="status-cell">
+              <span class="order-status-label">{{ sale.status }}</span>
+              <mnss-sync-status-badge [status]="sale.syncStatus" />
+            </div>
           </td>
           <td>{{ sale.totalAmount }}</td>
           <td class="history-actions">

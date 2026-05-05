@@ -12,11 +12,14 @@ import { PdvCatalogService } from '../data-access/pdv-catalog.service';
 import { PdvSaleService } from '../data-access/pdv-sale.service';
 import type { PdvSale, PdvSaleItem } from '../data-access/pdv-sale.service';
 import { HardwareService } from '../data-access/hardware.service';
+import { KdsService } from '../../kds/data-access/kds.service';
+import { AuthService } from '../../../core/auth/auth.service';
+import { SyncStatusBadgeComponent } from '../../../shared/sync-status-badge/sync-status-badge.component';
 
 @Component({
   selector: 'mnss-pdv-products-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, ErrorBannerComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, ErrorBannerComponent, SyncStatusBadgeComponent],
   templateUrl: './pdv-products-page.component.html',
   styleUrl: './pdv-products-page.component.scss'
 })
@@ -26,6 +29,8 @@ export class PdvProductsPageComponent implements OnInit {
   private readonly cashRegisterService = inject(CashRegisterService);
   private readonly pdvSaleService = inject(PdvSaleService);
   private readonly hardwareService = inject(HardwareService);
+  private readonly kdsService = inject(KdsService);
+  private readonly authService = inject(AuthService);
 
   groups: PdvProductGroup[] = [];
   currentCash: CurrentCashRegisterResponse = { open: false, cashRegister: null };
@@ -42,6 +47,8 @@ export class PdvProductsPageComponent implements OnInit {
   showDiscountModal = false;
   showCancelModal = false;
   saleToCancel: string | null = null;
+
+  roles: string[] = [];
 
   readonly openForm = this.formBuilder.nonNullable.group({
     openingAmount: ['', [Validators.required, Validators.min(0)]],
@@ -82,9 +89,17 @@ export class PdvProductsPageComponent implements OnInit {
   readonly barcodeControl = this.formBuilder.nonNullable.control('');
 
   ngOnInit(): void {
+    this.roles = this.authService.currentUser?.roles ?? [];
     this.loadCash();
     this.loadProducts();
     this.loadSales();
+    this.subscribeToKds();
+  }
+
+  private subscribeToKds(): void {
+    this.kdsService.readyOrders$.subscribe(orderId => {
+      this.saleSuccess = `Pedido pronto para entrega! ID: ${orderId.substring(0, 8)}`;
+    });
   }
 
   get cashStatusLabel(): string {

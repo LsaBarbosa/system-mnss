@@ -1,4 +1,4 @@
-package br.com.novaalianca.mnss.localapp.domain.sync;
+package br.com.novaalianca.mnss.sync;
 
 public enum SyncEnvironment {
     LOCAL,

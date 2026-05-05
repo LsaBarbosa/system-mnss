@@ -1,23 +1,20 @@
 package br.com.novaalianca.mnss.localapp.domain.catalog;
 
-import br.com.novaalianca.mnss.localapp.domain.sync.SyncDirection;
-import br.com.novaalianca.mnss.localapp.domain.sync.SyncEnvironment;
-import br.com.novaalianca.mnss.localapp.domain.sync.SyncEventEntity;
-import br.com.novaalianca.mnss.localapp.domain.sync.SyncEventRepository;
-import br.com.novaalianca.mnss.localapp.domain.sync.SyncStatus;
-import java.time.Instant;
+import br.com.novaalianca.mnss.localapp.domain.sync.SyncEventService;
+import br.com.novaalianca.mnss.sync.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
-@Service
-class CatalogSyncEventService {
-    private final Optional<SyncEventRepository> syncEventRepository;
+import java.util.Optional;
 
-    CatalogSyncEventService(Optional<SyncEventRepository> syncEventRepository) {
-        this.syncEventRepository = syncEventRepository;
+@Service
+public class CatalogSyncEventService {
+    private final Optional<SyncEventService> syncEventService;
+
+    public CatalogSyncEventService(Optional<SyncEventService> syncEventService) {
+        this.syncEventService = syncEventService;
     }
 
     void recordCategoryEvent(String eventType, CategoryEntity category) {
@@ -42,18 +39,6 @@ class CatalogSyncEventService {
     }
 
     private void recordEvent(String eventType, String aggregateType, UUID aggregateId, Map<String, Object> payload) {
-        SyncEventEntity event = new SyncEventEntity(
-                aggregateType + ":" + aggregateId + ":" + eventType + ":" + Instant.now().toEpochMilli(),
-                SyncDirection.LOCAL_TO_ONLINE,
-                SyncEnvironment.LOCAL,
-                SyncEnvironment.ONLINE,
-                aggregateType,
-                eventType,
-                payload,
-                SyncStatus.PENDING);
-        event.assignAggregateId(aggregateId);
-        syncEventRepository
-                .orElseThrow(() -> new IllegalStateException("Sync event repository is not available."))
-                .save(event);
+        syncEventService.ifPresent(service -> service.createPending(aggregateType, aggregateId, eventType, payload));
     }
 }

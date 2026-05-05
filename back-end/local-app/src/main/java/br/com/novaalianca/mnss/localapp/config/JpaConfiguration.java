@@ -1,0 +1,13 @@
+package br.com.novaalianca.mnss.localapp.config;
+
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+
+@Configuration
+@Profile("!smoke-test")
+@EntityScan(basePackages = "br.com.novaalianca.mnss")
+@EnableJpaRepositories(basePackages = "br.com.novaalianca.mnss")
+public class JpaConfiguration {
+}

@@ -35,6 +35,11 @@ public class KdsTicketItemEntity extends BaseEntity {
         this.status = Objects.requireNonNull(status, "status must not be null");
     }
 
+    public void ready() {
+        this.status = KdsTicketStatus.READY;
+        touch();
+    }
+
     public KdsTicketEntity getKdsTicket() {
         return kdsTicket;
     }

@@ -174,6 +174,6 @@ describe('CatalogAdminPageComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('Indisponivel');
-    expect(fixture.nativeElement.textContent).toContain('Pendente de sincronizacao');
+    expect(fixture.nativeElement.textContent).toContain('Pendente');
   });
 });

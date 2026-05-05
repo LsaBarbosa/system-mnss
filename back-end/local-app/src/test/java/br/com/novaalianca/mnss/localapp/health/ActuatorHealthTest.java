@@ -10,7 +10,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 
+import org.springframework.context.annotation.Import;
+import br.com.novaalianca.mnss.localapp.config.MockRepositoriesConfig;
+
+import org.springframework.test.context.ActiveProfiles;
+
 @AutoConfigureMockMvc
+@ActiveProfiles("smoke-test")
+@Import(MockRepositoriesConfig.class)
 @SpringBootTest(properties = {
     "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,"
             + "org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration,"

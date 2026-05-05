@@ -1,0 +1,20 @@
+# config.toml — Codex / Sistema MNSS
+#
+# Uso recomendado:
+# 1. Para configuração global do seu usuário:
+#    copiar este conteúdo para ~/.codex/config.toml
+#
+# 2. Para configuração do projeto:
+#    manter este arquivo em .codex/config.toml dentro do repositório.
+#    O Codex carrega configuração de projeto quando o repositório está confiável.
+#
+# Este arquivo não contém secrets.
+
+[features]
+memories = true
+
+[memories]
+use_memories = true
+generate_memories = true
+disable_on_external_context = true
+min_rate_limit_remaining_percent = 10

@@ -157,4 +157,15 @@ public class OrderEntity extends BaseEntity {
     public Set<OrderItemEntity> getItems() {
         return Set.copyOf(items);
     }
+
+    public void markAsReady() {
+        this.status = OrderStatus.READY;
+        touch();
+    }
+
+    public void finish() {
+        this.status = OrderStatus.FINISHED;
+        this.finishedAt = Instant.now();
+        touch();
+    }
 }

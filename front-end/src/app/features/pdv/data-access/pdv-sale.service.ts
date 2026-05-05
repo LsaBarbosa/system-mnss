@@ -12,6 +12,7 @@ import type {
   PaymentMethod,
   PaymentStatus,
   PreparationSector,
+  SyncStatus,
   Uuid
 } from '../../../shared/models/domain.models';
 
@@ -58,6 +59,7 @@ export interface PdvSale {
   items: PdvSaleItem[];
   payments: PdvSalePayment[];
   remainingAmount: DecimalString;
+  syncStatus: SyncStatus | null;
   createdAt: IsoDateTime;
   updatedAt: IsoDateTime;
 }

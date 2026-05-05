@@ -119,6 +119,7 @@ describe('PdvSaleService', () => {
       totalAmount: '1.20',
       payments: [],
       remainingAmount: '1.20',
+      syncStatus: null,
       createdAt: mockOrder.createdAt,
       updatedAt: mockOrder.updatedAt,
       items: [

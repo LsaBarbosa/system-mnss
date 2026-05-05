@@ -8,6 +8,8 @@ import { PdvCatalogService } from '../data-access/pdv-catalog.service';
 import { PdvSaleService } from '../data-access/pdv-sale.service';
 import type { PdvSale } from '../data-access/pdv-sale.service';
 import { HardwareService } from '../data-access/hardware.service';
+import { AuthService } from '../../../core/auth/auth.service';
+import { KdsService } from '../../kds/data-access/kds.service';
 import { PdvProductsPageComponent } from './pdv-products-page.component';
 
 describe('PdvProductsPageComponent', () => {
@@ -16,6 +18,8 @@ describe('PdvProductsPageComponent', () => {
   let cashRegisterService: jasmine.SpyObj<CashRegisterService>;
   let pdvSaleService: jasmine.SpyObj<PdvSaleService>;
   let hardwareService: jasmine.SpyObj<HardwareService>;
+  let authService: jasmine.SpyObj<AuthService>;
+  let kdsService: jasmine.SpyObj<KdsService>;
 
   beforeEach(async () => {
     pdvCatalogService = jasmine.createSpyObj<PdvCatalogService>('PdvCatalogService', [
@@ -42,6 +46,13 @@ describe('PdvProductsPageComponent', () => {
       'getSale'
     ]);
     hardwareService = jasmine.createSpyObj<HardwareService>('HardwareService', ['openDrawer']);
+    authService = jasmine.createSpyObj<AuthService>('AuthService', ['isAuthenticated', 'hasAnyRole'], {
+      currentUser: { id: 'u1', name: 'User', username: 'user', roles: ['ADMIN'], active: true }
+    });
+    kdsService = jasmine.createSpyObj<KdsService>('KdsService', ['loadTickets'], {
+      readyOrders$: of(),
+      tickets$: of([])
+    });
     pdvCatalogService.listProducts.and.returnValue(
       of([
         {
@@ -93,7 +104,9 @@ describe('PdvProductsPageComponent', () => {
         { provide: PdvCatalogService, useValue: pdvCatalogService },
         { provide: CashRegisterService, useValue: cashRegisterService },
         { provide: PdvSaleService, useValue: pdvSaleService },
-        { provide: HardwareService, useValue: hardwareService }
+        { provide: HardwareService, useValue: hardwareService },
+        { provide: AuthService, useValue: authService },
+        { provide: KdsService, useValue: kdsService }
       ]
     }).compileComponents();
 
@@ -347,8 +360,9 @@ describe('PdvProductsPageComponent', () => {
       totalAmount: subtotal,
       items,
       payments: [],
-      remainingAmount: subtotal,
-      createdAt: '2026-05-04T12:00:00Z',
+      remainingAmount: '1.20',
+      syncStatus: null,
+      createdAt: '2026-05-01T10:00:00Z',
       updatedAt: '2026-05-04T12:05:00Z'
     };
   }

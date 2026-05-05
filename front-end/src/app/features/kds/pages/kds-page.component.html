@@ -1,0 +1,140 @@
+<div class="kds-container">
+  <header class="kds-header">
+    <div class="header-left">
+      <h1>KDS — Produção</h1>
+      <div class="sector-selector">
+        <button 
+          [class.active]="selectedSector === ''" 
+          (click)="onSectorChange('')">
+          TODOS
+        </button>
+        @for (sector of sectors; track sector) {
+          <button 
+            [class.active]="selectedSector === sector" 
+            (click)="onSectorChange(sector)">
+            {{ sector }}
+          </button>
+        }
+      </div>
+    </div>
+    
+    <div class="header-right">
+      <div class="connection-status" [class.connected]="connectionStatus$ | async">
+        <span class="dot"></span>
+        {{ (connectionStatus$ | async) ? 'Conectado' : 'Desconectado' }}
+      </div>
+      <div class="clock">{{ currentTime$ | async | date:'HH:mm:ss' }}</div>
+    </div>
+  </header>
+
+  <main class="kds-board">
+    <!-- Coluna: Aguardando -->
+    <section class="kds-column waiting">
+      <div class="column-header">
+        <h2>AGUARDANDO</h2>
+        <span class="count">{{ (ticketsWaiting$ | async)?.length || 0 }}</span>
+      </div>
+      <div class="column-content">
+        @for (ticket of ticketsWaiting$ | async; track ticket.id) {
+          <div class="ticket-card" [style.border-left-color]="getWaitTimeColor(getWaitTime(ticket.createdAt))">
+            <div class="card-header">
+              <span class="ticket-number">#{{ ticket.ticketNumber }}</span>
+              <span class="wait-time" [style.color]="getWaitTimeColor(getWaitTime(ticket.createdAt))">
+                {{ getWaitTime(ticket.createdAt) }} min
+              </span>
+            </div>
+            <div class="card-body">
+              <div class="order-info">Pedido #{{ ticket.orderId.substring(0, 8) }}</div>
+              <div class="items-list">
+                @for (item of ticket.items; track item.id) {
+                  <div class="item" [class.is-ready]="item.status === 'READY'">
+                    <span class="qty">{{ item.quantity }}x</span>
+                    <span class="name">{{ item.productName }}</span>
+                    @if (item.status === 'WAITING' || item.status === 'IN_PREPARATION') {
+                      <button class="btn-item-ready" (click)="onReadyItem(item.id); $event.stopPropagation()">
+                        ✓
+                      </button>
+                    }
+                    @if (item.observation) {
+                      <div class="obs">{{ item.observation }}</div>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+            <div class="card-footer">
+              <button class="btn-start" (click)="onStart(ticket.id)">INICIAR PREPARO</button>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Coluna: Em Preparo -->
+    <section class="kds-column prep">
+      <div class="column-header">
+        <h2>EM PREPARO</h2>
+        <span class="count">{{ (ticketsPrep$ | async)?.length || 0 }}</span>
+      </div>
+      <div class="column-content">
+        @for (ticket of ticketsPrep$ | async; track ticket.id) {
+          <div class="ticket-card in-prep">
+            <div class="card-header">
+              <span class="ticket-number">#{{ ticket.ticketNumber }}</span>
+              <span class="wait-time">{{ getWaitTime(ticket.createdAt) }} min</span>
+            </div>
+            <div class="card-body">
+              <div class="items-list">
+                @for (item of ticket.items; track item.id) {
+                  <div class="item" [class.is-ready]="item.status === 'READY'">
+                    <span class="qty">{{ item.quantity }}x</span>
+                    <span class="name">{{ item.productName }}</span>
+                    @if (item.status === 'WAITING' || item.status === 'IN_PREPARATION') {
+                      <button class="btn-item-ready" (click)="onReadyItem(item.id); $event.stopPropagation()">
+                        ✓
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+            <div class="card-footer">
+              <button class="btn-ready" (click)="onReadyTicket(ticket.id)">MARCAR TUDO PRONTO</button>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Coluna: Pronto -->
+    <section class="kds-column ready">
+      <div class="column-header">
+        <h2>PRONTO</h2>
+        <span class="count">{{ (ticketsReady$ | async)?.length || 0 }}</span>
+      </div>
+      <div class="column-content">
+        @for (ticket of ticketsReady$ | async; track ticket.id) {
+          <div class="ticket-card is-ready">
+            <div class="card-header">
+              <span class="ticket-number">#{{ ticket.ticketNumber }}</span>
+              <span class="status-badge">PRONTO</span>
+            </div>
+            <div class="card-body">
+              <div class="items-list">
+                @for (item of ticket.items; track item.id) {
+                  <div class="item is-ready">
+                    <span class="qty">{{ item.quantity }}x</span>
+                    <span class="name">{{ item.productName }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+            <div class="card-footer">
+              <button class="btn-finish" (click)="onFinishOrder(ticket.orderId)">FINALIZAR EXPEDIÇÃO</button>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+  </main>
+</div>

@@ -80,6 +80,24 @@ public class KdsTicketEntity extends BaseEntity {
         return finishedAt;
     }
 
+    public void start() {
+        this.status = KdsTicketStatus.IN_PREPARATION;
+        this.startedAt = Instant.now();
+        touch();
+    }
+
+    public void ready() {
+        this.status = KdsTicketStatus.READY;
+        this.readyAt = Instant.now();
+        touch();
+    }
+
+    public void finish() {
+        this.status = KdsTicketStatus.FINISHED;
+        this.finishedAt = Instant.now();
+        touch();
+    }
+
     public Set<KdsTicketItemEntity> getItems() {
         return Set.copyOf(items);
     }

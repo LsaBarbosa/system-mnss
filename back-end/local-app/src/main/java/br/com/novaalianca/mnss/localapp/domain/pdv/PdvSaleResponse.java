@@ -24,9 +24,10 @@ public record PdvSaleResponse(
         List<PdvSaleItemResponse> items,
         List<PdvSalePaymentResponse> payments,
         BigDecimal remainingAmount,
+        br.com.novaalianca.mnss.sync.SyncEventStatus syncStatus,
         Instant createdAt,
         Instant updatedAt) {
-    static PdvSaleResponse from(OrderEntity order, List<PdvSaleItemResponse> items, List<PdvSalePaymentResponse> payments) {
+    static PdvSaleResponse from(OrderEntity order, List<PdvSaleItemResponse> items, List<PdvSalePaymentResponse> payments, br.com.novaalianca.mnss.sync.SyncEventStatus syncStatus) {
         BigDecimal paidTotal = payments.stream()
                 .map(PdvSalePaymentResponse::amount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -49,6 +50,7 @@ public record PdvSaleResponse(
                 items,
                 payments,
                 remainingAmount,
+                syncStatus,
                 order.getCreatedAt(),
                 order.getUpdatedAt());
     }

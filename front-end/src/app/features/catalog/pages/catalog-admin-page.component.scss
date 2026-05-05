@@ -190,8 +190,7 @@ button:disabled {
   color: #1d6b4a;
 }
 
-.availability-badge,
-.sync-indicator {
+.availability-badge {
   justify-self: start;
   border-radius: 999px;
   padding: 0.2rem 0.6rem;
@@ -204,11 +203,6 @@ button:disabled {
 .availability-badge--unavailable {
   background: #f8e5e5;
   color: #9b2c2c;
-}
-
-.sync-indicator--pending {
-  background: #fff4d6;
-  color: #7a5811;
 }
 
 .availability-reason {

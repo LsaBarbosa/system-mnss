@@ -8,8 +8,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.ActiveProfiles;
 
+import org.springframework.context.annotation.Import;
+
 @ActiveProfiles("local")
-@SpringBootTest(properties = {
+@Import(MockRepositoriesConfig.class)
+@SpringBootTest(
+    classes = {LocalProfileConfiguration.class},
+    properties = {
     "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,"
             + "org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration,"
             + "org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration",

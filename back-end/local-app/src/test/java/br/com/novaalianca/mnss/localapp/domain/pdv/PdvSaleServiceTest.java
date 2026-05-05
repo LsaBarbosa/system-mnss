@@ -12,6 +12,7 @@ import br.com.novaalianca.mnss.core.catalog.PreparationSector;
 import br.com.novaalianca.mnss.core.catalog.UnitType;
 import br.com.novaalianca.mnss.localapp.domain.cash.CashRegisterRepository;
 import br.com.novaalianca.mnss.localapp.domain.audit.AuditService;
+import br.com.novaalianca.mnss.localapp.domain.sync.SyncEventRepository;
 import br.com.novaalianca.mnss.localapp.domain.cash.CashRegisterService;
 import br.com.novaalianca.mnss.localapp.domain.cash.CashRegisterStatus;
 import br.com.novaalianca.mnss.localapp.domain.catalog.CategoryEntity;
@@ -19,6 +20,7 @@ import br.com.novaalianca.mnss.localapp.domain.catalog.ProductAvailabilityReposi
 import br.com.novaalianca.mnss.localapp.domain.catalog.ProductEntity;
 import br.com.novaalianca.mnss.localapp.domain.catalog.ProductRepository;
 import br.com.novaalianca.mnss.localapp.domain.hardware.HardwareAdapterService;
+import br.com.novaalianca.mnss.localapp.domain.kds.KdsService;
 import br.com.novaalianca.mnss.localapp.domain.order.DeliveryType;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderEntity;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderItemEntity;
@@ -70,6 +72,9 @@ class PdvSaleServiceTest {
     private PdvSyncEventService pdvSyncEventService;
 
     @Mock
+    private SyncEventRepository syncEventRepository;
+
+    @Mock
     private HardwareAdapterService hardwareAdapterService;
 
     @Mock
@@ -80,6 +85,9 @@ class PdvSaleServiceTest {
 
     @Mock
     private AuditService auditService;
+
+    @Mock
+    private KdsService kdsService;
 
     @Test
     void createSaleRequiresOpenCashRegister() {
@@ -373,11 +381,13 @@ class PdvSaleServiceTest {
                 Optional.of(productRepository),
                 Optional.of(productAvailabilityRepository),
                 Optional.of(paymentRepository),
+                Optional.of(syncEventRepository),
                 pdvSyncEventService,
                 hardwareAdapterService,
                 cashRegisterService,
                 stockService,
-                auditService);
+                auditService,
+                kdsService);
     }
 
     private OrderEntity sale(UUID saleId) {

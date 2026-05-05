@@ -11,6 +11,7 @@ import br.com.novaalianca.mnss.localapp.domain.catalog.ProductAvailabilityReposi
 import br.com.novaalianca.mnss.localapp.domain.catalog.ProductEntity;
 import br.com.novaalianca.mnss.localapp.domain.catalog.ProductRepository;
 import br.com.novaalianca.mnss.localapp.domain.hardware.HardwareAdapterService;
+import br.com.novaalianca.mnss.localapp.domain.kds.KdsService;
 import br.com.novaalianca.mnss.localapp.domain.order.DeliveryType;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderEntity;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderItemEntity;
@@ -24,7 +25,9 @@ import br.com.novaalianca.mnss.localapp.domain.payment.PaymentEntity;
 import br.com.novaalianca.mnss.localapp.domain.payment.PaymentMethod;
 import br.com.novaalianca.mnss.localapp.domain.payment.PaymentRepository;
 import br.com.novaalianca.mnss.localapp.domain.payment.PaymentStatus;
+import br.com.novaalianca.mnss.localapp.domain.sync.SyncEventRepository;
 import br.com.novaalianca.mnss.localapp.domain.stock.StockService;
+import br.com.novaalianca.mnss.sync.*;
 import br.com.novaalianca.mnss.localapp.security.user.RoleName;
 import br.com.novaalianca.mnss.sharedinfra.web.error.BusinessException;
 import java.math.BigDecimal;
@@ -48,11 +51,13 @@ public class PdvSaleService {
     private final Optional<ProductRepository> productRepository;
     private final Optional<ProductAvailabilityRepository> productAvailabilityRepository;
     private final Optional<PaymentRepository> paymentRepository;
+    private final Optional<SyncEventRepository> syncEventRepository;
     private final PdvSyncEventService pdvSyncEventService;
     private final HardwareAdapterService hardwareAdapterService;
     private final CashRegisterService cashRegisterService;
     private final StockService stockService;
     private final AuditService auditService;
+    private final KdsService kdsService;
 
     PdvSaleService(
             Optional<CashRegisterRepository> cashRegisterRepository,
@@ -61,22 +66,26 @@ public class PdvSaleService {
             Optional<ProductRepository> productRepository,
             Optional<ProductAvailabilityRepository> productAvailabilityRepository,
             Optional<PaymentRepository> paymentRepository,
+            Optional<SyncEventRepository> syncEventRepository,
             PdvSyncEventService pdvSyncEventService,
             HardwareAdapterService hardwareAdapterService,
             CashRegisterService cashRegisterService,
             StockService stockService,
-            AuditService auditService) {
+            AuditService auditService,
+            KdsService kdsService) {
         this.cashRegisterRepository = cashRegisterRepository;
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.productRepository = productRepository;
         this.productAvailabilityRepository = productAvailabilityRepository;
         this.paymentRepository = paymentRepository;
+        this.syncEventRepository = syncEventRepository;
         this.pdvSyncEventService = pdvSyncEventService;
         this.hardwareAdapterService = hardwareAdapterService;
         this.cashRegisterService = cashRegisterService;
         this.stockService = stockService;
         this.auditService = auditService;
+        this.kdsService = kdsService;
     }
 
     @Transactional
@@ -173,6 +182,8 @@ public class PdvSaleService {
         }
 
         hardwareAdapterService.printReceipt(sale, items, payments);
+        
+        kdsService.createTicketsForOrder(sale, items);
 
         return response(sale);
     }
@@ -290,7 +301,13 @@ public class PdvSaleService {
                 .filter(p -> p.getStatus() == PaymentStatus.PAID)
                 .map(PdvSalePaymentResponse::from)
                 .toList();
-        return PdvSaleResponse.from(order, items, payments);
+        
+        SyncEventStatus syncStatus = syncEventRepository
+                .flatMap(repo -> repo.findFirstByAggregateIdOrderByCreatedAtDesc(order.getId()))
+                .map(SyncEventEntity::getStatus)
+                .orElse(null);
+
+        return PdvSaleResponse.from(order, items, payments, syncStatus);
     }
 
     private OrderEntity editableSale(UUID saleId) {

@@ -201,9 +201,7 @@
               (input)="setAvailabilityReason(product.id, $any($event.target).value)"
             />
           </label>
-          <span class="sync-indicator" [class.sync-indicator--pending]="pendingSyncProductIds.has(product.id)">
-            {{ syncLabel(product.id) }}
-          </span>
+          <mnss-sync-status-badge [status]="getSyncStatus(product.id)" />
           <div class="product-actions">
             <button type="button" (click)="editProduct(product)">Editar</button>
             <button type="button" (click)="toggleAvailability(product, !product.available)">

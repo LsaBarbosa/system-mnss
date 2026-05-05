@@ -3,7 +3,9 @@ package br.com.novaalianca.mnss.sync;
 public enum SyncEventStatus {
     PENDING,
     PROCESSING,
-    PROCESSED,
+    SYNCED,
     FAILED,
-    DEAD_LETTER
+    RETRYING,
+    DEAD_LETTER,
+    IGNORED
 }

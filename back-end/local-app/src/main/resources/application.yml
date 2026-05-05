@@ -47,3 +47,8 @@ mnss:
       email: ${MNSS_INITIAL_ADMIN_EMAIL:admin@novaalianca.local}
       username: ${MNSS_INITIAL_ADMIN_USERNAME:admin}
       password: ${MNSS_INITIAL_ADMIN_PASSWORD:admin123}
+  sync:
+    online-url: ${MNSS_ONLINE_URL:http://localhost:8081}
+    store-id: ${MNSS_STORE_ID:store-001}
+    store-secret: ${MNSS_STORE_SECRET:local-dev-sync-secret-change-me}
+    retry-intervals: 1m,5m,15m,1h

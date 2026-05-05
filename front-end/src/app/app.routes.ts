@@ -50,6 +50,14 @@ export const routes: Routes = [
     }
   },
   {
+    path: 'kds',
+    loadComponent: () => import('./features/kds/pages/kds-page.component').then(m => m.KdsPageComponent),
+    canActivate: [authGuard, roleGuard],
+    data: {
+      roles: ['ADMIN', 'GERENTE', 'COZINHA']
+    }
+  },
+  {
     path: '**',
     redirectTo: ''
   }

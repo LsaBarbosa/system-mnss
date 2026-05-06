@@ -201,7 +201,7 @@ public class KdsService {
                 .map(item -> new KdsTicketItemResponse(
                         item.getId(),
                         item.getOrderItem().getProductNameSnapshot(),
-                        item.getOrderItem().getQuantity().doubleValue(),
+                        item.getOrderItem().getQuantity(),
                         item.getOrderItem().getObservation(),
                         item.getStatus()
                 ))
@@ -215,8 +215,10 @@ public class KdsService {
                 ticket.getSector(),
                 ticket.getStatus(),
                 ticket.getCreatedAt(),
+                ticket.getUpdatedAt(),
                 ticket.getStartedAt(),
                 ticket.getReadyAt(),
+                ticket.getFinishedAt(),
                 itemResponses
         );
     }

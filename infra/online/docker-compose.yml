@@ -94,6 +94,7 @@ services:
       - "127.0.0.1:5433:5432"
     volumes:
       - postgres_online_data:/var/lib/postgresql/data
+      - ./postgres/backup:/backup
     restart: unless-stopped
 
   rabbitmq-online:

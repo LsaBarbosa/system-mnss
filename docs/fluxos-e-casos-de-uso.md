@@ -3634,10 +3634,11 @@ GET  /api/sync/health
 ## 17.2 KDS
 
 - Recebe pedidos locais via WebSocket.
-- Separa tickets por setor.
-- Permite iniciar preparo.
-- Permite marcar pronto.
-- Atualiza pedido no PDV.
+- O sistema notifica o KDS.
+- O ticket aparece como `WAITING`.
+- O operador inicia o preparo (`IN_PREPARATION`).
+- O operador marca como pronto (`READY`).
+- O sistema atualiza o status do pedido no PDV.
 - Funciona sem internet.
 
 ## 17.3 Online

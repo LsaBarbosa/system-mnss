@@ -296,10 +296,9 @@ Assinatura HMAC do payload
 Exemplo de headers:
 
 ```http
-X-Store-Id: nova-alianca-001
+X-Store-ID: nova-alianca-001
 X-Signature: hash_hmac_sha256(payload, secret)
-X-Event-Id: uuid
-X-Event-Timestamp: 2026-05-03T10:30:00Z
+X-Idempotency-Key: uuid
 ```
 
 ## 13. Idempotência

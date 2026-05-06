@@ -460,9 +460,10 @@ Exemplos:
 
 ```text
 GET  /api/public/menu
-GET  /api/public/products
-POST /api/orders
-POST /api/payments/webhook
+GET  /api/public/info
+POST /api/public/orders
+POST /api/public/payments/online
+POST /api/public/payments/webhook
 POST /api/whatsapp/webhook
 POST /api/sync/events
 GET  /api/sync/pending

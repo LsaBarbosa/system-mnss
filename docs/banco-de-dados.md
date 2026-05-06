@@ -386,7 +386,8 @@ CREATE TABLE cash_movements (
     description TEXT,
     order_id UUID REFERENCES orders(id),
     created_by UUID REFERENCES users(id),
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
@@ -400,6 +401,7 @@ CREATE TABLE kds_tickets (
     sector VARCHAR(60) NOT NULL,
     status VARCHAR(50) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     started_at TIMESTAMP,
     ready_at TIMESTAMP,
     finished_at TIMESTAMP
@@ -430,7 +432,8 @@ CREATE TABLE stock_movements (
     reason TEXT,
     order_id UUID REFERENCES orders(id),
     created_by UUID REFERENCES users(id),
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
@@ -472,14 +475,15 @@ CREATE INDEX idx_sync_events_idempotency ON sync_events(idempotency_key);
 ```sql
 CREATE TABLE audit_logs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES users(id),
+    actor_user_id UUID REFERENCES users(id),
     action VARCHAR(120) NOT NULL,
-    entity_type VARCHAR(80),
+    entity_type VARCHAR(80) NOT NULL,
     entity_id UUID,
-    old_value JSONB,
-    new_value JSONB,
+    details JSONB,
     ip_address VARCHAR(80),
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    version BIGINT NOT NULL DEFAULT 0
 );
 ```
 

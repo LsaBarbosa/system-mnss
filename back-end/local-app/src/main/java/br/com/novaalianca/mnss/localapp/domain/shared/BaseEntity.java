@@ -7,6 +7,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Version;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -16,6 +17,10 @@ public abstract class BaseEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(nullable = false, updatable = false)
     private UUID id;
+
+    @Version
+    @Column(nullable = false)
+    private Long version;
 
     @Column(nullable = false, updatable = false)
     private Instant createdAt = Instant.now();

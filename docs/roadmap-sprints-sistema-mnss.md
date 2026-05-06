@@ -77,11 +77,11 @@
 | Sprint 10 | Finalização, impressão e cancelamento | Finalizar venda, imprimir, acionar gaveta e cancelar venda. |
 | Sprint 11 | KDS — tickets e WebSocket | Criar tickets por setor e exibir em tempo real no KDS. |
 | Sprint 12 | KDS — preparo e expedição | Iniciar preparo, marcar pronto e refletir no PDV/expedição. |
-| Sprint 13 | Sincronização base | SyncEvent, outbox, envio local → online e idempotência básica. |
+| Sprint 13 | Sincronização base | SyncEvent, outbox, envio local → online, RECEIVED_BY_STORE e idempotência básica. |
 | Sprint 14 | Site e cardápio público | Site institucional, cardápio público e visualização de produtos. |
 | Sprint 15 | Pedido online | Checkout, cliente, endereço, pedido online e status inicial. |
 | Sprint 16 | Pagamento online e webhook | Criar cobrança, receber webhook, validar assinatura e atualizar pedido. |
-| Sprint 17 | Sync online → local e painel | Pull de pedidos online, ACK, retry, painel de sync. |
+| Sprint 17 | Sync online → local e painel | Pull de pedidos online, ACK (RECEIVED_BY_STORE), retry, painel de sync. |
 | Sprint 18 | Observabilidade, deploy e homologação | Health checks, backup, deploy local/online e teste fim a fim. |
 | Sprint 19 | Estoque básico | Baixa por venda, ajuste manual e disponibilidade automática. |
 | Sprint 20 | WhatsApp inicial | Webhook, conversa assistida e pedido via WhatsApp. |

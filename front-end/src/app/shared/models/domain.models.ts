@@ -216,7 +216,7 @@ export interface StockMovementModel extends TimestampedResource {
 
 export type SyncDirection = 'LOCAL_TO_ONLINE' | 'ONLINE_TO_LOCAL';
 export type SyncEnvironment = 'LOCAL' | 'ONLINE';
-export type SyncStatus = 'PENDING' | 'PROCESSING' | 'SYNCED' | 'FAILED' | 'RETRYING' | 'DEAD_LETTER' | 'IGNORED';
+export type SyncStatus = 'PENDING' | 'PROCESSING' | 'SYNCED' | 'FAILED' | 'RETRYING' | 'DEAD_LETTER' | 'IGNORED' | 'RECEIVED_BY_STORE';
 
 export interface SyncEventModel extends TimestampedResource {
   idempotencyKey: string;

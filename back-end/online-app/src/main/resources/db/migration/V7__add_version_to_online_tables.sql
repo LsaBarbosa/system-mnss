@@ -3,6 +3,8 @@ DECLARE
     table_name TEXT;
 BEGIN
     FOREACH table_name IN ARRAY ARRAY[
+        'users',
+        'roles',
         'categories',
         'products',
         'product_availability',

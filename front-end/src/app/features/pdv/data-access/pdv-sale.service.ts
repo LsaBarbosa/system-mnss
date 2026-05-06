@@ -128,23 +128,23 @@ export class PdvSaleService {
   }
 
   pay(saleId: Uuid, payload: CreatePaymentPayload): Observable<PaymentResponse> {
-    return this.httpClient.post<PaymentResponse>(`/api/pdv/sales/${saleId}/payment`, payload);
+    return this.httpClient.post<PaymentResponse>(`${this.apiBaseUrl}/pdv/sales/${saleId}/payment`, payload);
   }
 
   finish(saleId: Uuid): Observable<PdvSale> {
-    return this.httpClient.post<PdvSale>(`/api/pdv/sales/${saleId}/finish`, {});
+    return this.httpClient.post<PdvSale>(`${this.apiBaseUrl}/pdv/sales/${saleId}/finish`, {});
   }
 
   applyDiscount(saleId: Uuid, payload: CreateDiscountPayload): Observable<PdvSale> {
-    return this.httpClient.post<PdvSale>(`/api/pdv/sales/${saleId}/discount`, payload);
+    return this.httpClient.post<PdvSale>(`${this.apiBaseUrl}/pdv/sales/${saleId}/discount`, payload);
   }
 
   cancelSale(saleId: Uuid, payload: CancelSalePayload): Observable<PdvSale> {
-    return this.httpClient.post<PdvSale>(`/api/pdv/sales/${saleId}/cancel`, payload);
+    return this.httpClient.post<PdvSale>(`${this.apiBaseUrl}/pdv/sales/${saleId}/cancel`, payload);
   }
 
   reprintReceipt(saleId: Uuid): Observable<void> {
-    return this.httpClient.post<void>(`/api/pdv/sales/${saleId}/print`, {});
+    return this.httpClient.post<void>(`${this.apiBaseUrl}/pdv/sales/${saleId}/print`, {});
   }
 
   private get apiBaseUrl(): string {

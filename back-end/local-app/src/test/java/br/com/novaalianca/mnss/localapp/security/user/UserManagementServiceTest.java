@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.factory.Mappers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -26,6 +27,7 @@ class UserManagementServiceTest {
     private RoleRepository roleRepository;
 
     private final PasswordHasher passwordHasher = new PasswordHasher();
+    private final UserMapper userMapper = Mappers.getMapper(UserMapper.class);
 
     @Test
     void duplicateUsernameFails() {
@@ -67,7 +69,7 @@ class UserManagementServiceTest {
     }
 
     private UserManagementService service() {
-        return new UserManagementService(userRepository, roleRepository, passwordHasher);
+        return new UserManagementService(userRepository, roleRepository, passwordHasher, userMapper);
     }
 
     private CreateUserRequest request(Set<RoleName> roles) {

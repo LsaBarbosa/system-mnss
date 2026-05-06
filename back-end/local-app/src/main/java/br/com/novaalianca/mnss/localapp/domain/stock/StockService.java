@@ -74,7 +74,7 @@ public class StockService {
         OrderEntity order = findOrder(request.orderId());
         BigDecimal balanceBefore = calculateBalance(productId);
         BigDecimal balanceAfter = balanceBefore.add(signedQuantity(type, quantity));
-        if (isOutbound(type) && balanceAfter.signum() < 0) {
+        if (product.isStockControlled() && isOutbound(type) && balanceAfter.signum() < 0) {
             throw new BusinessException("INSUFFICIENT_STOCK", "Estoque insuficiente para a movimentacao.", HttpStatus.BAD_REQUEST);
         }
 

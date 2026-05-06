@@ -11,6 +11,74 @@ info:
     - `/topic/kds/tickets`: Enviado quando um ticket é criado ou atualizado. Payload: `KdsTicketResponse`.
     - `/topic/kds/tickets/{sector}`: Mesmo evento acima, mas filtrado por setor (ex: `COZINHA`, `FORNO`).
     - `/topic/orders/ready`: Enviado quando um pedido completo está pronto para entrega. Payload: `UUID` (ID do pedido).
+  /api/version:
+    get:
+      summary: Retorna a versao da aplicacao local.
+      operationId: getLocalApiVersion
+      responses:
+        '200':
+          description: Versao da API local.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  version:
+                    type: string
+  /api/sync/health:
+    get:
+      summary: Retorna o estado operacional da sincronizacao local.
+      operationId: getLocalSyncHealth
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Status e detalhes do componente de sync local.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncHealthResponse'
+  /api/hardware/drawer:
+    post:
+      summary: Solicita abertura da gaveta de dinheiro.
+      operationId: openCashDrawer
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Comando enviado para a impressora/gaveta.
+        '403':
+          $ref: '#/components/responses/BusinessError'
+  /api/public/info:
+    get:
+      summary: Retorna informacoes da loja para o menu publico local.
+      operationId: getLocalStoreInfo
+      responses:
+        '200':
+          description: Informacoes institucionais da loja.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoreInfoResponse'
+  /api/public/menu:
+    get:
+      summary: Lista o cardapio publico para tablets/autoatendimento.
+      operationId: listLocalPublicMenu
+      parameters:
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de categorias com produtos.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoryProductsResponse'
 paths:
   /api/auth/login:
     post:
@@ -81,7 +149,7 @@ paths:
             schema:
               $ref: '#/components/schemas/CreateUserRequest'
       responses:
-        '200':
+        '201':
           description: Usuario criado.
           content:
             application/json:
@@ -1512,7 +1580,7 @@ components:
               type: string
               format: date-time
             syncStatus:
-              type: string
+              $ref: '#/components/schemas/SyncStatus'
               enum: [PENDING, SYNCED, FAILED]
     CategoryProductsResponse:
       type: object
@@ -1582,6 +1650,9 @@ components:
         - deliveryFee
         - totalAmount
         - items
+        - payments
+        - remainingAmount
+        - syncStatus
         - createdAt
         - updatedAt
       properties:
@@ -1615,6 +1686,15 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PdvSaleItemResponse'
+        payments:
+          type: array
+          items:
+            $ref: '#/components/schemas/PdvSalePaymentResponse'
+        remainingAmount:
+          type: number
+          format: decimal
+        syncStatus:
+          $ref: '#/components/schemas/SyncStatus'
         createdAt:
           type: string
           format: date-time
@@ -1756,6 +1836,9 @@ components:
         - amount
         - orderStatus
         - orderPaymentStatus
+        - recordedAmount
+        - remainingAmount
+        - changeAmount
         - createdAt
         - updatedAt
       properties:
@@ -1770,6 +1853,15 @@ components:
         status:
           $ref: '#/components/schemas/PaymentStatus'
         amount:
+          type: number
+          format: decimal
+        recordedAmount:
+          type: number
+          format: decimal
+        remainingAmount:
+          type: number
+          format: decimal
+        changeAmount:
           type: number
           format: decimal
         transactionId:
@@ -2144,6 +2236,7 @@ components:
         - ATENDENTE
         - COZINHA
         - ENTREGADOR
+        - EXPEDICAO
         - CONSULTA
     SyncEventResponse:
       type: object
@@ -2186,8 +2279,7 @@ components:
         payload:
           type: object
         status:
-          type: string
-          enum: [PENDING, PROCESSING, SYNCED, FAILED, RETRYING, IGNORED, RECEIVED_BY_STORE, DEAD_LETTER]
+          $ref: '#/components/schemas/SyncStatus'
         retryCount:
           type: integer
         nextRetryAt:
@@ -2206,3 +2298,56 @@ components:
           format: date-time
         version:
           type: integer
+    SyncStatus:
+      type: string
+      enum:
+        - PENDING
+        - PROCESSING
+        - SYNCED
+        - FAILED
+        - RETRYING
+        - IGNORED
+        - RECEIVED_BY_STORE
+        - DEAD_LETTER
+    PdvSalePaymentResponse:
+      type: object
+      required:
+        - id
+        - method
+        - amount
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        method:
+          $ref: '#/components/schemas/PaymentMethod'
+        amount:
+          type: number
+          format: decimal
+        createdAt:
+          type: string
+          format: date-time
+    SyncHealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        details:
+          type: object
+          additionalProperties:
+            type: object
+    StoreInfoResponse:
+      type: object
+      properties:
+        name:
+          type: string
+        address:
+          type: string
+        phone:
+          type: string
+        hours:
+          type: string
+        description:
+          type: string
+

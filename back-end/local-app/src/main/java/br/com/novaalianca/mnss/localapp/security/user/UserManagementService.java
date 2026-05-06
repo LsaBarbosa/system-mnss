@@ -17,21 +17,24 @@ public class UserManagementService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordHasher passwordHasher;
+    private final UserMapper userMapper;
 
     public UserManagementService(
             UserRepository userRepository,
             RoleRepository roleRepository,
-            PasswordHasher passwordHasher) {
+            PasswordHasher passwordHasher,
+            UserMapper userMapper) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordHasher = passwordHasher;
+        this.userMapper = userMapper;
     }
 
     @Transactional(readOnly = true)
     public List<UserResponse> listUsers() {
         return userRepository.findAll().stream()
                 .sorted(Comparator.comparing(UserEntity::getUsername))
-                .map(UserMapper::toResponse)
+                .map(userMapper::toResponse)
                 .toList();
     }
 
@@ -39,7 +42,7 @@ public class UserManagementService {
     public List<RoleResponse> listRoles() {
         return roleRepository.findAll().stream()
                 .sorted(Comparator.comparing(role -> role.getName().name()))
-                .map(UserMapper::toResponse)
+                .map(userMapper::toResponse)
                 .toList();
     }
 
@@ -61,7 +64,7 @@ public class UserManagementService {
                 request.active() == null || request.active(),
                 roles);
 
-        return UserMapper.toResponse(userRepository.save(user));
+        return userMapper.toResponse(userRepository.save(user));
     }
 
     public Set<RoleEntity> resolveRoles(Set<RoleName> roleNames) {

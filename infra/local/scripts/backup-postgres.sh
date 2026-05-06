@@ -4,7 +4,7 @@ BACKUP_DIR="/backup"
 DATE=$(date +"%Y-%m-%d_%H-%M-%S")
 CONTAINER="postgres-local"
 DB="nova_alianca_local"
-USER="user"
+USER="nova_alianca"
 
 mkdir -p $BACKUP_DIR
 

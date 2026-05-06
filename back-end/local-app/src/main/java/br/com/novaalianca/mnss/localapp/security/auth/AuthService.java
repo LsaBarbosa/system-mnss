@@ -20,14 +20,17 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordHasher passwordHasher;
     private final AuthTokenService authTokenService;
+    private final UserMapper userMapper;
 
     public AuthService(
             UserRepository userRepository,
             PasswordHasher passwordHasher,
-            AuthTokenService authTokenService) {
+            AuthTokenService authTokenService,
+            UserMapper userMapper) {
         this.userRepository = userRepository;
         this.passwordHasher = passwordHasher;
         this.authTokenService = authTokenService;
+        this.userMapper = userMapper;
     }
 
     @Transactional(readOnly = true)
@@ -52,7 +55,7 @@ public class AuthService {
         return new AuthResponse(
                 authTokenService.serialize(claims),
                 claims.expiresAt(),
-                UserMapper.toResponse(user));
+                userMapper.toResponse(user));
     }
 
     @Transactional(readOnly = true)
@@ -81,7 +84,7 @@ public class AuthService {
                 user.getEmail(),
                 user.getUsername(),
                 user.isActive(),
-                UserMapper.roleNames(user));
+                userMapper.mapRoleNames(user));
     }
 
     private BusinessException invalidCredentials(String username) {

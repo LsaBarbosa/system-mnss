@@ -198,7 +198,7 @@ public class PdvSaleService {
     }
 
     @Transactional(readOnly = true)
-    public void reprintReceipt(UUID saleId) {
+    public void reprintReceipt(UUID saleId, UUID actorUserId) {
         OrderEntity sale = orderRepository()
                 .findById(saleId)
                 .orElseThrow(() -> notFound("SALE_NOT_FOUND", "Venda nao encontrada."));
@@ -206,6 +206,7 @@ public class PdvSaleService {
         List<OrderItemEntity> items = orderItemRepository().findByOrderIdOrderByCreatedAtAsc(saleId);
         List<PaymentEntity> payments = paymentRepository().findByOrderIdOrderByCreatedAtAsc(saleId);
         
+        auditService.record(new AuditLogRequest(actorUserId, "RECEIPT_REPRINTED", "Order", saleId, Map.of(), null));
         hardwareAdapterService.printReceipt(sale, items, payments);
     }
 
@@ -228,8 +229,15 @@ public class PdvSaleService {
         }
 
         sale.updateTotals(sale.getSubtotal(), discountAmount, sale.getDeliveryFee(), money(newTotal));
-        orderRepository().save(sale);
-        return response(sale);
+        OrderEntity saved = orderRepository().save(sale);
+
+        Map<String, Object> details = new LinkedHashMap<>();
+        details.put("discountAmount", discountAmount.toPlainString());
+        details.put("subtotal", subtotal.toPlainString());
+        details.put("percentage", discountAmount.multiply(new BigDecimal("100")).divide(subtotal, 2, RoundingMode.HALF_UP).toPlainString());
+        auditService.record(new AuditLogRequest(actorUserId, "SALE_DISCOUNT_APPLIED", "Order", saleId, details, null));
+
+        return response(saved);
     }
 
     @Transactional

@@ -25,3 +25,8 @@ dependencies {
 bootJar {
     archiveFileName = 'mnss-online-api.jar'
 }
+
+test {
+    useJUnitPlatform()
+    systemProperty 'spring.profiles.active', 'dev'
+}

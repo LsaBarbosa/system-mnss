@@ -368,7 +368,7 @@ class PdvSaleServiceTest {
         when(orderItemRepository.findByOrderIdOrderByCreatedAtAsc(saleId)).thenReturn(List.of());
         when(paymentRepository.findByOrderIdOrderByCreatedAtAsc(saleId)).thenReturn(List.of());
 
-        service().reprintReceipt(saleId);
+        service().reprintReceipt(saleId, UUID.randomUUID());
 
         verify(hardwareAdapterService).printReceipt(eq(sale), any(), any());
     }

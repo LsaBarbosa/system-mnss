@@ -1,0 +1,19 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    username: mnss
+    password: mnss
+  rabbitmq:
+    username: mnss
+    password: mnss
+
+mnss:
+  security:
+    token:
+      secret: local-dev-auth-secret-change-me
+    initial-admin:
+      password: admin123
+  sync:
+    store-secret: local-dev-sync-secret-change-me

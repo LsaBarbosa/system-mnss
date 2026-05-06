@@ -98,6 +98,7 @@ class PdvSaleController {
     }
 
     @PostMapping("/{saleId}/cancel")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
     PdvSaleResponse cancelSale(
             @PathVariable UUID saleId,
             @Valid @RequestBody CancelSaleRequest request,
@@ -107,8 +108,9 @@ class PdvSaleController {
 
     @PostMapping("/{saleId}/print")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    void reprint(@PathVariable UUID saleId) {
-        pdvSaleService.reprintReceipt(saleId);
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'CAIXA')")
+    void reprint(@PathVariable UUID saleId, HttpServletRequest servletRequest) {
+        pdvSaleService.reprintReceipt(saleId, authenticatedUserId(servletRequest));
     }
 
     private UUID authenticatedUserId(HttpServletRequest request) {

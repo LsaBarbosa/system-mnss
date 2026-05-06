@@ -1,0 +1,17 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    username: mnss
+    password: mnss
+  rabbitmq:
+    username: mnss
+    password: mnss
+
+mnss:
+  sync:
+    stores:
+      store-001: local-dev-sync-secret-change-me
+  whatsapp:
+    verify-token: change_me

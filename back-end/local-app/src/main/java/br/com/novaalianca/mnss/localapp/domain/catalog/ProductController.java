@@ -41,7 +41,7 @@ class ProductController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasRole('GERENTE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
     ProductResponse createProduct(
             @Valid @RequestBody CreateProductRequest request,
             HttpServletRequest servletRequest) {
@@ -49,7 +49,7 @@ class ProductController {
     }
 
     @PatchMapping("/{id}")
-    @PreAuthorize("hasRole('GERENTE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
     ProductResponse updateProduct(
             @PathVariable UUID id,
             @Valid @RequestBody PatchProductRequest request,
@@ -58,7 +58,7 @@ class ProductController {
     }
 
     @PatchMapping("/{id}/availability")
-    @PreAuthorize("hasAnyRole('GERENTE', 'ATENDENTE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
     ProductAvailabilityResponse updateProductAvailability(
             @PathVariable UUID id,
             @Valid @RequestBody PatchProductAvailabilityRequest request,

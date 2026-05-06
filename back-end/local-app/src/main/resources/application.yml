@@ -3,13 +3,13 @@ spring:
     name: mnss-local-api
   datasource:
     url: ${MNSS_LOCAL_DB_URL:jdbc:postgresql://localhost:5432/mnss_local}
-    username: ${MNSS_LOCAL_DB_USER:mnss}
-    password: ${MNSS_LOCAL_DB_PASSWORD:mnss}
+    username: ${MNSS_LOCAL_DB_USER}
+    password: ${MNSS_LOCAL_DB_PASSWORD}
   rabbitmq:
     host: ${MNSS_LOCAL_RABBITMQ_HOST:localhost}
     port: ${MNSS_LOCAL_RABBITMQ_PORT:5672}
-    username: ${MNSS_LOCAL_RABBITMQ_USER:mnss}
-    password: ${MNSS_LOCAL_RABBITMQ_PASSWORD:mnss}
+    username: ${MNSS_LOCAL_RABBITMQ_USER}
+    password: ${MNSS_LOCAL_RABBITMQ_PASSWORD}
   data:
     redis:
       host: ${MNSS_LOCAL_REDIS_HOST:localhost}
@@ -39,18 +39,18 @@ mnss:
   security:
     enabled: ${MNSS_SECURITY_ENABLED:true}
     token:
-      secret: ${AUTH_TOKEN_SECRET:local-dev-auth-secret-change-me}
+      secret: ${AUTH_TOKEN_SECRET}
       ttl: ${AUTH_TOKEN_TTL:PT8H}
     initial-admin:
       enabled: ${MNSS_INITIAL_ADMIN_ENABLED:true}
       name: ${MNSS_INITIAL_ADMIN_NAME:Administrador}
       email: ${MNSS_INITIAL_ADMIN_EMAIL:admin@novaalianca.local}
       username: ${MNSS_INITIAL_ADMIN_USERNAME:admin}
-      password: ${MNSS_INITIAL_ADMIN_PASSWORD:admin123}
+      password: ${MNSS_INITIAL_ADMIN_PASSWORD}
   sync:
     online-url: ${MNSS_ONLINE_URL:http://localhost:8081}
     store-id: ${MNSS_STORE_ID:store-001}
-    store-secret: ${MNSS_STORE_SECRET:local-dev-sync-secret-change-me}
+    store-secret: ${MNSS_STORE_SECRET}
     retry-intervals: 1m,5m,15m,1h
   store:
     name: "Padaria e Lanchonete Nova Aliança"

@@ -3,13 +3,13 @@ spring:
     name: mnss-online-api
   datasource:
     url: ${MNSS_ONLINE_DB_URL:jdbc:postgresql://localhost:5433/mnss_online}
-    username: ${MNSS_ONLINE_DB_USER:mnss}
-    password: ${MNSS_ONLINE_DB_PASSWORD:mnss}
+    username: ${MNSS_ONLINE_DB_USER}
+    password: ${MNSS_ONLINE_DB_PASSWORD}
   rabbitmq:
     host: ${MNSS_ONLINE_RABBITMQ_HOST:localhost}
     port: ${MNSS_ONLINE_RABBITMQ_PORT:5673}
-    username: ${MNSS_ONLINE_RABBITMQ_USER:mnss}
-    password: ${MNSS_ONLINE_RABBITMQ_PASSWORD:mnss}
+    username: ${MNSS_ONLINE_RABBITMQ_USER}
+    password: ${MNSS_ONLINE_RABBITMQ_PASSWORD}
   data:
     redis:
       host: ${MNSS_ONLINE_REDIS_HOST:localhost}
@@ -38,7 +38,7 @@ mnss:
   environment: online
   sync:
     stores:
-      store-001: local-dev-sync-secret-change-me
+      store-001: ${MNSS_STORE_001_SECRET}
   store:
     name: "Padaria e Lanchonete Nova Aliança"
     address: "Rua Exemplo, 123 - Centro"
@@ -47,4 +47,4 @@ mnss:
     description: "A melhor padaria da região, com pães frescos a toda hora e um cardápio completo para o seu dia a dia."
   whatsapp:
     provider: ${WHATSAPP_PROVIDER:mock}
-    verify-token: ${WHATSAPP_VERIFY_TOKEN:change_me}
+    verify-token: ${WHATSAPP_VERIFY_TOKEN}

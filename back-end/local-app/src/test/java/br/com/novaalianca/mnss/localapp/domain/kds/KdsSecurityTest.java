@@ -54,7 +54,7 @@ class KdsSecurityTest {
     @Test
     @WithMockUser(roles = "COZINHA")
     void startTicket_AllowedForCozinha() throws Exception {
-        when(kdsService.startTicket(any())).thenReturn(new KdsTicketResponse(id, id, 1L, null, null, KdsTicketStatus.IN_PREPARATION, null, null, null, null, null, List.of()));
+        when(kdsService.startTicket(any(),any())).thenReturn(new KdsTicketResponse(id, id, 1L, null, null, KdsTicketStatus.IN_PREPARATION, null, null, null, null, null, List.of()));
         mockMvc.perform(patch("/api/kds/tickets/" + id + "/start"))
                 .andExpect(status().isOk());
     }

@@ -109,7 +109,7 @@ npm run build
 **Escopo funcional detalhado:**
 - Implementar exatamente a capacidade descrita na história, sem antecipar histórias futuras.
 - Back-end planejado no roadmap: Criar estrutura `back-end/`, `infra/`, `docs/`.
-- Front-end planejado no roadmap: Criar estrutura `front-end/` com apps `admin`, `pdv`, `kds`, `site-publico`.
+- Front-end planejado no roadmap: Manter `front-end/` como app Angular unico, com features `admin`, `pdv`, `kds` e `site-publico` em `src/app/features/`.
 - A história deve deixar uma fatia funcional testável no ambiente correspondente.
 
 **Arquivos/módulos prováveis:**
@@ -118,12 +118,12 @@ Back-end:
 - `back-end/` — módulo alvo: back-end/core-domain, back-end/local-app, back-end/online-app e back-end/shared-infra
 
 Front-end:
-- `front-end/` — app/feature alvo: front-end/admin, front-end/pdv, front-end/kds e front-end/site-publico
+- `front-end/` — app/feature alvo: front-end/src/app/features/admin, front-end/src/app/features/pdv, front-end/src/app/features/kds e front-end/src/app/features/site-publico
 
 **Tarefas de implementação:**
 1. Ler a história, identificar se ela pertence ao ambiente local, online ou compartilhado e confirmar o módulo alvo antes de alterar arquivos.
 2. Implementar o back-end previsto: Criar estrutura `back-end/`, `infra/`, `docs/`.
-3. Implementar o front-end previsto: Criar estrutura `front-end/` com apps `admin`, `pdv`, `kds`, `site-publico`.
+3. Implementar o front-end previsto: Manter `front-end/` como app Angular unico, com features `admin`, `pdv`, `kds` e `site-publico` em `src/app/features/`.
 4. Criar ou ajustar DTOs, mappers, services/use cases, controllers/endpoints e modelos TypeScript necessários.
 5. Atualizar OpenAPI/contratos, quando houver endpoint novo ou alteração de payload.
 6. Rodar testes unitários e, quando houver persistência, usar teste de integração com banco/container se o projeto já estiver preparado.
@@ -158,7 +158,7 @@ Contexto obrigatório:
 - Domínio: Fundação técnica
 - Documentos de referência: ARQ, README
 - Back-end esperado: Criar estrutura `back-end/`, `infra/`, `docs/`.
-- Front-end esperado: Criar estrutura `front-end/` com apps `admin`, `pdv`, `kds`, `site-publico`.
+- Front-end esperado: Manter `front-end/` como app Angular unico, com features `admin`, `pdv`, `kds` e `site-publico` em `src/app/features/`.
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: ARQ, README.
@@ -190,7 +190,7 @@ Back-end:
 - `back-end/` — módulo alvo: back-end/core-domain, back-end/local-app, back-end/online-app e back-end/shared-infra
 
 Front-end:
-- `front-end/` — app/feature alvo: front-end/admin, front-end/pdv, front-end/kds e front-end/site-publico
+- `front-end/` — app/feature alvo: front-end/src/app/features/admin, front-end/src/app/features/pdv, front-end/src/app/features/kds e front-end/src/app/features/site-publico
 
 **Tarefas de implementação:**
 1. Ler a história, identificar se ela pertence ao ambiente local, online ou compartilhado e confirmar o módulo alvo antes de alterar arquivos.
@@ -262,7 +262,7 @@ Back-end:
 - `back-end/` — módulo alvo: back-end/core-domain, back-end/local-app, back-end/online-app e back-end/shared-infra
 
 Front-end:
-- `front-end/` — app/feature alvo: front-end/admin, front-end/pdv, front-end/kds e front-end/site-publico
+- `front-end/` — app/feature alvo: front-end/src/app/features/admin, front-end/src/app/features/pdv, front-end/src/app/features/kds e front-end/src/app/features/site-publico
 
 **Tarefas de implementação:**
 1. Ler a história, identificar se ela pertence ao ambiente local, online ou compartilhado e confirmar o módulo alvo antes de alterar arquivos.
@@ -333,7 +333,7 @@ Back-end:
 - `back-end/` — módulo alvo: back-end/core-domain, back-end/local-app, back-end/online-app e back-end/shared-infra
 
 Front-end:
-- `front-end/` — app/feature alvo: front-end/admin, front-end/pdv, front-end/kds e front-end/site-publico
+- `front-end/` — app/feature alvo: front-end/src/app/features/admin, front-end/src/app/features/pdv, front-end/src/app/features/kds e front-end/src/app/features/site-publico
 
 **Tarefas de implementação:**
 1. Ler a história, identificar se ela pertence ao ambiente local, online ou compartilhado e confirmar o módulo alvo antes de alterar arquivos.
@@ -404,7 +404,7 @@ Back-end:
 - `back-end/` — módulo alvo: back-end/core-domain, back-end/local-app, back-end/online-app e back-end/shared-infra
 
 Front-end:
-- `front-end/` — app/feature alvo: front-end/admin, front-end/pdv, front-end/kds e front-end/site-publico
+- `front-end/` — app/feature alvo: front-end/src/app/features/admin, front-end/src/app/features/pdv, front-end/src/app/features/kds e front-end/src/app/features/site-publico
 
 **Tarefas de implementação:**
 1. Ler a história, identificar se ela pertence ao ambiente local, online ou compartilhado e confirmar o módulo alvo antes de alterar arquivos.

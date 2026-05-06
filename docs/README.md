@@ -120,7 +120,7 @@ O front-end atual deve ser mantido como **um único app Angular** (`front-end/`)
 ```text
 front-end/src/app/features/
   admin/
-  site/
+  site-publico/
   pdv/
   kds/
 ```

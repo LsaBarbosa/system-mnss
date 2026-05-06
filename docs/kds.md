@@ -351,13 +351,11 @@ Endpoints sugeridos:
 ```text
 GET    /api/kds/tickets
 GET    /api/kds/tickets?sector=CHAPA
-GET    /api/kds/tickets/{id}
 PATCH  /api/kds/tickets/{id}/start
 PATCH  /api/kds/tickets/{id}/ready
 PATCH  /api/kds/tickets/{id}/finish
-PATCH  /api/kds/items/{id}/start
 PATCH  /api/kds/items/{id}/ready
-PATCH  /api/kds/items/{id}/cancel
+PATCH  /api/kds/orders/{id}/finish
 ```
 
 ## 17. Eventos gerados

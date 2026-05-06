@@ -134,6 +134,13 @@ REDIS_PORT=6379
 
 JWT_SECRET=change_me
 SYNC_MASTER_SECRET=change_me
+MNSS_DEFAULT_STORE_ID=store-001
+MNSS_STORE_001_SECRET=change_me
+MNSS_PAYMENT_WEBHOOK_SECRET=change_me
+WHATSAPP_VERIFY_TOKEN=change_me
+WHATSAPP_PROVIDER=mock
+SPRING_SECURITY_USER_NAME=online_admin
+SPRING_SECURITY_USER_PASSWORD=change_me
 
 SITE_URL=https://padarianovaalianca.com.br
 API_URL=https://api.padarianovaalianca.com.br
@@ -166,6 +173,13 @@ services:
       REDIS_HOST: redis-online
       JWT_SECRET: ${JWT_SECRET}
       SYNC_MASTER_SECRET: ${SYNC_MASTER_SECRET}
+      MNSS_DEFAULT_STORE_ID: ${MNSS_DEFAULT_STORE_ID}
+      MNSS_STORE_001_SECRET: ${MNSS_STORE_001_SECRET}
+      MNSS_PAYMENT_WEBHOOK_SECRET: ${MNSS_PAYMENT_WEBHOOK_SECRET}
+      WHATSAPP_VERIFY_TOKEN: ${WHATSAPP_VERIFY_TOKEN}
+      WHATSAPP_PROVIDER: ${WHATSAPP_PROVIDER}
+      SPRING_SECURITY_USER_NAME: ${SPRING_SECURITY_USER_NAME}
+      SPRING_SECURITY_USER_PASSWORD: ${SPRING_SECURITY_USER_PASSWORD}
     expose:
       - "8080"
     restart: unless-stopped
@@ -485,13 +499,25 @@ POST /api/sync/events
 GET  /api/sync/pending
 ```
 
+Endpoints internos (exigem autenticação HTTP Basic):
+
+```text
+GET  /api/whatsapp/catalog
+GET  /api/whatsapp/conversations
+POST /api/whatsapp/orders
+GET  /api/sync/status
+POST /api/sync/events/{id}/reprocess
+```
+
 ## 20. Segurança online
 
 Medidas obrigatórias:
 
 - HTTPS
 - Firewall
-- JWT
+- Assinatura HMAC e segredos técnicos para sync/webhooks
+- HTTP Basic nos endpoints internos de `/api/**` que não são públicos
+- JWT para painéis administrativos quando o módulo de autenticação online estiver habilitado
 - Rate limit
 - Validação de webhook
 - Banco privado

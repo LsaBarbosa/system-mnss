@@ -72,14 +72,14 @@ Quando faltar contexto do meu projeto, peça o arquivo necessário ou gere uma v
 
 **Resumo do que deve ser feito:**
 - Back-end: Criar estrutura `back-end/`, `infra/`, `docs/`.
-- Front-end: Criar estrutura `front-end/` com apps `admin`, `pdv`, `kds`, `site-publico`.
+- Front-end: Manter `front-end/` como app Angular unico, com features `admin`, `pdv`, `kds` e `site-publico` em `src/app/features/`.
 - Testes back-end: Teste de arquitetura verificando pacotes obrigatórios com ArchUnit.
 - Testes front-end: Teste simples validando que cada app Angular inicial renderiza o shell.
 - Documentos-base: ARQ, README
 
 **Arquivos/módulos esperados:**
 - Back-end: `back-end/` — módulo alvo: back-end/core-domain, back-end/local-app, back-end/online-app e back-end/shared-infra
-- Front-end: `front-end/` — app/feature alvo: front-end/admin, front-end/pdv, front-end/kds e front-end/site-publico
+- Front-end: `front-end/` — app/feature alvo: front-end/src/app/features/admin, front-end/src/app/features/pdv, front-end/src/app/features/kds e front-end/src/app/features/site-publico
 
 **Prompt para copiar e colar no ChatGPT UI:**
 
@@ -99,7 +99,7 @@ Contexto do projeto:
 
 O que gerar:
 1. Back-end: Criar estrutura `back-end/`, `infra/`, `docs/`.
-2. Front-end: Criar estrutura `front-end/` com apps `admin`, `pdv`, `kds`, `site-publico`.
+2. Front-end: Manter `front-end/` como app Angular unico, com features `admin`, `pdv`, `kds` e `site-publico` em `src/app/features/`.
 3. Testes unitários back-end: Teste de arquitetura verificando pacotes obrigatórios com ArchUnit.
 4. Testes unitários front-end: Teste simples validando que cada app Angular inicial renderiza o shell.
 
@@ -135,7 +135,7 @@ Entregue a resposta neste formato:
 
 **Arquivos/módulos esperados:**
 - Back-end: `back-end/` — módulo alvo: back-end/core-domain, back-end/local-app, back-end/online-app e back-end/shared-infra
-- Front-end: `front-end/` — app/feature alvo: front-end/admin, front-end/pdv, front-end/kds e front-end/site-publico
+- Front-end: `front-end/` — app/feature alvo: front-end/src/app/features/admin, front-end/src/app/features/pdv, front-end/src/app/features/kds e front-end/src/app/features/site-publico
 
 **Prompt para copiar e colar no ChatGPT UI:**
 
@@ -191,7 +191,7 @@ Entregue a resposta neste formato:
 
 **Arquivos/módulos esperados:**
 - Back-end: `back-end/` — módulo alvo: back-end/core-domain, back-end/local-app, back-end/online-app e back-end/shared-infra
-- Front-end: `front-end/` — app/feature alvo: front-end/admin, front-end/pdv, front-end/kds e front-end/site-publico
+- Front-end: `front-end/` — app/feature alvo: front-end/src/app/features/admin, front-end/src/app/features/pdv, front-end/src/app/features/kds e front-end/src/app/features/site-publico
 
 **Prompt para copiar e colar no ChatGPT UI:**
 
@@ -247,7 +247,7 @@ Entregue a resposta neste formato:
 
 **Arquivos/módulos esperados:**
 - Back-end: `back-end/` — módulo alvo: back-end/core-domain, back-end/local-app, back-end/online-app e back-end/shared-infra
-- Front-end: `front-end/` — app/feature alvo: front-end/admin, front-end/pdv, front-end/kds e front-end/site-publico
+- Front-end: `front-end/` — app/feature alvo: front-end/src/app/features/admin, front-end/src/app/features/pdv, front-end/src/app/features/kds e front-end/src/app/features/site-publico
 
 **Prompt para copiar e colar no ChatGPT UI:**
 
@@ -303,7 +303,7 @@ Entregue a resposta neste formato:
 
 **Arquivos/módulos esperados:**
 - Back-end: `back-end/` — módulo alvo: back-end/core-domain, back-end/local-app, back-end/online-app e back-end/shared-infra
-- Front-end: `front-end/` — app/feature alvo: front-end/admin, front-end/pdv, front-end/kds e front-end/site-publico
+- Front-end: `front-end/` — app/feature alvo: front-end/src/app/features/admin, front-end/src/app/features/pdv, front-end/src/app/features/kds e front-end/src/app/features/site-publico
 
 **Prompt para copiar e colar no ChatGPT UI:**
 

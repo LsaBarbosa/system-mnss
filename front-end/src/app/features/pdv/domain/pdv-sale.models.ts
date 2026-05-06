@@ -31,6 +31,7 @@ export interface PdvSalePayment {
   id: Uuid;
   method: PaymentMethod;
   amount: DecimalString;
+  createdAt: IsoDateTime;
 }
 
 export interface CreateDiscountPayload {
@@ -82,6 +83,7 @@ export interface PaymentResponse {
   orderId: Uuid;
   method: PaymentMethod;
   status: PaymentStatus;
+  amount: DecimalString;
   recordedAmount: DecimalString;
   remainingAmount: DecimalString;
   changeAmount: DecimalString;

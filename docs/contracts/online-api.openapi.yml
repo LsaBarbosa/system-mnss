@@ -161,6 +161,8 @@ paths:
     get:
       summary: Lista produtos ativos para atendimento via WhatsApp.
       operationId: listWhatsAppCatalog
+      security:
+        - basicAuth: []
       responses:
         '200':
           description: Produtos vendaveis no canal WhatsApp.
@@ -176,6 +178,8 @@ paths:
     get:
       summary: Lista conversas de atendimento WhatsApp.
       operationId: listWhatsAppConversations
+      security:
+        - basicAuth: []
       responses:
         '200':
           description: Lista de conversas.
@@ -191,6 +195,8 @@ paths:
     get:
       summary: Lista mensagens de uma conversa.
       operationId: getWhatsAppConversationMessages
+      security:
+        - basicAuth: []
       parameters:
         - name: id
           in: path
@@ -212,6 +218,8 @@ paths:
     post:
       summary: Envia mensagem manual para uma conversa.
       operationId: sendWhatsAppConversationMessage
+      security:
+        - basicAuth: []
       parameters:
         - name: id
           in: path
@@ -240,6 +248,8 @@ paths:
     post:
       summary: Atribui conversa para um usuario operador.
       operationId: assignWhatsAppConversation
+      security:
+        - basicAuth: []
       parameters:
         - name: id
           in: path
@@ -266,6 +276,8 @@ paths:
     post:
       summary: Cria pedido assistido a partir de uma conversa WhatsApp.
       operationId: createWhatsAppAssistedOrder
+      security:
+        - basicAuth: []
       requestBody:
         required: true
         content:
@@ -370,6 +382,8 @@ paths:
     get:
       summary: Lista eventos de sincronizacao por ordem de criacao (desc).
       operationId: listSyncEvents
+      security:
+        - basicAuth: []
       responses:
         '200':
           description: Lista de eventos.
@@ -449,6 +463,8 @@ paths:
     post:
       summary: Reenvia evento para processamento manual.
       operationId: reprocessSyncEvent
+      security:
+        - basicAuth: []
       parameters:
         - name: id
           in: path
@@ -465,6 +481,8 @@ paths:
     post:
       summary: Ignora um evento com motivo operacional.
       operationId: ignoreSyncEvent
+      security:
+        - basicAuth: []
       parameters:
         - name: id
           in: path
@@ -487,6 +505,8 @@ paths:
     get:
       summary: Retorna estatisticas de sincronizacao para o dashboard.
       operationId: getSyncStatus
+      security:
+        - basicAuth: []
       responses:
         '200':
           description: Contagem de eventos por status.
@@ -500,6 +520,8 @@ paths:
     get:
       summary: Retorna o estado operacional da sincronizacao.
       operationId: getSyncHealth
+      security:
+        - basicAuth: []
       responses:
         '200':
           description: Status e detalhes do componente de sync.
@@ -508,6 +530,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/SyncHealthResponse'
 components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
   responses:
     ValidationError:
       description: Requisicao invalida por erro de validacao.

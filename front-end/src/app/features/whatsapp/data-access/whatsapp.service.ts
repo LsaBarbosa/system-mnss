@@ -7,7 +7,7 @@ import {
   MessageResponse, 
   CreateWhatsAppOrderRequest 
 } from '../domain/whatsapp.model';
-import { PublicProductResponse } from '../../site-publico/models/public-menu.model';
+import { PublicProductResponse } from '../../site-publico/domain/public-menu.model';
 import { OrderResponse } from '../../../core/models/order.model';
 
 @Injectable({

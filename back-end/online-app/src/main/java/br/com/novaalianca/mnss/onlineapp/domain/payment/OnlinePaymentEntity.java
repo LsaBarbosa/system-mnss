@@ -58,6 +58,15 @@ public class OnlinePaymentEntity extends BaseEntity {
         this.status = PaymentStatus.PENDING;
     }
 
+    public void registerGatewayReference(String transactionId, String payload) {
+        if (transactionId != null && !transactionId.isBlank()) {
+            this.transactionId = transactionId;
+        }
+        if (payload != null && !payload.isBlank()) {
+            this.webhookPayload = payload;
+        }
+    }
+
     public void markAsPaid(String transactionId, String payload) {
         this.status = PaymentStatus.PAID;
         this.transactionId = transactionId;

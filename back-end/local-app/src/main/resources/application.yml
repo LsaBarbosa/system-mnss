@@ -50,7 +50,7 @@ mnss:
   sync:
     online-url: ${MNSS_ONLINE_URL:http://localhost:8081}
     store-id: ${MNSS_STORE_ID:store-001}
-    store-secret: ${MNSS_STORE_SECRET}
+    store-secret: ${MNSS_STORE_SECRET:change_me}
     retry-intervals: 1m,5m,15m,1h
   store:
     name: "Padaria e Lanchonete Nova Aliança"

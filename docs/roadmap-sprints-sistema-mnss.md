@@ -99,12 +99,12 @@
 
 **Referências e motivo:**
 - ARQ define monólito modular local + online, monólito modular, front-end por features e estrutura sugerida do repositório.
-- README define módulos sugeridos: `local-api`, `online-api`, `sync`, `admin`, `site`, `pdv`, `kds`.
+- README define módulos sugeridos: `local-api`, `online-api`, `sync` e `front-end` Angular unificado por features (`admin`, `site`, `pdv`, `kds`).
 - FLUXOS recomenda iniciar por estrutura modular, segurança, Flyway e banco base.
 
 | ID | História pequena | Back-end | Front-end | Testes unitários back-end | Testes unitários front-end | Docs |
 |---|---|---|---|---|---|---|
-| S01-H01 | Como dev, quero criar o monorepo para organizar back-end, front-end, infra e docs. | Criar estrutura `back-end/`, `infra/`, `docs/`. | Criar estrutura `front-end/` com apps `admin`, `pdv`, `kds`, `site-publico`. | Verificar estrutura modular básica e pacotes. | Teste simples validando que cada app Angular inicial renderiza o shell. | ARQ, README |
+| S01-H01 | Como dev, quero criar o monorepo para organizar back-end, front-end, infra e docs. | Criar estrutura `back-end/`, `infra/`, `docs/`. | Criar estrutura `front-end/` com app Angular único organizado por features `admin`, `site`, `pdv` e `kds`. | Verificar estrutura modular básica e pacotes. | Teste simples validando o shell Angular e as rotas principais por feature. | ARQ, README |
 | S01-H02 | Como dev, quero criar o bootstrap da API local. | Criar `local-app` Spring Boot com `/actuator/health` e `/api/ping`. | Criar environment local apontando para API local. | Context load; `/api/ping` retorna 200; profile `local` carrega. | Service HTTP chama `/api/ping` e trata sucesso/erro. | ARQ, DL |
 | S01-H03 | Como dev, quero criar o bootstrap da API online. | Criar `online-app` Spring Boot com profile `online`. | Criar environment online para `site-publico` e `admin`. | Context load; profile `online` exige variáveis obrigatórias. | Configuração de environment é carregada corretamente. | ARQ, DO |
 | S01-H04 | Como dev, quero padronizar resposta de erro. | Criar `ApiError`, `BusinessException`, `GlobalExceptionHandler`. | Criar componente/shared service para exibir erro padronizado. | Validação retorna 400; regra de negócio retorna código esperado; erro inesperado não vaza stacktrace. | Interceptor converte erro HTTP em mensagem exibível. | FLUXOS |

@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Sistema MNSS Online API
-  version: 0.0.1
+  version: 0.0.2
 paths:
   /api/health:
     get:
@@ -16,6 +16,17 @@ paths:
                 $ref: '#/components/schemas/HealthResponse'
         default:
           $ref: '#/components/responses/UnexpectedError'
+  /api/version:
+    get:
+      summary: Retorna a versao da API online.
+      operationId: onlineApiVersion
+      responses:
+        '200':
+          description: Versao atual da aplicacao.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionResponse'
   /actuator/health:
     get:
       summary: Health check tecnico do Spring Actuator.
@@ -23,6 +34,304 @@ paths:
       responses:
         '200':
           description: Estado tecnico da aplicacao.
+  /api/public/menu:
+    get:
+      summary: Lista o cardapio publico disponivel para canais online.
+      operationId: listPublicMenu
+      parameters:
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de categorias com produtos disponiveis.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PublicMenuResponse'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/public/info:
+    get:
+      summary: Retorna informacoes da loja para o site/cardapio.
+      operationId: getStoreInfo
+      responses:
+        '200':
+          description: Informacoes institucionais da loja.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoreInfoResponse'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/public/orders:
+    post:
+      summary: Cria pedido online.
+      operationId: createOnlineOrder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOnlineOrderRequest'
+      responses:
+        '201':
+          description: Pedido criado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnlineOrderResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/public/orders/{id}:
+    get:
+      summary: Busca pedido online por ID.
+      operationId: getOnlineOrderById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Pedido encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnlineOrderResponse'
+        '404':
+          description: Pedido nao encontrado.
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/public/payments/online:
+    post:
+      summary: Cria tentativa de pagamento online para pedido pendente.
+      operationId: createOnlinePayment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OnlinePaymentRequest'
+      responses:
+        '200':
+          description: Pagamento criado no gateway.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnlinePaymentResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/public/payments/webhook:
+    post:
+      summary: Recebe webhook do gateway e valida assinatura HMAC.
+      operationId: processPaymentWebhook
+      parameters:
+        - name: X-Signature
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentWebhookRequest'
+      responses:
+        '200':
+          description: Webhook processado com sucesso.
+        '400':
+          description: Payload invalido ou campos obrigatorios ausentes.
+        '401':
+          description: Assinatura invalida.
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/whatsapp/catalog:
+    get:
+      summary: Lista produtos ativos para atendimento via WhatsApp.
+      operationId: listWhatsAppCatalog
+      responses:
+        '200':
+          description: Produtos vendaveis no canal WhatsApp.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PublicProductResponse'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/whatsapp/conversations:
+    get:
+      summary: Lista conversas de atendimento WhatsApp.
+      operationId: listWhatsAppConversations
+      responses:
+        '200':
+          description: Lista de conversas.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConversationResponse'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/whatsapp/conversations/{id}/messages:
+    get:
+      summary: Lista mensagens de uma conversa.
+      operationId: getWhatsAppConversationMessages
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Mensagens da conversa.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MessageResponse'
+        '404':
+          description: Conversa nao encontrada.
+    post:
+      summary: Envia mensagem manual para uma conversa.
+      operationId: sendWhatsAppConversationMessage
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendMessageRequest'
+      responses:
+        '201':
+          description: Mensagem enviada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          description: Conversa nao encontrada.
+  /api/whatsapp/conversations/{id}/assign:
+    post:
+      summary: Atribui conversa para um usuario operador.
+      operationId: assignWhatsAppConversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignConversationRequest'
+      responses:
+        '200':
+          description: Conversa atribuida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationResponse'
+        '404':
+          description: Conversa nao encontrada.
+  /api/whatsapp/orders:
+    post:
+      summary: Cria pedido assistido a partir de uma conversa WhatsApp.
+      operationId: createWhatsAppAssistedOrder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWhatsAppOrderRequest'
+      responses:
+        '201':
+          description: Pedido criado e vinculado a conversa.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnlineOrderResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/whatsapp/webhook:
+    get:
+      summary: Endpoint de verificacao do webhook do provedor WhatsApp.
+      operationId: verifyWhatsAppWebhook
+      parameters:
+        - name: hub.mode
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: hub.verify_token
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: hub.challenge
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Token validado e challenge devolvido.
+          content:
+            text/plain:
+              schema:
+                type: string
+        '403':
+          description: Validacao rejeitada.
+    post:
+      summary: Recebe notificacoes do provedor WhatsApp.
+      operationId: receiveWhatsAppWebhook
+      parameters:
+        - name: X-Hub-Signature-256
+          in: header
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WhatsAppWebhookPayload'
+      responses:
+        '200':
+          description: Payload aceito para processamento assíncrono.
+        '401':
+          description: Assinatura invalida.
   /api/sync/events:
     post:
       summary: Recebe um evento de sincronizacao vindo da loja.
@@ -52,13 +361,29 @@ paths:
       responses:
         '200':
           description: Evento recebido com sucesso ou duplicado ignorado.
+        '400':
+          description: Payload invalido.
         '401':
           description: Assinatura ou Store ID invalidos.
         default:
           $ref: '#/components/responses/UnexpectedError'
+    get:
+      summary: Lista eventos de sincronizacao por ordem de criacao (desc).
+      operationId: listSyncEvents
+      responses:
+        '200':
+          description: Lista de eventos.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SyncEventResponse'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
   /api/sync/pending:
     get:
-      summary: Retorna eventos pendentes para serem baixados pela loja.
+      summary: Retorna eventos pendentes para uma loja por pull.
       operationId: getPendingSyncEvents
       parameters:
         - name: X-Store-ID
@@ -71,9 +396,15 @@ paths:
           required: true
           schema:
             type: string
+        - name: storeId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Deve ser igual ao X-Store-ID quando informado.
       responses:
         '200':
-          description: Lista de eventos pendentes.
+          description: Lista de eventos pendentes pertencentes a loja.
           content:
             application/json:
               schema:
@@ -82,9 +413,11 @@ paths:
                   $ref: '#/components/schemas/SyncEventResponse'
         '401':
           description: Assinatura ou Store ID invalidos.
+        '403':
+          description: Consulta para loja diferente do cabecalho.
   /api/sync/events/{id}/ack:
     post:
-      summary: Confirma o recebimento de um evento pela loja.
+      summary: Confirma o recebimento de um evento pela loja dona do evento.
       operationId: acknowledgeSyncEvent
       parameters:
         - name: id
@@ -106,6 +439,48 @@ paths:
       responses:
         '200':
           description: Evento confirmado.
+        '401':
+          description: Assinatura ou Store ID invalidos.
+        '403':
+          description: Evento nao pertence a loja informada.
+        '404':
+          description: Evento nao encontrado.
+  /api/sync/events/{id}/reprocess:
+    post:
+      summary: Reenvia evento para processamento manual.
+      operationId: reprocessSyncEvent
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Evento marcado como pendente novamente.
+        '404':
+          description: Evento nao encontrado.
+  /api/sync/events/{id}/ignore:
+    post:
+      summary: Ignora um evento com motivo operacional.
+      operationId: ignoreSyncEvent
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IgnoreSyncEventRequest'
+      responses:
+        '200':
+          description: Evento marcado como ignorado.
         '404':
           description: Evento nao encontrado.
   /api/sync/status:
@@ -121,6 +496,17 @@ paths:
                 type: object
                 additionalProperties:
                   type: integer
+  /api/sync/health:
+    get:
+      summary: Retorna o estado operacional da sincronizacao.
+      operationId: getSyncHealth
+      responses:
+        '200':
+          description: Status e detalhes do componente de sync.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncHealthResponse'
 components:
   responses:
     ValidationError:
@@ -183,6 +569,14 @@ components:
         message:
           type: string
           example: must not be blank
+    VersionResponse:
+      type: object
+      required:
+        - version
+      properties:
+        version:
+          type: string
+          example: 0.0.1-MVP
     HealthResponse:
       type: object
       required:
@@ -221,6 +615,325 @@ components:
             db: UP
             redis: UP
             rabbit: UP
+    PublicCategoryResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        displayOrder:
+          type: integer
+        imageUrl:
+          type: string
+          nullable: true
+    PublicProductResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+          format: double
+        promotionalPrice:
+          type: number
+          format: double
+          nullable: true
+        imageUrl:
+          type: string
+          nullable: true
+        unitType:
+          type: string
+        preparationSector:
+          type: string
+        preparationTimeMinutes:
+          type: integer
+          nullable: true
+    PublicMenuResponse:
+      type: object
+      properties:
+        category:
+          $ref: '#/components/schemas/PublicCategoryResponse'
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicProductResponse'
+    StoreInfoResponse:
+      type: object
+      properties:
+        name:
+          type: string
+        address:
+          type: string
+        hours:
+          type: string
+        phone:
+          type: string
+        description:
+          type: string
+    ConversationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        customerPhone:
+          type: string
+        customerName:
+          type: string
+        status:
+          type: string
+          enum: [OPEN, ASSIGNED, CLOSED]
+        assignedTo:
+          type: string
+          format: uuid
+          nullable: true
+        orderId:
+          type: string
+          format: uuid
+          nullable: true
+        lastMessage:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    MessageResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        direction:
+          type: string
+          enum: [INBOUND, OUTBOUND]
+        senderPhone:
+          type: string
+        senderName:
+          type: string
+          nullable: true
+        content:
+          type: string
+        messageType:
+          type: string
+        status:
+          type: string
+          enum: [RECEIVED, SENT, FAILED]
+        createdAt:
+          type: string
+          format: date-time
+    SendMessageRequest:
+      type: object
+      required:
+        - content
+      properties:
+        content:
+          type: string
+    AssignConversationRequest:
+      type: object
+      required:
+        - userId
+      properties:
+        userId:
+          type: string
+          format: uuid
+    CustomerRequest:
+      type: object
+      required:
+        - name
+        - phone
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        document:
+          type: string
+    AddressRequest:
+      type: object
+      properties:
+        street:
+          type: string
+        number:
+          type: string
+        neighborhood:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        zipCode:
+          type: string
+    OnlineOrderItemRequest:
+      type: object
+      required:
+        - productId
+        - quantity
+      properties:
+        productId:
+          type: string
+          format: uuid
+        quantity:
+          type: number
+          format: double
+        observation:
+          type: string
+    CreateOnlineOrderRequest:
+      type: object
+      required:
+        - customer
+        - deliveryType
+        - items
+        - paymentMethod
+      properties:
+        customer:
+          $ref: '#/components/schemas/CustomerRequest'
+        deliveryType:
+          type: string
+        address:
+          $ref: '#/components/schemas/AddressRequest'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OnlineOrderItemRequest'
+        notes:
+          type: string
+        paymentMethod:
+          type: string
+    OnlineOrderResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        orderNumber:
+          type: integer
+          format: int64
+        status:
+          type: string
+        paymentStatus:
+          type: string
+        deliveryType:
+          type: string
+        subtotal:
+          type: number
+          format: double
+        discountAmount:
+          type: number
+          format: double
+        deliveryFee:
+          type: number
+          format: double
+        totalAmount:
+          type: number
+          format: double
+        paymentMethod:
+          type: string
+    OnlinePaymentRequest:
+      type: object
+      required:
+        - orderId
+        - method
+      properties:
+        orderId:
+          type: string
+          format: uuid
+        method:
+          type: string
+    OnlinePaymentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        orderId:
+          type: string
+          format: uuid
+        method:
+          type: string
+        status:
+          type: string
+        amount:
+          type: number
+          format: double
+        transactionId:
+          type: string
+        qrCodeBase64:
+          type: string
+        qrCodeCopyPaste:
+          type: string
+        paymentUrl:
+          type: string
+    PaymentWebhookRequest:
+      type: object
+      required:
+        - transactionId
+        - status
+      properties:
+        transactionId:
+          type: string
+        status:
+          type: string
+        gateway:
+          type: string
+        payload:
+          type: object
+          additionalProperties: true
+    CreateWhatsAppOrderRequest:
+      type: object
+      required:
+        - conversationId
+        - customerPhone
+        - customerName
+        - deliveryType
+        - items
+      properties:
+        conversationId:
+          type: string
+          format: uuid
+        customerPhone:
+          type: string
+        customerName:
+          type: string
+        customerEmail:
+          type: string
+        deliveryType:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/WhatsAppOrderItemRequest'
+        notes:
+          type: string
+    WhatsAppOrderItemRequest:
+      type: object
+      required:
+        - productId
+      properties:
+        productId:
+          type: string
+          format: uuid
+        quantity:
+          type: number
+          format: double
+        observation:
+          type: string
+    WhatsAppWebhookPayload:
+      type: object
+      additionalProperties: true
     SyncEventRequest:
       type: object
       required:
@@ -237,6 +950,7 @@ components:
           type: string
         payload:
           type: object
+          additionalProperties: true
     SyncEventResponse:
       type: object
       required:
@@ -277,6 +991,7 @@ components:
           type: string
         payload:
           type: object
+          additionalProperties: true
         status:
           type: string
           enum: [PENDING, PROCESSING, SYNCED, FAILED, RETRYING, IGNORED, RECEIVED_BY_STORE, DEAD_LETTER]
@@ -298,3 +1013,18 @@ components:
           format: date-time
         version:
           type: integer
+    IgnoreSyncEventRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          example: Evento sem impacto operacional
+    SyncHealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: UP
+        details:
+          type: object
+          additionalProperties: true

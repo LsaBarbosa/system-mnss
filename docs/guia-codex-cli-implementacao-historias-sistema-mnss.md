@@ -34,6 +34,10 @@ Dentro do Codex CLI, cole o bloco da história correspondente e peça para ele i
 13. Front-end deve seguir **arquitetura Angular por features**: `domain`, `application`, `data-access`, `ui` e `pages`.
 14. Componentes `ui` não acessam `HttpClient`; integrações HTTP ficam em `data-access`.
 
+### Nota de estrutura do front-end
+
+Quando este guia mencionar "admin", "site", "pdv" e "kds", tratar como **features dentro de um único app Angular** em `front-end/`, e não como múltiplos apps separados.
+
 ---
 
 ## 2. Documentos de referência usados

@@ -8,9 +8,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import br.com.novaalianca.mnss.sharedinfra.health.TechnicalHealthResponse;
 import br.com.novaalianca.mnss.sharedinfra.health.TechnicalHealthService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.time.Instant;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -18,6 +22,10 @@ class HealthControllerTest {
     private final TechnicalHealthService technicalHealthService = mock(TechnicalHealthService.class);
     private final MockMvc mockMvc = MockMvcBuilders
             .standaloneSetup(new HealthController(technicalHealthService))
+            .setMessageConverters(new MappingJackson2HttpMessageConverter(
+                    new ObjectMapper()
+                            .registerModule(new JavaTimeModule())
+                            .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)))
             .build();
 
     @Test

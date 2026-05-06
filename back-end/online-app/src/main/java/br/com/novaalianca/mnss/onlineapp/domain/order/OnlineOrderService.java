@@ -16,6 +16,7 @@ import br.com.novaalianca.mnss.sync.SyncDirection;
 import br.com.novaalianca.mnss.sync.SyncEnvironment;
 import br.com.novaalianca.mnss.sync.SyncEventEntity;
 import br.com.novaalianca.mnss.sync.SyncEventStatus;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +32,8 @@ public class OnlineOrderService {
     private final OnlineCustomerAddressRepository addressRepository;
     private final OnlineProductRepository productRepository;
     private final SyncEventRepository syncEventRepository;
+    @Value("${mnss.sync.default-store-id:store-001}")
+    private String defaultStoreId = "store-001";
 
     public OnlineOrderService(
             OnlineOrderRepository orderRepository,
@@ -175,6 +178,7 @@ public class OnlineOrderService {
         payload.put("paymentStatus", order.getPaymentStatus().name());
         payload.put("deliveryType", order.getDeliveryType().name());
         payload.put("paymentMethod", order.getPaymentMethod().name());
+        payload.put("storeId", defaultStoreId);
         payload.put("subtotal", order.getSubtotal());
         payload.put("discountAmount", order.getDiscountAmount());
         payload.put("deliveryFee", order.getDeliveryFee());

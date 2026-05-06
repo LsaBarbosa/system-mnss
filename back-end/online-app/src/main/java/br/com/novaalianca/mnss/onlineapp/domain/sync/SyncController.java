@@ -10,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
 
@@ -18,6 +17,7 @@ import java.util.UUID;
 @RequestMapping("/api/sync")
 public class SyncController {
     private static final Logger log = LoggerFactory.getLogger(SyncController.class);
+    private static final String STORE_ID_FIELD = "storeId";
 
     private final SyncEventRepository repository;
     private final ObjectMapper objectMapper;
@@ -49,6 +49,9 @@ public class SyncController {
         // 2. Validate Signature
         try {
             Object payload = body.get("payload");
+            if (!(payload instanceof Map<?, ?>)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            }
             String payloadJson = objectMapper.writeValueAsString(payload);
             String dataToSign = idempotencyKey + ":" + payloadJson;
             
@@ -69,6 +72,14 @@ public class SyncController {
 
         // 4. Save Event
         try {
+            Object payload = body.get("payload");
+            @SuppressWarnings("unchecked")
+            Map<String, Object> rawPayload = payload == null
+                    ? Map.of()
+                    : (Map<String, Object>) payload;
+            Map<String, Object> eventPayload = new java.util.LinkedHashMap<>(rawPayload);
+            eventPayload.putIfAbsent(STORE_ID_FIELD, storeId);
+
             SyncEventEntity event = new SyncEventEntity(
                     idempotencyKey,
                     SyncDirection.LOCAL_TO_ONLINE,
@@ -76,7 +87,7 @@ public class SyncController {
                     SyncEnvironment.ONLINE,
                     (String) body.get("aggregateType"),
                     (String) body.get("eventType"),
-                    (Map<String, Object>) body.get("payload"),
+                    eventPayload,
                     SyncEventStatus.PENDING
             );
             
@@ -97,12 +108,21 @@ public class SyncController {
     @GetMapping("/pending")
     public ResponseEntity<java.util.List<SyncEventEntity>> getPendingEvents(
             @RequestHeader("X-Store-ID") String storeId,
-            @RequestHeader("X-Signature") String signature) {
+            @RequestHeader("X-Signature") String signature,
+            @RequestParam(value = "storeId", required = false) String requestedStoreId) {
 
         // Validate Store
         String secret = storeSecrets.get(storeId);
         if (secret == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String effectiveStoreId = storeId;
+        if (requestedStoreId != null && !requestedStoreId.isBlank()) {
+            if (!storeId.equals(requestedStoreId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+            effectiveStoreId = requestedStoreId;
         }
 
         // Validate Signature (Pull request signature validation)
@@ -112,7 +132,14 @@ public class SyncController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        return ResponseEntity.ok(repository.findByStatusAndDirection(SyncEventStatus.PENDING, SyncDirection.ONLINE_TO_LOCAL));
+        String targetStoreId = effectiveStoreId;
+        java.util.List<SyncEventEntity> pendingEvents = repository.findByStatusAndDirection(
+                SyncEventStatus.PENDING,
+                SyncDirection.ONLINE_TO_LOCAL);
+        java.util.List<SyncEventEntity> filtered = pendingEvents.stream()
+                .filter(event -> belongsToStore(event, targetStoreId))
+                .toList();
+        return ResponseEntity.ok(filtered);
     }
 
     @PostMapping("/events/{id}/ack")
@@ -134,6 +161,12 @@ public class SyncController {
         }
 
         return repository.findById(id).map(event -> {
+            if (!belongsToStore(event, storeId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).<Void>build();
+            }
+            if (event.getStatus() == SyncEventStatus.RECEIVED_BY_STORE) {
+                return ResponseEntity.ok().<Void>build();
+            }
             event.markAsReceivedByStore();
             repository.save(event);
             return ResponseEntity.ok().<Void>build();
@@ -171,5 +204,10 @@ public class SyncController {
             repository.save(event);
             return ResponseEntity.ok().<Void>build();
         }).orElse(ResponseEntity.notFound().build());
+    }
+
+    private boolean belongsToStore(SyncEventEntity event, String storeId) {
+        Object payloadStoreId = event.getPayload().get(STORE_ID_FIELD);
+        return payloadStoreId != null && storeId.equals(payloadStoreId.toString());
     }
 }

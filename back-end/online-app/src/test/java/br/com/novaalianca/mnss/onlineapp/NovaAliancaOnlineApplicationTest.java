@@ -3,16 +3,16 @@ package br.com.novaalianca.mnss.onlineapp;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import br.com.novaalianca.mnss.onlineapp.config.OnlineProfileProperties;
+import br.com.novaalianca.mnss.onlineapp.config.OnlineProfileConfiguration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.ActiveProfiles;
 
-import org.springframework.boot.test.mock.mockito.MockBean;
-
 @ActiveProfiles("online")
 @SpringBootTest(
+        classes = OnlineProfileConfiguration.class,
         webEnvironment = SpringBootTest.WebEnvironment.NONE,
         properties = {
             "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,"
@@ -36,14 +36,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
             "mnss.sync.stores={'test-store':'change_me'}"
         })
 class NovaAliancaOnlineApplicationTest {
-    @MockBean
-    private br.com.novaalianca.mnss.onlineapp.domain.sync.SyncEventRepository syncEventRepository;
-    @MockBean
-    private br.com.novaalianca.mnss.onlineapp.domain.catalog.OnlineCategoryRepository onlineCategoryRepository;
-    @MockBean
-    private br.com.novaalianca.mnss.onlineapp.domain.catalog.OnlineProductRepository onlineProductRepository;
-    @MockBean
-    private br.com.novaalianca.mnss.onlineapp.domain.catalog.OnlineProductAvailabilityRepository onlineProductAvailabilityRepository;
     @Autowired
     private Environment environment;
 

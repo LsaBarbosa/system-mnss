@@ -1,4 +1,88 @@
 services:
+  nova-alianca-online-api:
+    build:
+      context: ../../back-end
+      dockerfile: online-app/Dockerfile
+    container_name: nova-alianca-online-api
+    depends_on:
+      - postgres-online
+      - rabbitmq-online
+      - redis-online
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-online}
+      DB_HOST: postgres-online
+      DB_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-nova_alianca_online}
+      POSTGRES_USER: ${POSTGRES_USER:-nova_alianca}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me}
+      RABBITMQ_HOST: rabbitmq-online
+      RABBITMQ_PORT: 5672
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-nova_alianca}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-change_me}
+      REDIS_HOST: redis-online
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      ONLINE_API_PORT: ${ONLINE_API_PORT:-8080}
+      JWT_SECRET: ${JWT_SECRET:-change_me}
+      SYNC_MASTER_SECRET: ${SYNC_MASTER_SECRET:-change_me}
+      SITE_URL: ${SITE_URL:-https://padarianovaalianca.com.br}
+      API_URL: ${API_URL:-https://api.padarianovaalianca.com.br}
+      ADMIN_URL: ${ADMIN_URL:-https://admin.padarianovaalianca.com.br}
+      MNSS_STORE_001_SECRET: ${MNSS_STORE_001_SECRET:-change_me}
+      MNSS_DEFAULT_STORE_ID: ${MNSS_DEFAULT_STORE_ID:-store-001}
+      MNSS_PAYMENT_WEBHOOK_SECRET: ${MNSS_PAYMENT_WEBHOOK_SECRET:-change_me}
+      WHATSAPP_VERIFY_TOKEN: ${WHATSAPP_VERIFY_TOKEN:-change_me}
+    ports:
+      - "127.0.0.1:${ONLINE_API_PORT:-8080}:8080"
+    restart: unless-stopped
+
+  nova-alianca-site:
+    build:
+      context: ../../front-end
+      dockerfile: Dockerfile
+      args:
+        BUILD_CONFIGURATION: online
+    container_name: nova-alianca-site
+    depends_on:
+      - nova-alianca-online-api
+    restart: unless-stopped
+
+  nova-alianca-admin:
+    build:
+      context: ../../front-end
+      dockerfile: Dockerfile
+      args:
+        BUILD_CONFIGURATION: online
+    container_name: nova-alianca-admin
+    depends_on:
+      - nova-alianca-online-api
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:stable
+    container_name: nginx
+    depends_on:
+      - nova-alianca-online-api
+      - nova-alianca-site
+      - nova-alianca-admin
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/conf.d/api.conf:/etc/nginx/conf.d/api.conf:ro
+      - ./certbot/www:/var/www/certbot
+      - ./certbot/conf:/etc/letsencrypt
+    restart: unless-stopped
+
+  certbot:
+    image: certbot/certbot:latest
+    container_name: certbot
+    volumes:
+      - ./certbot/www:/var/www/certbot
+      - ./certbot/conf:/etc/letsencrypt
+    command: ["sh", "-c", "trap exit TERM; while :; do sleep 12h; done"]
+    restart: unless-stopped
+
   postgres-online:
     image: postgres:17
     container_name: postgres-online

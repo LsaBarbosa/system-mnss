@@ -1,6 +1,5 @@
 package br.com.novaalianca.mnss.onlineapp.domain.payment;
 
-import br.com.novaalianca.mnss.core.payment.PaymentMethod;
 import br.com.novaalianca.mnss.onlineapp.application.payment.PaymentGatewayPort;
 import br.com.novaalianca.mnss.onlineapp.application.payment.PaymentGatewayPort.PaymentGatewayRequest;
 import br.com.novaalianca.mnss.onlineapp.application.payment.PaymentGatewayPort.PaymentGatewayResponse;
@@ -15,6 +14,7 @@ import br.com.novaalianca.mnss.sync.SyncDirection;
 import br.com.novaalianca.mnss.sync.SyncEnvironment;
 import br.com.novaalianca.mnss.sync.SyncEventEntity;
 import br.com.novaalianca.mnss.sync.SyncEventStatus;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +29,8 @@ public class OnlinePaymentService {
     private final OnlineOrderRepository orderRepository;
     private final PaymentGatewayPort paymentGatewayPort;
     private final SyncEventRepository syncEventRepository;
+    @Value("${mnss.sync.default-store-id:store-001}")
+    private String defaultStoreId = "store-001";
 
     public OnlinePaymentService(
             OnlinePaymentRepository paymentRepository,
@@ -66,8 +68,9 @@ public class OnlinePaymentService {
                 order.getCustomer().getPhone()
         ));
 
-        // Note: transactionId is set here but status is PENDING until webhook
-        // However, some gateways return transactionId only after creation
+        payment.registerGatewayReference(
+                gatewayResponse.transactionId(),
+                gatewayResponse.rawResponse() != null ? gatewayResponse.rawResponse().toString() : null);
         payment = paymentRepository.save(payment);
 
         order.updateStatus(OrderStatus.PAYMENT_PENDING);
@@ -115,6 +118,9 @@ public class OnlinePaymentService {
         } else if ("REFUSED".equalsIgnoreCase(status)) {
             payment.markAsRefused(transactionId, payload);
             paymentRepository.save(payment);
+        } else if ("EXPIRED".equalsIgnoreCase(status)) {
+            payment.markAsExpired();
+            paymentRepository.save(payment);
         }
     }
 
@@ -128,6 +134,7 @@ public class OnlinePaymentService {
         payload.put("paymentStatus", order.getPaymentStatus().name());
         payload.put("deliveryType", order.getDeliveryType().name());
         payload.put("paymentMethod", order.getPaymentMethod().name());
+        payload.put("storeId", defaultStoreId);
         payload.put("subtotal", order.getSubtotal());
         payload.put("discountAmount", order.getDiscountAmount());
         payload.put("deliveryFee", order.getDeliveryFee());

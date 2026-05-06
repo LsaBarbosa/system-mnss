@@ -116,6 +116,20 @@ features/<feature>/
 - `pages` contem componentes roteáveis e composição de tela.
 - `core` guarda infraestrutura global; `shared` guarda peças reutilizáveis sem depender de features.
 
+### Decisão atual do front-end
+
+O front-end atual deve ser mantido como **um único app Angular** (`front-end/`) com isolamento por feature/layer.
+
+```text
+front-end/src/app/features/
+  admin/
+  site/
+  pdv/
+  kds/
+```
+
+Cada área funcional continua separada por rotas, guards e módulos internos, sem dividir o workspace em múltiplos apps Angular neste estágio.
+
 ## Nome técnico sugerido
 
 ```text
@@ -128,8 +142,5 @@ nova-alianca-system
 nova-alianca-local-api
 nova-alianca-online-api
 nova-alianca-sync
-nova-alianca-admin
-nova-alianca-site
-nova-alianca-pdv
-nova-alianca-kds
+nova-alianca-front-end-unificado (features: admin, site, pdv e kds)
 ```

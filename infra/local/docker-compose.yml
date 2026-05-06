@@ -1,4 +1,63 @@
 services:
+  nova-alianca-local-api:
+    build:
+      context: ../../back-end
+      dockerfile: local-app/Dockerfile
+    container_name: nova-alianca-local-api
+    depends_on:
+      - postgres-local
+      - rabbitmq-local
+      - redis-local
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-local}
+      DB_HOST: postgres-local
+      DB_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-nova_alianca_local}
+      POSTGRES_USER: ${POSTGRES_USER:-nova_alianca}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me}
+      RABBITMQ_HOST: rabbitmq-local
+      RABBITMQ_PORT: 5672
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-nova_alianca}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-change_me}
+      REDIS_HOST: redis-local
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      LOCAL_API_PORT: ${LOCAL_API_PORT:-8080}
+      AUTH_TOKEN_SECRET: ${AUTH_TOKEN_SECRET:-change_me_auth_token_secret}
+      AUTH_TOKEN_TTL: ${AUTH_TOKEN_TTL:-PT8H}
+      MNSS_INITIAL_ADMIN_USERNAME: ${MNSS_INITIAL_ADMIN_USERNAME:-admin}
+      MNSS_INITIAL_ADMIN_PASSWORD: ${MNSS_INITIAL_ADMIN_PASSWORD:-change_me_admin_password}
+      MNSS_INITIAL_ADMIN_EMAIL: ${MNSS_INITIAL_ADMIN_EMAIL:-admin@novaalianca.local}
+      ONLINE_SYNC_BASE_URL: ${ONLINE_SYNC_BASE_URL:-https://api.padarianovaalianca.com.br}
+      STORE_ID: ${STORE_ID:-nova-alianca-001}
+      STORE_SECRET: ${STORE_SECRET:-change_me}
+    ports:
+      - "127.0.0.1:${LOCAL_API_PORT:-8080}:8080"
+    restart: unless-stopped
+
+  nova-alianca-local-front:
+    build:
+      context: ../../front-end
+      dockerfile: Dockerfile
+      args:
+        BUILD_CONFIGURATION: local
+    container_name: nova-alianca-local-front
+    depends_on:
+      - nova-alianca-local-api
+    restart: unless-stopped
+
+  nginx-local:
+    image: nginx:stable
+    container_name: nginx-local
+    depends_on:
+      - nova-alianca-local-api
+      - nova-alianca-local-front
+    ports:
+      - "${NGINX_HTTP_PORT:-80}:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/conf.d/local.conf:/etc/nginx/conf.d/local.conf:ro
+    restart: unless-stopped
+
   postgres-local:
     image: postgres:17
     container_name: postgres-local
@@ -40,4 +99,3 @@ volumes:
   postgres_local_data:
   rabbitmq_local_data:
   redis_local_data:
-

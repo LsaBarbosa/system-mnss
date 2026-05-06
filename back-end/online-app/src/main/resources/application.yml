@@ -37,8 +37,11 @@ management:
 mnss:
   environment: online
   sync:
+    default-store-id: ${MNSS_DEFAULT_STORE_ID:store-001}
     stores:
       store-001: ${MNSS_STORE_001_SECRET}
+  payment:
+    webhook-secret: ${MNSS_PAYMENT_WEBHOOK_SECRET:change_me}
   store:
     name: "Padaria e Lanchonete Nova Aliança"
     address: "Rua Exemplo, 123 - Centro"

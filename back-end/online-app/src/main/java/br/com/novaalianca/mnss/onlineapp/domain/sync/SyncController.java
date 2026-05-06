@@ -21,13 +21,15 @@ public class SyncController {
 
     private final SyncEventRepository repository;
     private final ObjectMapper objectMapper;
+    private final SyncEventMapper syncEventMapper;
 
     @Value("#{${mnss.sync.stores}}")
     private Map<String, String> storeSecrets;
 
-    public SyncController(SyncEventRepository repository, ObjectMapper objectMapper) {
+    public SyncController(SyncEventRepository repository, ObjectMapper objectMapper, SyncEventMapper syncEventMapper) {
         this.repository = repository;
         this.objectMapper = objectMapper;
+        this.syncEventMapper = syncEventMapper;
     }
 
     @PostMapping("/events")
@@ -106,7 +108,7 @@ public class SyncController {
     }
 
     @GetMapping("/pending")
-    public ResponseEntity<java.util.List<SyncEventEntity>> getPendingEvents(
+    public ResponseEntity<java.util.List<SyncEventDto>> getPendingEvents(
             @RequestHeader("X-Store-ID") String storeId,
             @RequestHeader("X-Signature") String signature,
             @RequestParam(value = "storeId", required = false) String requestedStoreId) {
@@ -125,19 +127,17 @@ public class SyncController {
             effectiveStoreId = requestedStoreId;
         }
 
-        // Validate Signature (Pull request signature validation)
-        // In this case, we can sign the storeId + "pull" or similar
         String dataToSign = storeId + ":pull";
         if (!HmacUtils.verifyHmac(dataToSign, signature, secret)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         String targetStoreId = effectiveStoreId;
-        java.util.List<SyncEventEntity> pendingEvents = repository.findByStatusAndDirection(
-                SyncEventStatus.PENDING,
-                SyncDirection.ONLINE_TO_LOCAL);
-        java.util.List<SyncEventEntity> filtered = pendingEvents.stream()
+        java.util.List<SyncEventDto> filtered = repository.findByStatusAndDirection(
+                        SyncEventStatus.PENDING,
+                        SyncDirection.ONLINE_TO_LOCAL).stream()
                 .filter(event -> belongsToStore(event, targetStoreId))
+                .map(syncEventMapper::toDto)
                 .toList();
         return ResponseEntity.ok(filtered);
     }
@@ -174,8 +174,9 @@ public class SyncController {
     }
 
     @GetMapping("/events")
-    public ResponseEntity<java.util.List<SyncEventEntity>> listEvents() {
-        return ResponseEntity.ok(repository.findAllByOrderByCreatedAtDesc());
+    public ResponseEntity<java.util.List<SyncEventDto>> listEvents() {
+        return ResponseEntity.ok(
+                syncEventMapper.toDtoList(repository.findAllByOrderByCreatedAtDesc()));
     }
 
     @GetMapping("/status")

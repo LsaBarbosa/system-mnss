@@ -103,16 +103,15 @@ Front-end:
 
 ```text
 features/<feature>/
-  domain/
-  application/
-  data-access/
-  ui/
-  pages/
+  domain/       # modelos TypeScript e interfaces
+  data-access/  # services HTTP e DTOs
+  components/   # componentes presentacionais (opcional)
+  pages/        # componentes roteáveis
 ```
 
-- `data-access` concentra HTTP, DTOs e mappers.
-- `application` concentra facades, estado e orquestração.
-- `ui` contem componentes presentacionais.
+- `domain` concentra modelos TypeScript, interfaces e tipos da feature.
+- `data-access` concentra services HTTP, DTOs e acesso à API.
+- `components` é opcional; use quando há componentes presentacionais reutilizáveis dentro da feature.
 - `pages` contem componentes roteáveis e composição de tela.
 - `core` guarda infraestrutura global; `shared` guarda peças reutilizáveis sem depender de features.
 

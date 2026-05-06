@@ -1,8 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { OnlinePaymentService, PaymentResponse } from '../../services/online-payment.service';
-import { OrderService, OrderResponse } from '../../services/order.service';
+import { OnlinePaymentService, PaymentResponse } from '../../data-access/online-payment.service';
+import { OrderService, OrderResponse } from '../../data-access/order.service';
 import { interval, Subscription, switchMap, takeWhile } from 'rxjs';
 
 @Component({

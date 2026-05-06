@@ -6,7 +6,7 @@ import {
   ConversationResponse, 
   MessageResponse, 
   CreateWhatsAppOrderRequest 
-} from '../models/whatsapp.model';
+} from '../domain/whatsapp.model';
 import { PublicProductResponse } from '../../site-publico/models/public-menu.model';
 import { OrderResponse } from '../../../core/models/order.model';
 

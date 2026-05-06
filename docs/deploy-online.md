@@ -91,8 +91,9 @@ rabbitmq-online
 redis-online
 nginx
 certbot
-sync-worker-online
 ```
+
+> **Nota sobre sincronização:** Não há serviço `sync-worker-online` separado. O worker de processamento (`SyncInboxWorker`) roda embutido dentro do container `nova-alianca-online-api` via agendamento `@Scheduled`. Nenhum container adicional é necessário para sincronização.
 
 ## 6. Estrutura de diretórios na VPS
 

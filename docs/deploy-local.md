@@ -67,8 +67,9 @@ postgres-local
 rabbitmq-local
 redis-local
 nginx-local
-sync-worker-local
 ```
+
+> **Nota sobre sincronização:** Não há serviço `sync-worker-local` separado. O worker de sincronização (`SyncOutboxWorker`) roda embutido dentro do container `nova-alianca-local-api` via agendamento `@Scheduled`. Nenhum container adicional é necessário para sincronização.
 
 Opcionalmente:
 

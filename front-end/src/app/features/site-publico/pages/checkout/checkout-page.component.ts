@@ -2,9 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { CartService, CartItem } from '../../services/cart.service';
-import { OrderService, CreateOrderRequest } from '../../services/order.service';
-import { OnlinePaymentService } from '../../services/online-payment.service';
+import { CartService, CartItem } from '../../data-access/cart.service';
+import { OrderService, CreateOrderRequest } from '../../data-access/order.service';
+import { OnlinePaymentService } from '../../data-access/online-payment.service';
 import { Observable } from 'rxjs';
 
 @Component({

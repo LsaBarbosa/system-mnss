@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SyncService, SyncEvent, SyncStatusCounts } from '../../services/sync.service';
+import { SyncService, SyncEvent, SyncStatusCounts } from '../../data-access/sync.service';
 
 @Component({
   selector: 'app-sync-dashboard',

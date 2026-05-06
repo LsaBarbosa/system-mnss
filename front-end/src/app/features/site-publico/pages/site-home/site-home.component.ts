@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { PublicMenuService } from '../../services/public-menu.service';
-import { StoreInfoResponse } from '../../models/public-menu.model';
+import { PublicMenuService } from '../../data-access/public-menu.service';
+import { StoreInfoResponse } from '../../domain/public-menu.model';
 
 @Component({
   selector: 'app-site-home',

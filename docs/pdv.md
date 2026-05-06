@@ -336,7 +336,7 @@ Rodapé:
 
 ## 16. APIs do PDV
 
-Endpoints sugeridos:
+Endpoints do contexto de caixa (app PDV):
 
 ```text
 POST   /api/pdv/sales
@@ -350,6 +350,11 @@ POST   /api/pdv/sales/{saleId}/cancel
 GET    /api/pdv/products
 GET    /api/pdv/products/barcode/{barcode}
 ```
+
+> **Dois endpoints de pagamento coexistem por design:**
+> - `POST /api/pdv/sales/{saleId}/payment` — usado exclusivamente pelo app PDV (caixa). `saleId` é o ID da venda em andamento.
+> - `POST /api/orders/{orderId}/payments` — usado pela API genérica de ordens (admin, integrações). `orderId` é o mesmo ID, mas o contexto é diferente.
+> Ambos delegam ao `PaymentService.payOrder()`. O app PDV deve usar sempre o endpoint `/pdv/sales/`; integradores externos devem usar `/orders/`.
 
 ## 17. APIs de caixa
 

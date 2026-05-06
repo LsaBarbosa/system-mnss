@@ -375,13 +375,13 @@ class PdvSaleServiceTest {
 
     private PdvSaleService service() {
         return new PdvSaleService(
-                Optional.of(cashRegisterRepository),
-                Optional.of(orderRepository),
-                Optional.of(orderItemRepository),
-                Optional.of(productRepository),
-                Optional.of(productAvailabilityRepository),
-                Optional.of(paymentRepository),
-                Optional.of(syncEventRepository),
+                cashRegisterRepository,
+                orderRepository,
+                orderItemRepository,
+                productRepository,
+                productAvailabilityRepository,
+                paymentRepository,
+                syncEventRepository,
                 pdvSyncEventService,
                 hardwareAdapterService,
                 cashRegisterService,

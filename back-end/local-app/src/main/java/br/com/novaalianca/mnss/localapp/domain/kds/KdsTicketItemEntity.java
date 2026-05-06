@@ -1,7 +1,7 @@
 package br.com.novaalianca.mnss.localapp.domain.kds;
 
 import br.com.novaalianca.mnss.localapp.domain.order.OrderItemEntity;
-import br.com.novaalianca.mnss.localapp.domain.shared.BaseEntity;
+import br.com.novaalianca.mnss.sharedinfra.domain.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

@@ -1,9 +1,9 @@
 package br.com.novaalianca.mnss.localapp.domain.kds;
 
 public enum KdsTicketStatus {
-    WAITING,
-    IN_PREPARATION,
+    PENDING,
+    PREPARING,
     READY,
-    FINISHED,
+    DELIVERED,
     CANCELED
 }

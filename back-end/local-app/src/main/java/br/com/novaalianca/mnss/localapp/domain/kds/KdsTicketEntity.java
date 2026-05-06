@@ -2,7 +2,7 @@ package br.com.novaalianca.mnss.localapp.domain.kds;
 
 import br.com.novaalianca.mnss.core.catalog.PreparationSector;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderEntity;
-import br.com.novaalianca.mnss.localapp.domain.shared.BaseEntity;
+import br.com.novaalianca.mnss.sharedinfra.domain.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -81,7 +81,7 @@ public class KdsTicketEntity extends BaseEntity {
     }
 
     public void start() {
-        this.status = KdsTicketStatus.IN_PREPARATION;
+        this.status = KdsTicketStatus.PREPARING;
         this.startedAt = Instant.now();
         touch();
     }
@@ -93,7 +93,7 @@ public class KdsTicketEntity extends BaseEntity {
     }
 
     public void finish() {
-        this.status = KdsTicketStatus.FINISHED;
+        this.status = KdsTicketStatus.DELIVERED;
         this.finishedAt = Instant.now();
         touch();
     }

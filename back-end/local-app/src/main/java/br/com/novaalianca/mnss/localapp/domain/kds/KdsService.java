@@ -39,12 +39,12 @@ public class KdsService {
                 .collect(Collectors.groupingBy(OrderItemEntity::getPreparationSector));
 
         itemsBySector.forEach((sector, sectorItems) -> {
-            KdsTicketEntity ticket = new KdsTicketEntity(order, sector, KdsTicketStatus.WAITING);
+            KdsTicketEntity ticket = new KdsTicketEntity(order, sector, KdsTicketStatus.PENDING);
             ticketRepository.save(ticket);
 
             List<KdsTicketItemEntity> ticketItems = sectorItems.stream()
                     .map(item -> {
-                        KdsTicketItemEntity ticketItem = new KdsTicketItemEntity(ticket, item, KdsTicketStatus.WAITING);
+                        KdsTicketItemEntity ticketItem = new KdsTicketItemEntity(ticket, item, KdsTicketStatus.PENDING);
                         return itemRepository.save(ticketItem);
                     })
                     .collect(Collectors.toList());
@@ -56,8 +56,8 @@ public class KdsService {
     @Transactional
     public KdsTicketResponse startTicket(UUID id) {
         KdsTicketEntity ticket = findTicket(id);
-        if (ticket.getStatus() != KdsTicketStatus.WAITING) {
-            throw new br.com.novaalianca.mnss.sharedinfra.web.error.BusinessException("INVALID_STATUS", "Only WAITING tickets can be started", org.springframework.http.HttpStatus.BAD_REQUEST);
+        if (ticket.getStatus() != KdsTicketStatus.PENDING) {
+            throw new br.com.novaalianca.mnss.sharedinfra.web.error.BusinessException("INVALID_STATUS", "Only PENDING tickets can be started", org.springframework.http.HttpStatus.BAD_REQUEST);
         }
         ticket.start();
         KdsTicketEntity saved = ticketRepository.save(ticket);
@@ -120,7 +120,7 @@ public class KdsService {
     private void checkAndUpdateOrderStatus(OrderEntity order) {
         List<KdsTicketEntity> orderTickets = ticketRepository.findByOrder(order);
         boolean allTicketsReady = orderTickets.stream()
-                .allMatch(t -> t.getStatus() == KdsTicketStatus.READY || t.getStatus() == KdsTicketStatus.FINISHED || t.getStatus() == KdsTicketStatus.CANCELED);
+                .allMatch(t -> t.getStatus() == KdsTicketStatus.READY || t.getStatus() == KdsTicketStatus.DELIVERED || t.getStatus() == KdsTicketStatus.CANCELED);
         
         if (allTicketsReady && !orderTickets.isEmpty()) {
             order.markAsReady();

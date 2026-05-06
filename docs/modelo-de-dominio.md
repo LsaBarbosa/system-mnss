@@ -77,6 +77,7 @@ preparationSector
 preparationTimeMinutes
 active
 available
+stockControlled
 sellOnPdv
 sellOnline
 sellOnWhatsapp
@@ -569,10 +570,10 @@ finishedAt
 
 ```java
 public enum KdsTicketStatus {
-    WAITING,
-    IN_PREPARATION,
+    PENDING,
+    PREPARING,
     READY,
-    FINISHED,
+    DELIVERED,
     CANCELED
 }
 ```
@@ -735,6 +736,7 @@ GERENTE
 CAIXA
 ATENDENTE
 COZINHA
+EXPEDICAO
 ENTREGADOR
 CONSULTA
 ```

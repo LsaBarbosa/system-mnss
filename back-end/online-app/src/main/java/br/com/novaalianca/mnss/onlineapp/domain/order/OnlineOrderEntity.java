@@ -14,7 +14,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -64,10 +64,10 @@ public class OnlineOrderEntity extends BaseEntity {
     private String notes;
 
     @Column(name = "finished_at")
-    private LocalDateTime finishedAt;
+    private Instant finishedAt;
 
     @Column(name = "canceled_at")
-    private LocalDateTime canceledAt;
+    private Instant canceledAt;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<OnlineOrderItemEntity> items = new LinkedHashSet<>();
@@ -105,9 +105,9 @@ public class OnlineOrderEntity extends BaseEntity {
         if (newStatus == null) throw new IllegalArgumentException("Status is required");
         this.status = newStatus;
         if (newStatus == OrderStatus.FINISHED) {
-            this.finishedAt = LocalDateTime.now();
+            this.finishedAt = Instant.now();
         } else if (newStatus == OrderStatus.CANCELED) {
-            this.canceledAt = LocalDateTime.now();
+            this.canceledAt = Instant.now();
         }
     }
 
@@ -128,7 +128,7 @@ public class OnlineOrderEntity extends BaseEntity {
     public BigDecimal getDeliveryFee() { return deliveryFee; }
     public BigDecimal getTotalAmount() { return totalAmount; }
     public String getNotes() { return notes; }
-    public LocalDateTime getFinishedAt() { return finishedAt; }
-    public LocalDateTime getCanceledAt() { return canceledAt; }
+    public Instant getFinishedAt() { return finishedAt; }
+    public Instant getCanceledAt() { return canceledAt; }
     public Set<OnlineOrderItemEntity> getItems() { return Set.copyOf(items); }
 }

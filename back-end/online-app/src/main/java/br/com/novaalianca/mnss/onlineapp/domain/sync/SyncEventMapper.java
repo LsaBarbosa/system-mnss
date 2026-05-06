@@ -1,6 +1,6 @@
 package br.com.novaalianca.mnss.onlineapp.domain.sync;
 
-import br.com.novaalianca.mnss.sync.SyncEventEntity;
+import br.com.novaalianca.mnss.sync.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 

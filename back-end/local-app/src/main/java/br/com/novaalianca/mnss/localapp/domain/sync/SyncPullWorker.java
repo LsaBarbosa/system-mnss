@@ -1,7 +1,7 @@
 package br.com.novaalianca.mnss.localapp.domain.sync;
 
 import br.com.novaalianca.mnss.sharedinfra.security.HmacUtils;
-import br.com.novaalianca.mnss.sync.SyncEventEntity;
+import br.com.novaalianca.mnss.sync.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,15 +50,15 @@ public class SyncPullWorker {
 
             HttpEntity<Void> entity = new HttpEntity<>(headers);
             
-            ResponseEntity<List<SyncEventEntity>> response = restTemplate.exchange(
+            ResponseEntity<List<SyncEventDto>> response = restTemplate.exchange(
                     onlineUrl + "/api/sync/pending",
                     HttpMethod.GET,
                     entity,
-                    new ParameterizedTypeReference<List<SyncEventEntity>>() {}
+                    new ParameterizedTypeReference<List<SyncEventDto>>() {}
             );
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                List<SyncEventEntity> events = response.getBody();
+                List<SyncEventDto> events = response.getBody();
                 if (!events.isEmpty()) {
                     log.info("Pulled {} events from online", events.size());
                     events.forEach(this::processAndAck);
@@ -69,12 +69,12 @@ public class SyncPullWorker {
         }
     }
 
-    private void processAndAck(SyncEventEntity event) {
+    private void processAndAck(SyncEventDto event) {
         try {
-            inboxService.processEvent(event.getAggregateType(), event.getEventType(), event.getPayload());
-            sendAck(event.getId());
+            inboxService.processEvent(event.aggregateType(), event.eventType(), event.payload());
+            sendAck(event.id());
         } catch (Exception e) {
-            log.error("Error processing pulled event {}: {}", event.getId(), e.getMessage());
+            log.error("Error processing pulled event {}: {}", event.id(), e.getMessage());
         }
     }
 

@@ -44,13 +44,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class PdvSaleService {
     private static final BigDecimal DEFAULT_QUANTITY = BigDecimal.ONE.setScale(3, RoundingMode.HALF_UP);
 
-    private final Optional<CashRegisterRepository> cashRegisterRepository;
-    private final Optional<OrderRepository> orderRepository;
-    private final Optional<OrderItemRepository> orderItemRepository;
-    private final Optional<ProductRepository> productRepository;
-    private final Optional<ProductAvailabilityRepository> productAvailabilityRepository;
-    private final Optional<PaymentRepository> paymentRepository;
-    private final Optional<SyncEventRepository> syncEventRepository;
+    private final CashRegisterRepository cashRegisterRepository;
+    private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
+    private final ProductRepository productRepository;
+    private final ProductAvailabilityRepository productAvailabilityRepository;
+    private final PaymentRepository paymentRepository;
+    private final SyncEventRepository syncEventRepository;
     private final PdvSyncEventService pdvSyncEventService;
     private final HardwareAdapterService hardwareAdapterService;
     private final CashRegisterService cashRegisterService;
@@ -59,13 +59,13 @@ public class PdvSaleService {
     private final KdsService kdsService;
 
     PdvSaleService(
-            Optional<CashRegisterRepository> cashRegisterRepository,
-            Optional<OrderRepository> orderRepository,
-            Optional<OrderItemRepository> orderItemRepository,
-            Optional<ProductRepository> productRepository,
-            Optional<ProductAvailabilityRepository> productAvailabilityRepository,
-            Optional<PaymentRepository> paymentRepository,
-            Optional<SyncEventRepository> syncEventRepository,
+            CashRegisterRepository cashRegisterRepository,
+            OrderRepository orderRepository,
+            OrderItemRepository orderItemRepository,
+            ProductRepository productRepository,
+            ProductAvailabilityRepository productAvailabilityRepository,
+            PaymentRepository paymentRepository,
+            SyncEventRepository syncEventRepository,
             PdvSyncEventService pdvSyncEventService,
             HardwareAdapterService hardwareAdapterService,
             CashRegisterService cashRegisterService,
@@ -320,7 +320,7 @@ public class PdvSaleService {
                 .toList();
         
         SyncEventStatus syncStatus = syncEventRepository
-                .flatMap(repo -> repo.findFirstByAggregateIdOrderByCreatedAtDesc(order.getId()))
+                .findFirstByAggregateIdOrderByCreatedAtDesc(order.getId())
                 .map(SyncEventEntity::getStatus)
                 .orElse(null);
 
@@ -385,7 +385,7 @@ public class PdvSaleService {
     private OrderStatus nextFinishedStatus(List<OrderItemEntity> items) {
         boolean requiresPreparation = items.stream()
                 .anyMatch(i -> i.getPreparationSector() != br.com.novaalianca.mnss.core.catalog.PreparationSector.SEM_PREPARO);
-        return requiresPreparation ? OrderStatus.SENT_TO_STORE : OrderStatus.FINISHED;
+        return requiresPreparation ? OrderStatus.ACCEPTED : OrderStatus.FINISHED;
     }
 
     private BigDecimal normalizeQuantity(BigDecimal quantity) {
@@ -409,29 +409,26 @@ public class PdvSaleService {
     }
 
     private CashRegisterRepository cashRegisterRepository() {
-        return cashRegisterRepository
-                .orElseThrow(() -> new IllegalStateException("Cash register repository is not available."));
+        return cashRegisterRepository;
     }
 
     private OrderRepository orderRepository() {
-        return orderRepository.orElseThrow(() -> new IllegalStateException("Order repository is not available."));
+        return orderRepository;
     }
 
     private OrderItemRepository orderItemRepository() {
-        return orderItemRepository
-                .orElseThrow(() -> new IllegalStateException("Order item repository is not available."));
+        return orderItemRepository;
     }
 
     private ProductRepository productRepository() {
-        return productRepository.orElseThrow(() -> new IllegalStateException("Product repository is not available."));
+        return productRepository;
     }
 
     private ProductAvailabilityRepository productAvailabilityRepository() {
-        return productAvailabilityRepository
-                .orElseThrow(() -> new IllegalStateException("Product availability repository is not available."));
+        return productAvailabilityRepository;
     }
 
     private PaymentRepository paymentRepository() {
-        return paymentRepository.orElseThrow(() -> new IllegalStateException("Payment repository is not available."));
+        return paymentRepository;
     }
 }

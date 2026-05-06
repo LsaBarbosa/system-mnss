@@ -1,8 +1,4 @@
-package br.com.novaalianca.mnss.onlineapp.domain.sync;
-
-import br.com.novaalianca.mnss.sync.SyncDirection;
-import br.com.novaalianca.mnss.sync.SyncEnvironment;
-import br.com.novaalianca.mnss.sync.SyncEventStatus;
+package br.com.novaalianca.mnss.sync;
 
 import java.time.Instant;
 import java.util.Map;

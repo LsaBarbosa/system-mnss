@@ -142,6 +142,11 @@ public class OrderEntity extends BaseEntity {
         return totalAmount;
     }
 
+    public void setNotes(String notes) {
+        this.notes = notes;
+        touch();
+    }
+
     public String getNotes() {
         return notes;
     }

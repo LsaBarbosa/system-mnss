@@ -78,7 +78,7 @@ public class SyncInboxService {
         
         // Notes if present
         if (payload.containsKey("notes")) {
-            // order.setNotes((String) payload.get("notes")); // Add notes field to OrderEntity if needed
+            order.setNotes((String) payload.get("notes"));
         }
 
         order = orderRepository.save(order);

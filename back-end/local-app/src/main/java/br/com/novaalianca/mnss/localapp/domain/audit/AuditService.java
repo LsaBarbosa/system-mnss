@@ -5,9 +5,9 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class AuditService {
-    private final Optional<AuditLogRepository> auditLogRepository;
+    private final AuditLogRepository auditLogRepository;
 
-    public AuditService(Optional<AuditLogRepository> auditLogRepository) {
+    public AuditService(AuditLogRepository auditLogRepository) {
         this.auditLogRepository = auditLogRepository;
     }
 
@@ -19,8 +19,6 @@ public class AuditService {
                 request.entityId(),
                 request.details(),
                 request.ipAddress());
-        return auditLogRepository
-                .orElseThrow(() -> new IllegalStateException("Audit repository is not available."))
-                .save(log);
+        return auditLogRepository.save(log);
     }
 }

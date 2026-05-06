@@ -96,7 +96,7 @@ public class PdvSaleService {
                 PaymentStatus.PENDING,
                 DeliveryType.LOCAL_CONSUMPTION);
         order.updateTotals(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
-        OrderEntity saved = orderRepository().save(order);
+        OrderEntity saved = orderRepository.save(order);
         return response(saved);
     }
 
@@ -116,7 +116,7 @@ public class PdvSaleService {
                 OrderItemStatus.CREATED,
                 product.getPreparationSector(),
                 request.observation());
-        OrderItemEntity saved = orderItemRepository().save(item);
+        OrderItemEntity saved = orderItemRepository.save(item);
         recalculate(sale, appendCurrentItem(sale.getId(), saved));
         return response(sale);
     }
@@ -125,29 +125,29 @@ public class PdvSaleService {
     public PdvSaleResponse updateItem(UUID saleId, UUID itemId, PatchPdvSaleItemRequest request) {
         OrderEntity sale = editableSale(saleId);
         BigDecimal quantity = normalizeQuantity(request.quantity());
-        OrderItemEntity item = orderItemRepository()
+        OrderItemEntity item = orderItemRepository
                 .findByIdAndOrderId(itemId, saleId)
                 .orElseThrow(() -> notFound("SALE_ITEM_NOT_FOUND", "Item nao encontrado."));
         item.changeQuantity(quantity);
-        orderItemRepository().save(item);
-        recalculate(sale, orderItemRepository().findByOrderIdOrderByCreatedAtAsc(sale.getId()));
+        orderItemRepository.save(item);
+        recalculate(sale, orderItemRepository.findByOrderIdOrderByCreatedAtAsc(sale.getId()));
         return response(sale);
     }
 
     @Transactional
     public PdvSaleResponse removeItem(UUID saleId, UUID itemId) {
         OrderEntity sale = editableSale(saleId);
-        OrderItemEntity item = orderItemRepository()
+        OrderItemEntity item = orderItemRepository
                 .findByIdAndOrderId(itemId, saleId)
                 .orElseThrow(() -> notFound("SALE_ITEM_NOT_FOUND", "Item nao encontrado."));
-        orderItemRepository().delete(item);
-        recalculate(sale, orderItemRepository().findByOrderIdOrderByCreatedAtAsc(sale.getId()));
+        orderItemRepository.delete(item);
+        recalculate(sale, orderItemRepository.findByOrderIdOrderByCreatedAtAsc(sale.getId()));
         return response(sale);
     }
 
     @Transactional
     public PdvSaleResponse finishSale(UUID saleId, UUID actorUserId) {
-        OrderEntity sale = orderRepository()
+        OrderEntity sale = orderRepository
                 .findById(saleId)
                 .orElseThrow(() -> notFound("SALE_NOT_FOUND", "Venda nao encontrada."));
         
@@ -155,12 +155,12 @@ public class PdvSaleService {
             return response(sale);
         }
 
-        List<OrderItemEntity> items = orderItemRepository().findByOrderIdOrderByCreatedAtAsc(sale.getId());
+        List<OrderItemEntity> items = orderItemRepository.findByOrderIdOrderByCreatedAtAsc(sale.getId());
         if (items.isEmpty()) {
             throw new BusinessException("EMPTY_SALE", "Venda sem itens nao pode ser finalizada.", HttpStatus.BAD_REQUEST);
         }
 
-        List<PaymentEntity> payments = paymentRepository().findByOrderIdOrderByCreatedAtAsc(saleId);
+        List<PaymentEntity> payments = paymentRepository.findByOrderIdOrderByCreatedAtAsc(saleId);
         BigDecimal paidTotal = payments.stream()
                 .filter(p -> p.getStatus() == PaymentStatus.PAID)
                 .map(PaymentEntity::getAmount)
@@ -172,7 +172,7 @@ public class PdvSaleService {
         }
 
         sale.changeStatus(nextFinishedStatus(items));
-        orderRepository().save(sale);
+        orderRepository.save(sale);
 
         pdvSyncEventService.recordOrderFinishedEvent(sale);
 
@@ -199,12 +199,12 @@ public class PdvSaleService {
 
     @Transactional(readOnly = true)
     public void reprintReceipt(UUID saleId, UUID actorUserId) {
-        OrderEntity sale = orderRepository()
+        OrderEntity sale = orderRepository
                 .findById(saleId)
                 .orElseThrow(() -> notFound("SALE_NOT_FOUND", "Venda nao encontrada."));
         
-        List<OrderItemEntity> items = orderItemRepository().findByOrderIdOrderByCreatedAtAsc(saleId);
-        List<PaymentEntity> payments = paymentRepository().findByOrderIdOrderByCreatedAtAsc(saleId);
+        List<OrderItemEntity> items = orderItemRepository.findByOrderIdOrderByCreatedAtAsc(saleId);
+        List<PaymentEntity> payments = paymentRepository.findByOrderIdOrderByCreatedAtAsc(saleId);
         
         auditService.record(new AuditLogRequest(actorUserId, "RECEIPT_REPRINTED", "Order", saleId, Map.of(), null));
         hardwareAdapterService.printReceipt(sale, items, payments);
@@ -229,7 +229,7 @@ public class PdvSaleService {
         }
 
         sale.updateTotals(sale.getSubtotal(), discountAmount, sale.getDeliveryFee(), money(newTotal));
-        OrderEntity saved = orderRepository().save(sale);
+        OrderEntity saved = orderRepository.save(sale);
 
         Map<String, Object> details = new LinkedHashMap<>();
         details.put("discountAmount", discountAmount.toPlainString());
@@ -241,8 +241,12 @@ public class PdvSaleService {
     }
 
     @Transactional
-    public PdvSaleResponse cancelSale(UUID saleId, CancelSaleRequest request, UUID actorUserId) {
-        OrderEntity sale = orderRepository()
+    public PdvSaleResponse cancelSale(UUID saleId, CancelSaleRequest request, UUID actorUserId, List<String> roles) {
+        if (!roles.contains(RoleName.GERENTE) && !roles.contains(RoleName.ADMIN)) {
+            throw new BusinessException("CANCEL_SALE_FORBIDDEN", "Cancelamento de venda exige permissao de gerente.", HttpStatus.FORBIDDEN);
+        }
+
+        OrderEntity sale = orderRepository
                 .findById(saleId)
                 .orElseThrow(() -> notFound("SALE_NOT_FOUND", "Venda nao encontrada."));
 
@@ -251,21 +255,21 @@ public class PdvSaleService {
         }
 
         sale.changeStatus(OrderStatus.CANCELED);
-        orderRepository().save(sale);
+        orderRepository.save(sale);
 
-        List<PaymentEntity> payments = paymentRepository().findByOrderIdOrderByCreatedAtAsc(saleId);
+        List<PaymentEntity> payments = paymentRepository.findByOrderIdOrderByCreatedAtAsc(saleId);
         for (PaymentEntity payment : payments) {
             if (payment.getStatus() == PaymentStatus.PAID) {
                 payment.markCanceled();
-                paymentRepository().save(payment);
+                paymentRepository.save(payment);
                 
-                cashRegisterRepository().findFirstByOperatorIdAndStatusOrderByOpenedAtDesc(actorUserId, CashRegisterStatus.OPEN)
+                cashRegisterRepository.findFirstByOperatorIdAndStatusOrderByOpenedAtDesc(actorUserId, CashRegisterStatus.OPEN)
                         .ifPresent(cash -> cashRegisterService.recordRefundMovement(
                                 cash.getId(), payment.getMethod(), payment.getAmount(), saleId, actorUserId));
             }
         }
 
-        List<OrderItemEntity> items = orderItemRepository().findByOrderIdOrderByCreatedAtAsc(saleId);
+        List<OrderItemEntity> items = orderItemRepository.findByOrderIdOrderByCreatedAtAsc(saleId);
         for (OrderItemEntity item : items) {
             stockService.recordReturnMovement(item.getProduct().getId(), item.getQuantity(), saleId, actorUserId);
         }
@@ -279,20 +283,20 @@ public class PdvSaleService {
 
     @Transactional(readOnly = true)
     public PdvSaleResponse getSale(UUID saleId) {
-        return response(orderRepository()
+        return response(orderRepository
                 .findById(saleId)
                 .orElseThrow(() -> notFound("SALE_NOT_FOUND", "Venda nao encontrada.")));
     }
 
     @Transactional(readOnly = true)
     public List<PdvSaleResponse> listSales() {
-        return orderRepository().findByOriginOrderByCreatedAtDesc(OrderOrigin.PDV).stream()
+        return orderRepository.findByOriginOrderByCreatedAtDesc(OrderOrigin.PDV).stream()
                 .map(this::response)
                 .toList();
     }
 
     private List<OrderItemEntity> appendCurrentItem(UUID saleId, OrderItemEntity saved) {
-        List<OrderItemEntity> items = orderItemRepository().findByOrderIdOrderByCreatedAtAsc(saleId);
+        List<OrderItemEntity> items = orderItemRepository.findByOrderIdOrderByCreatedAtAsc(saleId);
         if (saved.getId() == null || items.stream().anyMatch(item -> saved.getId().equals(item.getId()))) {
             return items;
         }
@@ -307,14 +311,14 @@ public class PdvSaleService {
                 .subtract(sale.getDiscountAmount())
                 .add(sale.getDeliveryFee());
         sale.updateTotals(money(subtotal), money(sale.getDiscountAmount()), money(sale.getDeliveryFee()), money(total));
-        orderRepository().save(sale);
+        orderRepository.save(sale);
     }
 
     private PdvSaleResponse response(OrderEntity order) {
-        List<PdvSaleItemResponse> items = orderItemRepository().findByOrderIdOrderByCreatedAtAsc(order.getId()).stream()
+        List<PdvSaleItemResponse> items = orderItemRepository.findByOrderIdOrderByCreatedAtAsc(order.getId()).stream()
                 .map(PdvSaleItemResponse::from)
                 .toList();
-        List<PdvSalePaymentResponse> payments = paymentRepository().findByOrderIdOrderByCreatedAtAsc(order.getId()).stream()
+        List<PdvSalePaymentResponse> payments = paymentRepository.findByOrderIdOrderByCreatedAtAsc(order.getId()).stream()
                 .filter(p -> p.getStatus() == PaymentStatus.PAID)
                 .map(PdvSalePaymentResponse::from)
                 .toList();
@@ -328,7 +332,7 @@ public class PdvSaleService {
     }
 
     private OrderEntity editableSale(UUID saleId) {
-        OrderEntity sale = orderRepository()
+        OrderEntity sale = orderRepository
                 .findById(saleId)
                 .orElseThrow(() -> notFound("SALE_NOT_FOUND", "Venda nao encontrada."));
         if (sale.getOrigin() != OrderOrigin.PDV || sale.getStatus() != OrderStatus.CREATED) {
@@ -338,7 +342,7 @@ public class PdvSaleService {
     }
 
     private ProductEntity sellableProduct(UUID productId) {
-        ProductEntity product = productRepository()
+        ProductEntity product = productRepository
                 .findById(productId)
                 .orElseThrow(() -> notFound("PRODUCT_NOT_FOUND", "Produto nao encontrado."));
         if (!isSellableOnPdv(product)) {
@@ -370,14 +374,14 @@ public class PdvSaleService {
             UUID productId,
             SalesChannel channel) {
         Optional<br.com.novaalianca.mnss.localapp.domain.catalog.ProductAvailabilityEntity> availability =
-                productAvailabilityRepository()
+                productAvailabilityRepository
                         .findFirstByProductIdAndChannelOrderByUpdatedAtDesc(productId, channel);
         return availability == null ? Optional.empty() : availability;
     }
 
     private void requireOpenCashRegister(UUID actorUserId) {
         if (actorUserId == null
-                || !cashRegisterRepository().existsByOperatorIdAndStatus(actorUserId, CashRegisterStatus.OPEN)) {
+                || !cashRegisterRepository.existsByOperatorIdAndStatus(actorUserId, CashRegisterStatus.OPEN)) {
             throw new BusinessException("OPEN_CASH_REGISTER_REQUIRED", "Abra o caixa antes de iniciar venda.", HttpStatus.BAD_REQUEST);
         }
     }
@@ -406,29 +410,5 @@ public class PdvSaleService {
 
     private BusinessException notFound(String code, String message) {
         return new BusinessException(code, message, HttpStatus.NOT_FOUND);
-    }
-
-    private CashRegisterRepository cashRegisterRepository() {
-        return cashRegisterRepository;
-    }
-
-    private OrderRepository orderRepository() {
-        return orderRepository;
-    }
-
-    private OrderItemRepository orderItemRepository() {
-        return orderItemRepository;
-    }
-
-    private ProductRepository productRepository() {
-        return productRepository;
-    }
-
-    private ProductAvailabilityRepository productAvailabilityRepository() {
-        return productAvailabilityRepository;
-    }
-
-    private PaymentRepository paymentRepository() {
-        return paymentRepository;
     }
 }

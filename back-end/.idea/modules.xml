@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/core-domain/mnss-nova-alianca-backend.core-domain.main.iml" filepath="$PROJECT_DIR$/.idea/modules/core-domain/mnss-nova-alianca-backend.core-domain.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/core-domain/mnss-nova-alianca-backend.core-domain.test.iml" filepath="$PROJECT_DIR$/.idea/modules/core-domain/mnss-nova-alianca-backend.core-domain.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/local-app/mnss-nova-alianca-backend.local-app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/local-app/mnss-nova-alianca-backend.local-app.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/local-app/mnss-nova-alianca-backend.local-app.test.iml" filepath="$PROJECT_DIR$/.idea/modules/local-app/mnss-nova-alianca-backend.local-app.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/online-app/mnss-nova-alianca-backend.online-app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/online-app/mnss-nova-alianca-backend.online-app.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/online-app/mnss-nova-alianca-backend.online-app.test.iml" filepath="$PROJECT_DIR$/.idea/modules/online-app/mnss-nova-alianca-backend.online-app.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/shared-infra/mnss-nova-alianca-backend.shared-infra.main.iml" filepath="$PROJECT_DIR$/.idea/modules/shared-infra/mnss-nova-alianca-backend.shared-infra.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/shared-infra/mnss-nova-alianca-backend.shared-infra.test.iml" filepath="$PROJECT_DIR$/.idea/modules/shared-infra/mnss-nova-alianca-backend.shared-infra.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/sync-module/mnss-nova-alianca-backend.sync-module.main.iml" filepath="$PROJECT_DIR$/.idea/modules/sync-module/mnss-nova-alianca-backend.sync-module.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/sync-module/mnss-nova-alianca-backend.sync-module.test.iml" filepath="$PROJECT_DIR$/.idea/modules/sync-module/mnss-nova-alianca-backend.sync-module.test.iml" />
+    </modules>
+  </component>
+</project>

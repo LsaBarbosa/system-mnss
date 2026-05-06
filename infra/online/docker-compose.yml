@@ -1,65 +1,41 @@
 services:
   postgres-online:
-    image: postgres:17-alpine
+    image: postgres:17
     container_name: postgres-online
     environment:
-      POSTGRES_DB: nova_alianca_online
-      POSTGRES_USER: online_user
-      POSTGRES_PASSWORD: online_password
+      POSTGRES_DB: ${POSTGRES_DB:-nova_alianca_online}
+      POSTGRES_USER: ${POSTGRES_USER:-nova_alianca}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me}
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5433:5432"
     volumes:
       - postgres_online_data:/var/lib/postgresql/data
-      - ./scripts:/backup
+    restart: unless-stopped
 
   rabbitmq-online:
-    image: rabbitmq:4-management-alpine
+    image: rabbitmq:4-management
     container_name: rabbitmq-online
-    ports:
-      - "5673:5672"
-      - "15673:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: online_user
-      RABBITMQ_DEFAULT_PASS: online_password
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-nova_alianca}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-change_me}
+    ports:
+      - "127.0.0.1:5673:5672"
+      - "127.0.0.1:15673:15672"
+    volumes:
+      - rabbitmq_online_data:/var/lib/rabbitmq
+    restart: unless-stopped
 
   redis-online:
-    image: redis:8-alpine
+    image: redis:8
     container_name: redis-online
     command: redis-server --appendonly yes
     ports:
-      - "6380:6379"
-
-  online-app:
-    build:
-      context: ../../back-end
-      dockerfile: online-app/Dockerfile
-    container_name: nova-alianca-online-api
-    ports:
-      - "8081:8081"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-online:5432/nova_alianca_online
-      SPRING_DATASOURCE_USERNAME: online_user
-      SPRING_DATASOURCE_PASSWORD: online_password
-      SPRING_RABBITMQ_HOST: rabbitmq-online
-      SPRING_DATA_REDIS_HOST: redis-online
-    depends_on:
-      - postgres-online
-      - rabbitmq-online
-      - redis-online
-
-  nginx:
-    image: nginx:stable-alpine
-    container_name: nginx
-    depends_on:
-      - online-app
-    ports:
-      - "80:80"
-      - "443:443"
+      - "127.0.0.1:6380:6379"
     volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d
-      - ./certbot/www:/var/www/certbot
-      - ./certbot/conf:/etc/letsencrypt
+      - redis_online_data:/data
     restart: unless-stopped
 
 volumes:
   postgres_online_data:
+  rabbitmq_online_data:
+  redis_online_data:

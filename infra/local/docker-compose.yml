@@ -1,63 +1,43 @@
 services:
-  postgres:
-    image: postgres:17-alpine
+  postgres-local:
+    image: postgres:17
     container_name: postgres-local
     environment:
-      POSTGRES_DB: nova_alianca_local
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ${POSTGRES_DB:-nova_alianca_local}
+      POSTGRES_USER: ${POSTGRES_USER:-nova_alianca}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./scripts:/backup
+      - postgres_local_data:/var/lib/postgresql/data
+      - ./postgres/backup:/backup
+    restart: unless-stopped
 
-  rabbitmq:
-    image: rabbitmq:4-management-alpine
+  rabbitmq-local:
+    image: rabbitmq:4-management
     container_name: rabbitmq-local
-    ports:
-      - "5672:5672"
-      - "15672:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: user
-      RABBITMQ_DEFAULT_PASS: password
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-nova_alianca}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-change_me}
+    ports:
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
+    volumes:
+      - rabbitmq_local_data:/var/lib/rabbitmq
+    restart: unless-stopped
 
-  redis:
-    image: redis:8-alpine
+  redis-local:
+    image: redis:8
     container_name: redis-local
     command: redis-server --appendonly yes
     ports:
-      - "6379:6379"
-
-  local-app:
-    build:
-      context: ../../back-end
-      dockerfile: local-app/Dockerfile
-    container_name: nova-alianca-local-api
-    ports:
-      - "8080:8080"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/nova_alianca_local
-      SPRING_DATASOURCE_USERNAME: user
-      SPRING_DATASOURCE_PASSWORD: password
-      SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_DATA_REDIS_HOST: redis
-      MNSS_SYNC_ONLINE_URL: http://online-app:8081
-    depends_on:
-      - postgres
-      - rabbitmq
-      - redis
-
-  nginx-local:
-    image: nginx:stable-alpine
-    container_name: nginx-local
-    depends_on:
-      - local-app
-    ports:
-      - "80:80"
+      - "127.0.0.1:6379:6379"
     volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d
+      - redis_local_data:/data
     restart: unless-stopped
 
 volumes:
-  postgres_data:
+  postgres_local_data:
+  rabbitmq_local_data:
+  redis_local_data:
+

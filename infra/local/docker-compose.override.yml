@@ -1,0 +1,13 @@
+services:
+  postgres-local:
+    ports:
+      - "127.0.0.1:5432:5432"
+
+  rabbitmq-local:
+    ports:
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
+
+  redis-local:
+    ports:
+      - "127.0.0.1:6379:6379"

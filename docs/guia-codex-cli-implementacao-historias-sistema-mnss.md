@@ -5901,7 +5901,7 @@ Regras de execução:
 
 **Escopo funcional detalhado:**
 - Implementar exatamente a capacidade descrita na história, sem antecipar histórias futuras.
-- Back-end planejado no roadmap: `POST /api/orders`.
+- Back-end planejado no roadmap: `POST /api/public/orders`.
 - Front-end planejado no roadmap: Checkout confirma pedido.
 - A história deve deixar uma fatia funcional testável no ambiente correspondente.
 
@@ -5917,7 +5917,7 @@ Front-end:
 
 **Tarefas de implementação:**
 1. Ler a história, identificar se ela pertence ao ambiente local, online ou compartilhado e confirmar o módulo alvo antes de alterar arquivos.
-2. Implementar o back-end previsto: `POST /api/orders`.
+2. Implementar o back-end previsto: `POST /api/public/orders`.
 3. Implementar o front-end previsto: Checkout confirma pedido.
 4. Criar ou ajustar DTOs, mappers, services/use cases, controllers/endpoints e modelos TypeScript necessários.
 5. Garantir idempotência por UUID/eventId e status controlado para evitar duplicidade.
@@ -5952,7 +5952,7 @@ Contexto obrigatório:
 - Sprint: Sprint 15 — Pedido online
 - Domínio: Pedido online
 - Documentos de referência: FLUXOS, DOM
-- Back-end esperado: `POST /api/orders`.
+- Back-end esperado: `POST /api/public/orders`.
 - Front-end esperado: Checkout confirma pedido.
 
 Regras de execução:
@@ -6055,7 +6055,7 @@ Regras de execução:
 
 **Escopo funcional detalhado:**
 - Implementar exatamente a capacidade descrita na história, sem antecipar histórias futuras.
-- Back-end planejado no roadmap: `POST /api/payments/online`.
+- Back-end planejado no roadmap: `POST /api/public/payments/online`.
 - Front-end planejado no roadmap: Opção Pix/cartão online no checkout.
 - A história deve deixar uma fatia funcional testável no ambiente correspondente.
 
@@ -6071,7 +6071,7 @@ Front-end:
 
 **Tarefas de implementação:**
 1. Ler a história, identificar se ela pertence ao ambiente local, online ou compartilhado e confirmar o módulo alvo antes de alterar arquivos.
-2. Implementar o back-end previsto: `POST /api/payments/online`.
+2. Implementar o back-end previsto: `POST /api/public/payments/online`.
 3. Implementar o front-end previsto: Opção Pix/cartão online no checkout.
 4. Criar ou ajustar DTOs, mappers, services/use cases, controllers/endpoints e modelos TypeScript necessários.
 5. Validar valores monetários com BigDecimal no back-end e nunca confiar em total calculado apenas no front-end.
@@ -6106,7 +6106,7 @@ Contexto obrigatório:
 - Sprint: Sprint 16 — Pagamento online e webhook
 - Domínio: Pagamento online e webhook
 - Documentos de referência: DOM, FLUXOS
-- Back-end esperado: `POST /api/payments/online`.
+- Back-end esperado: `POST /api/public/payments/online`.
 - Front-end esperado: Opção Pix/cartão online no checkout.
 
 Regras de execução:
@@ -6201,7 +6201,7 @@ Regras de execução:
 
 **Escopo funcional detalhado:**
 - Implementar exatamente a capacidade descrita na história, sem antecipar histórias futuras.
-- Back-end planejado no roadmap: `POST /api/payments/webhook`.
+- Back-end planejado no roadmap: `POST /api/public/payments/webhook`.
 - Front-end planejado no roadmap: Página de status consulta pedido.
 - A história deve deixar uma fatia funcional testável no ambiente correspondente.
 
@@ -6217,7 +6217,7 @@ Front-end:
 
 **Tarefas de implementação:**
 1. Ler a história, identificar se ela pertence ao ambiente local, online ou compartilhado e confirmar o módulo alvo antes de alterar arquivos.
-2. Implementar o back-end previsto: `POST /api/payments/webhook`.
+2. Implementar o back-end previsto: `POST /api/public/payments/webhook`.
 3. Implementar o front-end previsto: Página de status consulta pedido.
 4. Criar ou ajustar DTOs, mappers, services/use cases, controllers/endpoints e modelos TypeScript necessários.
 5. Garantir idempotência por UUID/eventId e status controlado para evitar duplicidade.
@@ -6252,7 +6252,7 @@ Contexto obrigatório:
 - Sprint: Sprint 16 — Pagamento online e webhook
 - Domínio: Pagamento online e webhook
 - Documentos de referência: DO, FLUXOS
-- Back-end esperado: `POST /api/payments/webhook`.
+- Back-end esperado: `POST /api/public/payments/webhook`.
 - Front-end esperado: Página de status consulta pedido.
 
 Regras de execução:

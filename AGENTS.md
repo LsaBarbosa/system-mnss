@@ -119,10 +119,11 @@ nova-alianca-system/
 │   ├── sync-module/
 │   └── shared-infra/
 ├── front-end/
-│   ├── site-publico/
-│   ├── admin/
-│   ├── pdv/
-│   └── kds/
+│   └── src/app/features/
+│       ├── site-publico/
+│       ├── admin/
+│       ├── pdv/
+│       └── kds/
 ├── infra/
 │   ├── local/
 │   └── online/

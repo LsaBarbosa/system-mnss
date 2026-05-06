@@ -71,7 +71,7 @@ public class SyncPullWorker {
 
     private void processAndAck(SyncEventDto event) {
         try {
-            inboxService.processEvent(event.aggregateType(), event.eventType(), event.payload());
+            inboxService.processEvent(event);
             sendAck(event.id());
         } catch (Exception e) {
             log.error("Error processing pulled event {}: {}", event.id(), e.getMessage());

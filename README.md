@@ -6,15 +6,15 @@ Base inicial do sistema Nova Alianca, seguindo a arquitetura hibrida local + onl
 
 ```text
 back-end/
-  core-domain/   dominio puro, entidades, value objects e regras sem framework
-  sync-module/   dominio/portas de idempotencia e sincronizacao
+  core-domain/   tipos e regras compartilhadas entre local/online
+  sync-module/   componentes de sincronizacao compartilhados
   shared-infra/  infraestrutura tecnica compartilhada sem regra de negocio
-  local-app/     composition root local e adapters locais
-  online-app/    composition root online e adapters online
+  local-app/     monolito modular local
+  online-app/    monolito modular online
 
 front-end/
   Angular standalone app organizado por core, shared e features
-  features/<feature>/{domain,application,data-access,ui,pages}
+  features/<feature>/{domain,data-access,components,pages}
 
 infra/local/
   Docker Compose local para API, front-end estatico, PostgreSQL, RabbitMQ, Redis e Nginx
@@ -26,9 +26,9 @@ infra/online/
 ## Decisoes do bootstrap
 
 - Monolito modular separado por ambiente local e online, sem microservicos no inicio.
-- Back-end deve ser organizado em módulos funcionais.
-- Dominio e aplicacao nao dependem de HTTP, banco, mensageria, hardware ou APIs externas.
-- Front-end deve seguir arquitetura por features: `domain`, `application`, `data-access`, `ui` e `pages`.
+- Back-end deve ser organizado por domínio com classes `XController`, `XService`, `XEntity`, `XRepository`, `XRequest` e `XResponse`.
+- Controllers nao devem conter regra de negocio; services concentram a logica.
+- Front-end deve seguir arquitetura por features: `domain`, `data-access`, `components` (opcional) e `pages`.
 - Componentes de UI nao acessam `HttpClient`; chamadas HTTP ficam em `data-access`.
 - Operacao local tratada como caminho critico.
 - IDs principais em UUID.
@@ -86,4 +86,3 @@ Os endpoints de saúde estão disponíveis em:
 - **Versão**: `/api/version`
 
 Consulte `docs/homologacao-mvp.md` para o roteiro completo de validação pós-deploy.
-

@@ -218,7 +218,7 @@ public class PdvSaleService {
 
         BigDecimal limit = subtotal.multiply(new BigDecimal("0.10"));
         if (discountAmount.compareTo(limit) > 0) {
-            if (!roles.contains(RoleName.GERENTE) && !roles.contains(RoleName.ADMIN)) {
+            if (!roles.contains(RoleName.GERENTE.name()) && !roles.contains(RoleName.ADMIN.name())) {
                 throw new BusinessException("DISCOUNT_LIMIT_EXCEEDED", "Desconto acima de 10% exige permissao de gerente.", HttpStatus.FORBIDDEN);
             }
         }
@@ -242,7 +242,7 @@ public class PdvSaleService {
 
     @Transactional
     public PdvSaleResponse cancelSale(UUID saleId, CancelSaleRequest request, UUID actorUserId, List<String> roles) {
-        if (!roles.contains(RoleName.GERENTE) && !roles.contains(RoleName.ADMIN)) {
+        if (!roles.contains(RoleName.GERENTE.name()) && !roles.contains(RoleName.ADMIN.name())) {
             throw new BusinessException("CANCEL_SALE_FORBIDDEN", "Cancelamento de venda exige permissao de gerente.", HttpStatus.FORBIDDEN);
         }
 

@@ -5,6 +5,7 @@ import br.com.novaalianca.mnss.core.catalog.SalesChannel;
 import br.com.novaalianca.mnss.core.catalog.UnitType;
 import br.com.novaalianca.mnss.localapp.domain.audit.AuditLogRequest;
 import br.com.novaalianca.mnss.localapp.domain.audit.AuditService;
+import br.com.novaalianca.mnss.sync.SyncEventStatus;
 import br.com.novaalianca.mnss.sharedinfra.web.error.BusinessException;
 import java.math.BigDecimal;
 import java.util.Comparator;
@@ -221,11 +222,11 @@ public class CatalogService {
             productRepository().save(product);
         }
 
-        String syncStatus = "PENDING";
+        SyncEventStatus syncStatus = SyncEventStatus.PENDING;
         try {
             syncEventService.recordAvailabilityEvent(availabilityEventType(request.status()), saved);
         } catch (RuntimeException exception) {
-            syncStatus = "FAILED";
+            syncStatus = SyncEventStatus.FAILED;
         }
 
         auditService.record(new AuditLogRequest(

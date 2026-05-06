@@ -271,7 +271,7 @@ domain/<dominio>/
 - DTOs de Request/Response ficam no mesmo pacote do domínio (ex: `XRequest.java`, `XResponse.java`).
 - Entidades JPA são usadas para persistência e estado de domínio; nunca devem ser retornadas diretamente pelos controllers.
 - A lógica de negócio é concentrada nos Services.
-- Mapeamentos Entity→DTO usam **MapStruct** (`@Mapper(componentModel = "spring")`). O mapper é injetado via construtor no controller ou service que precisar dele.
+- Mapeamentos Entity→DTO podem usar **MapStruct** (`@Mapper(componentModel = "spring")`) ou factories estáticas de Response quando o mapeamento for simples e local ao domínio.
 
 ## 10. Arquitetura do front-end
 

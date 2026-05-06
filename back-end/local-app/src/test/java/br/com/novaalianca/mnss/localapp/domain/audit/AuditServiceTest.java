@@ -60,6 +60,6 @@ class AuditServiceTest {
     }
 
     private AuditService service() {
-        return new AuditService(Optional.of(auditLogRepository));
+        return new AuditService(auditLogRepository);
     }
 }

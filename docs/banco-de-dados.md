@@ -457,7 +457,7 @@ CREATE TABLE sync_events (
     processed_at TIMESTAMP,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    version INTEGER NOT NULL DEFAULT 0
+    version BIGINT NOT NULL DEFAULT 0
 );
 ```
 
@@ -465,9 +465,9 @@ CREATE TABLE sync_events (
 
 ```sql
 CREATE INDEX idx_sync_events_status ON sync_events(status);
-CREATE INDEX idx_sync_events_created_at ON sync_events(created_at);
+CREATE INDEX idx_sync_events_next_retry_at ON sync_events(next_retry_at);
 CREATE INDEX idx_sync_events_aggregate ON sync_events(aggregate_type, aggregate_id);
-CREATE INDEX idx_sync_events_idempotency ON sync_events(idempotency_key);
+CREATE INDEX idx_sync_events_status_direction ON sync_events(status, direction);
 ```
 
 ## 6.18 Audit Logs
@@ -492,25 +492,23 @@ CREATE TABLE audit_logs (
 Estrutura de migrations:
 
 ```text
-resources/db/migration/
-├── V001__create_roles.sql
-├── V002__create_users.sql
-├── V003__create_user_roles.sql
-├── V004__create_categories.sql
-├── V005__create_products.sql
-├── V006__create_product_availability.sql
-├── V007__create_customers.sql
-├── V008__create_customer_addresses.sql
-├── V009__create_orders.sql
-├── V010__create_order_items.sql
-├── V011__create_payments.sql
-├── V012__create_cash_registers.sql
-├── V013__create_cash_movements.sql
-├── V014__create_kds_tickets.sql
-├── V015__create_kds_ticket_items.sql
-├── V016__create_stock_movements.sql
-├── V017__create_sync_events.sql
-└── V018__create_audit_logs.sql
+back-end/local-app/src/main/resources/db/migration/
+├── V1__baseline_schema.sql
+├── V2__core_business_schema.sql
+├── V3__seed_initial_roles.sql
+├── V4__sync_outbox_schema.sql
+└── V5__add_stock_controlled_to_products.sql
+
+back-end/online-app/src/main/resources/db/migration/
+├── V1__baseline_schema.sql
+├── V2__core_business_schema.sql
+├── V3__seed_initial_roles.sql
+├── V4__whatsapp_schema.sql
+├── V5__add_stock_controlled_to_products.sql
+├── V6__add_version_to_categories.sql
+├── V7__add_version_to_online_tables.sql
+├── V8__add_payment_method_to_orders.sql
+└── V9__add_webhook_payload_to_payments.sql
 ```
 
 ## 8. Separação local e online

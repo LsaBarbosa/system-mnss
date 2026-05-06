@@ -91,13 +91,11 @@ A regra mais importante:
 
 Back-end:
 
-```text
-```
-
-- `domain` contem regras puras, entidades, value objects e eventos.
-- Camada de serviço contém a lógica de negócio e orquestração.
-- Camada web contém controladores HTTP e DTOs.
-- Domínio não pode depender de Spring, JPA, HTTP, RabbitMQ, Redis ou APIs externas.
+- Organização por domínio com pacote plano: `XController`, `XService`, `XEntity`, `XRepository`, `XRequest` e `XResponse`.
+- Controllers recebem requests e delegam; não concentram regra de negócio.
+- Services concentram a lógica de aplicação e negócio.
+- Entities representam persistência/estado e não devem ser expostas diretamente na API.
+- Repositories ficam isolados por módulo/domínio.
 
 Front-end:
 

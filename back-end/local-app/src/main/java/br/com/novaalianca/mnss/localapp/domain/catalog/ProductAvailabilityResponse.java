@@ -1,6 +1,7 @@
 package br.com.novaalianca.mnss.localapp.domain.catalog;
 
 import br.com.novaalianca.mnss.core.catalog.SalesChannel;
+import br.com.novaalianca.mnss.sync.SyncEventStatus;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
@@ -15,8 +16,8 @@ public record ProductAvailabilityResponse(
         UUID updatedBy,
         Instant createdAt,
         Instant updatedAt,
-        String syncStatus) {
-    static ProductAvailabilityResponse from(ProductAvailabilityEntity availability, String syncStatus) {
+        SyncEventStatus syncStatus) {
+    static ProductAvailabilityResponse from(ProductAvailabilityEntity availability, SyncEventStatus syncStatus) {
         return new ProductAvailabilityResponse(
                 availability.getId(),
                 availability.getProduct().getId(),

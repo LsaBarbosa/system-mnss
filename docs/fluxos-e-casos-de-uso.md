@@ -430,6 +430,7 @@ GERENTE
 CAIXA
 ATENDENTE
 COZINHA
+EXPEDICAO
 ENTREGADOR
 CONSULTA
 ```
@@ -3402,18 +3403,16 @@ PATCH  /api/kds/items/{id}/cancel
 
 ```text
 GET  /api/public/menu
-GET  /api/public/products
-POST /api/orders
-GET  /api/orders/{id}/status
-POST /api/checkout/quote
+GET  /api/public/info
+POST /api/public/orders
+GET  /api/public/orders/{id}
 ```
 
 ## 12.7 Pagamentos e webhooks
 
 ```text
-POST /api/payments/online
-POST /api/payments/webhook
-GET  /api/payments/{id}
+POST /api/public/payments/online
+POST /api/public/payments/webhook
 ```
 
 ## 12.8 WhatsApp

@@ -2,17 +2,8 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import type { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import type { CategoryModel, ProductModel, Uuid } from '../../../shared/models/domain.models';
-
-export interface PdvProductGroup {
-  category: CategoryModel;
-  products: ProductModel[];
-}
-
-export interface PdvProductFilters {
-  name?: string | null;
-  categoryId?: Uuid | null;
-}
+import type { ProductModel } from '../../../shared/models/domain.models';
+import type { PdvProductFilters, PdvProductGroup } from '../domain/pdv-catalog.models';
 
 @Injectable({ providedIn: 'root' })
 export class PdvCatalogService {

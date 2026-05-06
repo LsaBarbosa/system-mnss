@@ -11,6 +11,7 @@ info:
     - `/topic/kds/tickets`: Enviado quando um ticket é criado ou atualizado. Payload: `KdsTicketResponse`.
     - `/topic/kds/tickets/{sector}`: Mesmo evento acima, mas filtrado por setor (ex: `COZINHA`, `FORNO`).
     - `/topic/orders/ready`: Enviado quando um pedido completo está pronto para entrega. Payload: `UUID` (ID do pedido).
+paths:
   /api/version:
     get:
       summary: Retorna a versao da aplicacao local.
@@ -60,26 +61,6 @@ info:
             application/json:
               schema:
                 $ref: '#/components/schemas/StoreInfoResponse'
-  /api/public/menu:
-    get:
-      summary: Lista o cardapio publico para tablets/autoatendimento.
-      operationId: listLocalPublicMenu
-      parameters:
-        - name: search
-          in: query
-          required: false
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Lista de categorias com produtos.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/CategoryProductsResponse'
-paths:
   /api/auth/login:
     post:
       summary: Autentica usuario interno.
@@ -1581,7 +1562,6 @@ components:
               format: date-time
             syncStatus:
               $ref: '#/components/schemas/SyncStatus'
-              enum: [PENDING, SYNCED, FAILED]
     CategoryProductsResponse:
       type: object
       required:
@@ -1695,6 +1675,7 @@ components:
           format: decimal
         syncStatus:
           $ref: '#/components/schemas/SyncStatus'
+          nullable: true
         createdAt:
           type: string
           format: date-time
@@ -2350,4 +2331,3 @@ components:
           type: string
         description:
           type: string
-

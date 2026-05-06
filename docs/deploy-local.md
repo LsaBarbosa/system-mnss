@@ -63,6 +63,7 @@ Serviços previstos:
 
 ```text
 nova-alianca-local-api
+nova-alianca-local-front
 postgres-local
 rabbitmq-local
 redis-local
@@ -119,6 +120,11 @@ REDIS_HOST=redis-local
 REDIS_PORT=6379
 
 LOCAL_API_PORT=8080
+AUTH_TOKEN_SECRET=change_me_auth_token_secret
+AUTH_TOKEN_TTL=PT8H
+MNSS_INITIAL_ADMIN_USERNAME=admin
+MNSS_INITIAL_ADMIN_PASSWORD=change_me_admin_password
+MNSS_INITIAL_ADMIN_EMAIL=admin@novaalianca.local
 
 ONLINE_SYNC_BASE_URL=https://api.padarianovaalianca.com.br
 STORE_ID=nova-alianca-001
@@ -142,18 +148,30 @@ services:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
       DB_HOST: postgres-local
       DB_PORT: 5432
-      DB_NAME: ${POSTGRES_DB}
-      DB_USER: ${POSTGRES_USER}
-      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       RABBITMQ_HOST: rabbitmq-local
-      RABBITMQ_USER: ${RABBITMQ_DEFAULT_USER}
-      RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
       REDIS_HOST: redis-local
+      AUTH_TOKEN_SECRET: ${AUTH_TOKEN_SECRET}
+      AUTH_TOKEN_TTL: ${AUTH_TOKEN_TTL}
+      MNSS_INITIAL_ADMIN_USERNAME: ${MNSS_INITIAL_ADMIN_USERNAME}
+      MNSS_INITIAL_ADMIN_PASSWORD: ${MNSS_INITIAL_ADMIN_PASSWORD}
+      MNSS_INITIAL_ADMIN_EMAIL: ${MNSS_INITIAL_ADMIN_EMAIL}
       ONLINE_SYNC_BASE_URL: ${ONLINE_SYNC_BASE_URL}
       STORE_ID: ${STORE_ID}
       STORE_SECRET: ${STORE_SECRET}
     expose:
       - "8080"
+    restart: unless-stopped
+
+  nova-alianca-local-front:
+    image: nova-alianca/local-front:latest
+    container_name: nova-alianca-local-front
+    depends_on:
+      - nova-alianca-local-api
     restart: unless-stopped
 
   postgres-local:
@@ -191,6 +209,7 @@ services:
     container_name: nginx-local
     depends_on:
       - nova-alianca-local-api
+      - nova-alianca-local-front
     ports:
       - "80:80"
     volumes:
@@ -204,6 +223,8 @@ volumes:
 ```
 
 ## 8. Nginx local
+
+> **Nota:** No ambiente local o padrão inicial é HTTP interno na rede da padaria. HTTPS com certificado local é opcional e pode ser adotado posteriormente.
 
 Arquivo:
 

@@ -157,17 +157,31 @@ services:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
       DB_HOST: postgres-online
       DB_PORT: 5432
-      DB_NAME: ${POSTGRES_DB}
-      DB_USER: ${POSTGRES_USER}
-      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       RABBITMQ_HOST: rabbitmq-online
-      RABBITMQ_USER: ${RABBITMQ_DEFAULT_USER}
-      RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
       REDIS_HOST: redis-online
       JWT_SECRET: ${JWT_SECRET}
       SYNC_MASTER_SECRET: ${SYNC_MASTER_SECRET}
     expose:
       - "8080"
+    restart: unless-stopped
+
+  nova-alianca-site:
+    image: nova-alianca/site:latest
+    container_name: nova-alianca-site
+    depends_on:
+      - nova-alianca-online-api
+    restart: unless-stopped
+
+  nova-alianca-admin:
+    image: nova-alianca/admin:latest
+    container_name: nova-alianca-admin
+    depends_on:
+      - nova-alianca-online-api
     restart: unless-stopped
 
   postgres-online:
@@ -205,6 +219,8 @@ services:
     container_name: nginx
     depends_on:
       - nova-alianca-online-api
+      - nova-alianca-site
+      - nova-alianca-admin
     ports:
       - "80:80"
       - "443:443"

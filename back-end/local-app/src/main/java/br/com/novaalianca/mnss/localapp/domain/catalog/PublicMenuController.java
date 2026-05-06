@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/public/menu")
+@RequestMapping("/api/public")
 class PublicMenuController {
     private final CatalogService catalogService;
 
@@ -14,7 +14,7 @@ class PublicMenuController {
         this.catalogService = catalogService;
     }
 
-    @GetMapping
+    @GetMapping("/menu")
     List<CategoryProductsResponse> listPublicMenu(@org.springframework.web.bind.annotation.RequestParam(required = false) String search) {
         return catalogService.listPublicMenu(search);
     }

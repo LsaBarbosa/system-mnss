@@ -275,7 +275,7 @@ class PdvSaleServiceTest {
         when(orderRepository.findById(saleId)).thenReturn(Optional.of(sale));
         when(orderRepository.save(any())).thenAnswer(i -> i.getArgument(0));
 
-        PdvSaleResponse response = service().applyDiscount(saleId, new CreateDiscountRequest(new BigDecimal("5.00")), UUID.randomUUID(), List.of(RoleName.CAIXA.name()));
+        PdvSaleResponse response = service().applyDiscount(saleId, new CreateDiscountRequest(new BigDecimal("5.00")), UUID.randomUUID(), List.of(RoleName.GERENTE.name()));
 
         assertThat(response.discountAmount()).isEqualByComparingTo("5.00");
         assertThat(response.totalAmount()).isEqualByComparingTo("95.00");
@@ -312,7 +312,7 @@ class PdvSaleServiceTest {
         ReflectionTestUtils.setField(cash, "id", UUID.randomUUID());
         when(cashRegisterRepository.findFirstByOperatorIdAndStatusOrderByOpenedAtDesc(actorId, CashRegisterStatus.OPEN)).thenReturn(Optional.of(cash));
 
-        service().cancelSale(saleId, new CancelSaleRequest("Desistencia"), actorId);
+        service().cancelSale(saleId, new CancelSaleRequest("Desistencia"), actorId, List.of(RoleName.GERENTE.name()));
 
         assertThat(sale.getStatus()).isEqualTo(OrderStatus.CANCELED);
         assertThat(payment.getStatus()).isEqualTo(PaymentStatus.CANCELED);

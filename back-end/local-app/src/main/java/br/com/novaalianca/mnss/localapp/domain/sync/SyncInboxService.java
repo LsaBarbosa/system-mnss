@@ -5,9 +5,10 @@ import br.com.novaalianca.mnss.core.payment.PaymentStatus;
 import br.com.novaalianca.mnss.localapp.domain.customer.CustomerEntity;
 import br.com.novaalianca.mnss.localapp.domain.customer.CustomerRepository;
 import br.com.novaalianca.mnss.localapp.domain.kds.KdsService;
-import br.com.novaalianca.mnss.localapp.domain.order.*;
 import br.com.novaalianca.mnss.localapp.domain.catalog.ProductEntity;
 import br.com.novaalianca.mnss.localapp.domain.catalog.ProductRepository;
+import br.com.novaalianca.mnss.localapp.domain.order.*;
+import br.com.novaalianca.mnss.sync.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,7 @@ public class SyncInboxService {
     private final CustomerRepository customerRepository;
     private final ProductRepository productRepository;
     private final KdsService kdsService;
+    private final SyncEventRepository syncEventRepository;
     private final ObjectMapper objectMapper;
 
     public SyncInboxService(
@@ -38,23 +40,46 @@ public class SyncInboxService {
             CustomerRepository customerRepository,
             ProductRepository productRepository,
             KdsService kdsService,
+            SyncEventRepository syncEventRepository,
             ObjectMapper objectMapper) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.customerRepository = customerRepository;
         this.productRepository = productRepository;
         this.kdsService = kdsService;
+        this.syncEventRepository = syncEventRepository;
         this.objectMapper = objectMapper;
     }
 
     @Transactional
-    public void processEvent(String aggregateType, String eventType, Map<String, Object> payload) {
-        log.info("Processing inbox event: {} - {}", aggregateType, eventType);
+    public void processEvent(SyncEventDto dto) {
+        log.info("Processing inbox event: {} - {} (ID: {})", dto.aggregateType(), dto.eventType(), dto.id());
 
-        if ("ORDER".equals(aggregateType) && "ORDER_CREATED".equals(eventType)) {
-            processOrderCreated(payload);
+        // Register received event locally for audit/resilience
+        String localIdempotencyKey = "IN:" + dto.id();
+        if (syncEventRepository.findByIdempotencyKey(localIdempotencyKey).isPresent()) {
+            log.info("Event {} already received and processed local", dto.id());
+            return;
+        }
+
+        SyncEventEntity inboxEvent = new SyncEventEntity(
+                localIdempotencyKey,
+                SyncDirection.ONLINE_TO_LOCAL,
+                dto.sourceEnvironment(),
+                SyncEnvironment.LOCAL,
+                dto.aggregateType(),
+                dto.eventType(),
+                dto.payload(),
+                SyncEventStatus.RECEIVED_BY_STORE
+        );
+        inboxEvent.assignAggregateId(dto.aggregateId());
+        syncEventRepository.save(inboxEvent);
+
+        // Process business logic
+        if ("ORDER".equals(dto.aggregateType()) && "ORDER_CREATED".equals(dto.eventType())) {
+            processOrderCreated(dto.payload());
         } else {
-            log.warn("Unknown event type for inbox: {} - {}", aggregateType, eventType);
+            log.warn("Unknown event type for inbox: {} - {}", dto.aggregateType(), dto.eventType());
         }
     }
 

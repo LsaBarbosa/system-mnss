@@ -2,53 +2,15 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import type { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import type { CashRegisterModel, Uuid } from '../../../shared/models/domain.models';
 import type {
-  CashMovementModel,
-  CashMovementType,
-  CashRegisterModel,
-  DecimalString,
-  PaymentMethod,
-  Uuid
-} from '../../../shared/models/domain.models';
-
-export interface CashRegisterOpenPayload {
-  openingAmount: DecimalString;
-  notes?: string | null;
-}
-
-export interface CashRegisterClosePayload {
-  closingAmount: DecimalString;
-  notes?: string | null;
-}
-
-export interface CashMovementPayload {
-  type: CashMovementType;
-  paymentMethod?: PaymentMethod | null;
-  amount: DecimalString;
-  description?: string | null;
-  orderId?: Uuid | null;
-}
-
-export type CashMovementResponse = CashMovementModel;
-
-export interface CurrentCashRegisterResponse {
-  open: boolean;
-  cashRegister: CashRegisterModel | null;
-}
-
-export interface CashRegisterSummaryResponse {
-  cashRegister: CashRegisterModel;
-  totalsByPaymentMethod: Record<PaymentMethod, DecimalString>;
-  saleTotal: DecimalString;
-  refundTotal: DecimalString;
-  cashInTotal: DecimalString;
-  cashOutTotal: DecimalString;
-  adjustmentTotal: DecimalString;
-  expectedAmount: DecimalString;
-  closingAmount: DecimalString | null;
-  differenceAmount: DecimalString;
-  movements: CashMovementResponse[];
-}
+  CashMovementPayload,
+  CashMovementResponse,
+  CashRegisterClosePayload,
+  CashRegisterOpenPayload,
+  CashRegisterSummaryResponse,
+  CurrentCashRegisterResponse
+} from '../domain/cash-register.models';
 
 @Injectable({ providedIn: 'root' })
 export class CashRegisterService {

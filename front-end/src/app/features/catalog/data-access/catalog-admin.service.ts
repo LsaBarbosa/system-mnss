@@ -9,6 +9,7 @@ import type {
   ProductAvailabilityModel,
   ProductModel,
   SalesChannel,
+  SyncStatus,
   UnitType,
   Uuid
 } from '../../../shared/models/domain.models';
@@ -57,7 +58,7 @@ export interface ProductAvailabilityPayload {
 }
 
 export interface ProductAvailabilityChange extends ProductAvailabilityModel {
-  syncStatus: 'PENDING' | 'SYNCED' | 'FAILED';
+  syncStatus: SyncStatus;
 }
 
 @Injectable({ providedIn: 'root' })

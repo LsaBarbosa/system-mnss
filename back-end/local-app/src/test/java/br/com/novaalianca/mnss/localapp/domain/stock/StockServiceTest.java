@@ -188,9 +188,9 @@ class StockServiceTest {
 
     private StockService service() {
         return new StockService(
-                Optional.of(productRepository),
-                Optional.of(orderRepository),
-                Optional.of(stockMovementRepository),
+                productRepository,
+                orderRepository,
+                stockMovementRepository,
                 syncEventService,
                 auditService);
     }

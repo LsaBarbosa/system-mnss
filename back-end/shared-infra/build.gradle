@@ -11,4 +11,5 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-autoconfigure'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'io.swagger.parser.v3:swagger-parser:2.1.25'
 }

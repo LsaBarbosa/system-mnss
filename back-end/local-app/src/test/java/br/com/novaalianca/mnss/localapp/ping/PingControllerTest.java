@@ -3,26 +3,37 @@ package br.com.novaalianca.mnss.localapp.ping;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import br.com.novaalianca.mnss.localapp.security.auth.AuthService;
+
+import br.com.novaalianca.mnss.localapp.security.config.SecurityConfiguration;
+import org.springframework.context.annotation.Import;
 
 @WebMvcTest(PingController.class)
+@Import(SecurityConfiguration.class)
 @TestPropertySource(properties = {
     "spring.application.name=mnss-local-api",
     "mnss.environment=local",
-    "mnss.security.enabled=false"
+    "mnss.security.enabled=true"
 })
 class PingControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @MockBean
+    private AuthService authService;
+
     @Test
     void pingReturnsLocalApiStatus() throws Exception {
         mockMvc.perform(get("/api/ping"))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("pong"))
                 .andExpect(jsonPath("$.application").value("mnss-local-api"))

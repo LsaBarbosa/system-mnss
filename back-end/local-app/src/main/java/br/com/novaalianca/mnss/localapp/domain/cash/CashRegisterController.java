@@ -1,8 +1,7 @@
 package br.com.novaalianca.mnss.localapp.domain.cash;
 
 import br.com.novaalianca.mnss.localapp.security.auth.AuthenticatedUser;
-import br.com.novaalianca.mnss.localapp.security.auth.AuthenticatedUserInterceptor;
-import br.com.novaalianca.mnss.localapp.security.auth.RequiresRole;
+import org.springframework.security.access.prepost.PreAuthorize;
 import br.com.novaalianca.mnss.localapp.security.user.RoleName;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -27,7 +26,7 @@ class CashRegisterController {
 
     @PostMapping("/open")
     @ResponseStatus(HttpStatus.CREATED)
-    @RequiresRole({RoleName.ADMIN, RoleName.GERENTE, RoleName.CAIXA})
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'CAIXA')")
     CashRegisterResponse open(
             @Valid @RequestBody CashRegisterOpenRequest request,
             HttpServletRequest servletRequest) {
@@ -35,13 +34,13 @@ class CashRegisterController {
     }
 
     @GetMapping("/current")
-    @RequiresRole({RoleName.ADMIN, RoleName.GERENTE, RoleName.CAIXA})
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'CAIXA')")
     CurrentCashRegisterResponse current(HttpServletRequest servletRequest) {
         return cashRegisterService.current(authenticatedUserId(servletRequest));
     }
 
     @PostMapping("/{id}/movement")
-    @RequiresRole({RoleName.ADMIN, RoleName.GERENTE})
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
     CashMovementResponse createMovement(
             @PathVariable UUID id,
             @Valid @RequestBody CashMovementRequest request,
@@ -50,7 +49,7 @@ class CashRegisterController {
     }
 
     @PostMapping("/{id}/close")
-    @RequiresRole({RoleName.ADMIN, RoleName.GERENTE, RoleName.CAIXA})
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'CAIXA')")
     CashRegisterSummaryResponse close(
             @PathVariable UUID id,
             @Valid @RequestBody CashRegisterCloseRequest request,
@@ -59,13 +58,13 @@ class CashRegisterController {
     }
 
     @GetMapping("/{id}/summary")
-    @RequiresRole({RoleName.ADMIN, RoleName.GERENTE, RoleName.CAIXA})
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'CAIXA')")
     CashRegisterSummaryResponse summary(@PathVariable UUID id) {
         return cashRegisterService.summary(id);
     }
 
     private UUID authenticatedUserId(HttpServletRequest request) {
-        Object attribute = request.getAttribute(AuthenticatedUserInterceptor.AUTHENTICATED_USER_ATTRIBUTE);
+        Object attribute = request.getAttribute(AuthenticatedUser.AUTHENTICATED_USER_ATTRIBUTE);
         return attribute instanceof AuthenticatedUser user ? user.id() : null;
     }
 }

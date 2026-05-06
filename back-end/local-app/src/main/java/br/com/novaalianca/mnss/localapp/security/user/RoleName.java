@@ -6,6 +6,7 @@ public enum RoleName {
     CAIXA,
     ATENDENTE,
     COZINHA,
+    EXPEDICAO,
     ENTREGADOR,
     CONSULTA
 }

@@ -1,8 +1,8 @@
 package br.com.novaalianca.mnss.localapp.domain.payment;
 
 import br.com.novaalianca.mnss.localapp.security.auth.AuthenticatedUser;
-import br.com.novaalianca.mnss.localapp.security.auth.AuthenticatedUserInterceptor;
-import br.com.novaalianca.mnss.localapp.security.auth.RequiresRole;
+import br.com.novaalianca.mnss.localapp.security.auth.AuthenticatedUser;
+import org.springframework.security.access.prepost.PreAuthorize;
 import br.com.novaalianca.mnss.localapp.security.user.RoleName;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/orders/{orderId}/payments")
-@RequiresRole({RoleName.ADMIN, RoleName.GERENTE, RoleName.CAIXA, RoleName.ATENDENTE})
+@PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'CAIXA', 'ATENDENTE')")
 class PaymentController {
     private final PaymentService paymentService;
 
@@ -35,7 +35,7 @@ class PaymentController {
     }
 
     private UUID authenticatedUserId(HttpServletRequest request) {
-        Object attribute = request.getAttribute(AuthenticatedUserInterceptor.AUTHENTICATED_USER_ATTRIBUTE);
+        Object attribute = request.getAttribute(AuthenticatedUser.AUTHENTICATED_USER_ATTRIBUTE);
         return attribute instanceof AuthenticatedUser user ? user.id() : null;
     }
 }

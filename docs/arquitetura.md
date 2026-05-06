@@ -176,10 +176,10 @@ online/
 
 ## 7. Stack definida
 
-### Backend
+### Back-end
 
 - Java 21
-- Spring Boot
+- Spring Boot 3.x
 - Spring Security
 - Spring Data JPA
 - PostgreSQL
@@ -192,7 +192,7 @@ online/
 - Mockito
 - Testcontainers
 
-### Frontend
+### Front-end
 
 - Angular
 - TypeScript
@@ -246,9 +246,11 @@ Cada domínio funcional deve ser organizado de forma clara:
 
 ```text
 <dominio>/
-├── model/          # entidades, objetos de valor e enums
+├── web/            # controladores e DTOs de entrada
 ├── service/        # lógica de negócio e serviços
-└── web/            # controladores e DTOs de entrada
+├── entity/         # entidades JPA e objetos de domínio
+├── repository/     # interfaces de acesso a dados
+└── dto/            # objetos de transferência de dados (interno/externo)
 ```
 
 ### 9.2 Módulos Gradle e responsabilidades
@@ -263,10 +265,10 @@ Cada domínio funcional deve ser organizado de forma clara:
 
 ### 9.3 DTOs e entidades
 
-- Request/response DTOs pertencem às camadas de entrada (web).
-- Entidades JPA são usadas para persistência.
-- Objetos de domínio contêm a lógica de negócio pura.
-- MapStruct deve mapear entre esses diferentes modelos.
+- DTOs de Request/Response pertencem à camada de entrada (web).
+- Entidades JPA são usadas para persistência e estado de domínio.
+- A lógica de negócio é concentrada nos Services.
+- MapStruct deve ser usado para mapeamento entre os modelos.
 
 ## 10. Arquitetura do front-end
 
@@ -299,14 +301,14 @@ src/app/
 ```text
 nova-alianca-system/
 │
-├── backend/
+├── back-end/
 │   ├── core-domain/
 │   ├── local-app/
 │   ├── online-app/
 │   ├── sync-module/
 │   └── shared-infra/
 │
-├── frontend/
+├── front-end/
 │   ├── src/app/
 │
 ├── infra/

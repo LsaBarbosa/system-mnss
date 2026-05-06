@@ -1,8 +1,7 @@
 package br.com.novaalianca.mnss.localapp.domain.catalog;
 
 import br.com.novaalianca.mnss.localapp.security.auth.AuthenticatedUser;
-import br.com.novaalianca.mnss.localapp.security.auth.AuthenticatedUserInterceptor;
-import br.com.novaalianca.mnss.localapp.security.auth.RequiresRole;
+import org.springframework.security.access.prepost.PreAuthorize;
 import br.com.novaalianca.mnss.localapp.security.user.RoleName;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -42,7 +41,7 @@ class ProductController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @RequiresRole({RoleName.GERENTE})
+    @PreAuthorize("hasRole('GERENTE')")
     ProductResponse createProduct(
             @Valid @RequestBody CreateProductRequest request,
             HttpServletRequest servletRequest) {
@@ -50,7 +49,7 @@ class ProductController {
     }
 
     @PatchMapping("/{id}")
-    @RequiresRole({RoleName.GERENTE})
+    @PreAuthorize("hasRole('GERENTE')")
     ProductResponse updateProduct(
             @PathVariable UUID id,
             @Valid @RequestBody PatchProductRequest request,
@@ -59,7 +58,7 @@ class ProductController {
     }
 
     @PatchMapping("/{id}/availability")
-    @RequiresRole({RoleName.GERENTE, RoleName.ATENDENTE})
+    @PreAuthorize("hasAnyRole('GERENTE', 'ATENDENTE')")
     ProductAvailabilityResponse updateProductAvailability(
             @PathVariable UUID id,
             @Valid @RequestBody PatchProductAvailabilityRequest request,
@@ -68,7 +67,7 @@ class ProductController {
     }
 
     private UUID authenticatedUserId(HttpServletRequest request) {
-        Object attribute = request.getAttribute(AuthenticatedUserInterceptor.AUTHENTICATED_USER_ATTRIBUTE);
+        Object attribute = request.getAttribute(AuthenticatedUser.AUTHENTICATED_USER_ATTRIBUTE);
         return attribute instanceof AuthenticatedUser user ? user.id() : null;
     }
 }

@@ -1,8 +1,7 @@
 package br.com.novaalianca.mnss.localapp.domain.catalog;
 
 import br.com.novaalianca.mnss.localapp.security.auth.AuthenticatedUser;
-import br.com.novaalianca.mnss.localapp.security.auth.AuthenticatedUserInterceptor;
-import br.com.novaalianca.mnss.localapp.security.auth.RequiresRole;
+import org.springframework.security.access.prepost.PreAuthorize;
 import br.com.novaalianca.mnss.localapp.security.user.RoleName;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -36,7 +35,7 @@ class CategoryController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @RequiresRole({RoleName.GERENTE})
+    @PreAuthorize("hasRole('GERENTE')")
     CategoryResponse createCategory(
             @Valid @RequestBody CreateCategoryRequest request,
             HttpServletRequest servletRequest) {
@@ -44,7 +43,7 @@ class CategoryController {
     }
 
     @PatchMapping("/{id}")
-    @RequiresRole({RoleName.GERENTE})
+    @PreAuthorize("hasRole('GERENTE')")
     CategoryResponse updateCategory(
             @PathVariable UUID id,
             @Valid @RequestBody PatchCategoryRequest request,
@@ -53,7 +52,7 @@ class CategoryController {
     }
 
     private UUID authenticatedUserId(HttpServletRequest request) {
-        Object attribute = request.getAttribute(AuthenticatedUserInterceptor.AUTHENTICATED_USER_ATTRIBUTE);
+        Object attribute = request.getAttribute(AuthenticatedUser.AUTHENTICATED_USER_ATTRIBUTE);
         return attribute instanceof AuthenticatedUser user ? user.id() : null;
     }
 }

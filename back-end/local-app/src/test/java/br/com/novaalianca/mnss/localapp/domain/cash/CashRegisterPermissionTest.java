@@ -1,59 +1,50 @@
 package br.com.novaalianca.mnss.localapp.domain.cash;
 
-import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import br.com.novaalianca.mnss.localapp.security.auth.AuthService;
-import br.com.novaalianca.mnss.localapp.security.auth.AuthenticatedUser;
-import br.com.novaalianca.mnss.localapp.security.auth.AuthenticatedUserInterceptor;
-import br.com.novaalianca.mnss.localapp.security.user.RoleName;
-import br.com.novaalianca.mnss.sharedinfra.web.error.GlobalExceptionHandler;
-import java.util.Set;
-import java.util.UUID;
+import br.com.novaalianca.mnss.localapp.security.config.SecurityConfiguration;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpHeaders;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@ExtendWith(MockitoExtension.class)
+@WebMvcTest(CashRegisterController.class)
+@Import(SecurityConfiguration.class)
 class CashRegisterPermissionTest {
-    @Mock
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
     private AuthService authService;
 
-    @Mock
+    @MockBean
     private CashRegisterService cashRegisterService;
 
     @Test
+    @WithMockUser(roles = "CONSULTA")
     void userWithoutPermissionCannotOpenCashRegister() throws Exception {
-        when(authService.authenticate("Bearer token")).thenReturn(user(RoleName.CONSULTA));
-
-        mockMvc().perform(post("/api/cash-register/open")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer token")
+        mockMvc.perform(post("/api/cash-register/open")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"openingAmount\":10.00}"))
                 .andExpect(status().isForbidden());
     }
 
-    private MockMvc mockMvc() {
-        return MockMvcBuilders
-                .standaloneSetup(new CashRegisterController(cashRegisterService))
-                .setControllerAdvice(new GlobalExceptionHandler())
-                .addInterceptors(new AuthenticatedUserInterceptor(authService))
-                .build();
-    }
-
-    private AuthenticatedUser user(RoleName roleName) {
-        return new AuthenticatedUser(
-                UUID.randomUUID(),
-                "User",
-                "user@local",
-                "user",
-                true,
-                Set.of(roleName));
+    @Test
+    @WithMockUser(roles = "CAIXA")
+    void userWithPermissionCanOpenCashRegister() throws Exception {
+        mockMvc.perform(post("/api/cash-register/open")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"openingAmount\":10.00}"))
+                .andExpect(status().isCreated());
     }
 }

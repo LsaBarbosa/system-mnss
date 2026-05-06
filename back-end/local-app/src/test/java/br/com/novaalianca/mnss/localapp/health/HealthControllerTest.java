@@ -13,11 +13,20 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 class HealthControllerTest {
     private final TechnicalHealthService technicalHealthService = mock(TechnicalHealthService.class);
     private final MockMvc mockMvc = MockMvcBuilders
             .standaloneSetup(new HealthController(technicalHealthService))
+            .setMessageConverters(new MappingJackson2HttpMessageConverter(
+                new ObjectMapper()
+                    .registerModule(new JavaTimeModule())
+                    .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+            ))
             .build();
 
     @Test
@@ -31,6 +40,7 @@ class HealthControllerTest {
                         "local",
                         true,
                         "ready",
+                        "1.0.0",
                         Instant.parse("2026-05-04T12:00:00Z"),
                         Map.of("db", "UP", "redis", "UP", "rabbit", "UP")));
 
@@ -39,6 +49,8 @@ class HealthControllerTest {
                 .andExpect(jsonPath("$.status").value("UP"))
                 .andExpect(jsonPath("$.environment").value("local"))
                 .andExpect(jsonPath("$.offlineCriticalOperation").value(true))
+                .andExpect(jsonPath("$.version").value("1.0.0"))
+                .andExpect(jsonPath("$.timestamp").value("2026-05-04T12:00:00Z"))
                 .andExpect(jsonPath("$.components.db").value("UP"));
     }
 
@@ -53,6 +65,7 @@ class HealthControllerTest {
                         "local",
                         true,
                         "redis down",
+                        "1.0.0",
                         Instant.parse("2026-05-04T12:00:00Z"),
                         Map.of("db", "UP", "redis", "DOWN", "rabbit", "UP")));
 

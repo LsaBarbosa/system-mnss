@@ -29,8 +29,8 @@ Dentro do Codex CLI, cole o bloco da história correspondente e peça para ele i
 8. Eventos de sincronização, webhooks e integrações devem ser idempotentes.
 9. Toda ação crítica deve gerar auditoria quando previsto.
 10. Cada história deve terminar com testes unitários do back-end e do front-end quando aplicável.
-11. Back-end deve seguir **arquitetura hexagonal**: `adapter -> application -> domain`.
-12. Domínio e aplicação não podem depender de HTTP, JPA, Spring MVC, mensageria, Redis, hardware ou APIs externas.
+11. Back-end deve seguir **arquitetura modular em camadas** (web, service, entity, repository, dto).
+12. Controllers não devem conter regra de negócio; Services concentram a lógica de aplicação e negócio; Entities representam persistência; Repositories ficam isolados por módulo; DTOs não expõem entidades diretamente.
 13. Front-end deve seguir **arquitetura Angular por features**: `domain`, `application`, `data-access`, `ui` e `pages`.
 14. Componentes `ui` não acessam `HttpClient`; integrações HTTP ficam em `data-access`.
 
@@ -38,7 +38,7 @@ Dentro do Codex CLI, cole o bloco da história correspondente e peça para ele i
 
 ## 2. Documentos de referência usados
 
-- **ARQ** — `arquitetura.md`: arquitetura híbrida local + online, monólito modular, back-end hexagonal, front-end por features/camadas, comunicação HTTPS e separação entre operação local e canais online.
+- **ARQ** — `arquitetura.md`: arquitetura híbrida local + online, monólito modular, back-end em camadas, front-end por features/camadas, comunicação HTTPS e separação entre operação local e canais online.
 - **DOM** — `modelo-de-dominio.md`: entidades, agregados, enums, regras de negócio e prioridade de implementação do domínio.
 - **BD** — `banco-de-dados.md`: PostgreSQL, Flyway, UUID, timestamps, NUMERIC para dinheiro, tabelas e índices iniciais.
 - **SYNC** — `sincronizacao.md`: Outbox, Inbox, Retry, HMAC, idempotência, push local → online e pull online → local.
@@ -69,13 +69,13 @@ Para cada história, o Codex deve entregar:
 Ajuste conforme o projeto real:
 
 ```bash
-# backend
-cd backend
-./mvnw test
-./mvnw verify
+# back-end
+cd back-end
+./gradlew test
+./gradlew check
 
-# frontend
-cd frontend
+# front-end
+cd front-end
 npm install
 npm test
 npm run build
@@ -94,39 +94,39 @@ npm run build
 **Objetivo da sprint:** deixar a base do projeto preparada para evolução modular.
 
 
-### S01-H01 — Como dev, quero criar o monorepo para organizar backend, frontend, infra e docs.
+### S01-H01 — Como dev, quero criar o monorepo para organizar back-end, front-end, infra e docs.
 
 **Domínio técnico:** Fundação técnica
 
 **Documentos que justificam a implementação:**
-- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, back-end hexagonal, front-end por features/camadas, comunicação HTTPS e separação entre operação local e canais online.
+- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, back-end em camadas, front-end por features/camadas, comunicação HTTPS e separação entre operação local e canais online.
 - `README.md`: visão geral do projeto, módulos sugeridos e ordem de leitura da documentação.
 
 **Escopo funcional detalhado:**
 - Implementar exatamente a capacidade descrita na história, sem antecipar histórias futuras.
-- Back-end planejado no roadmap: Criar estrutura `backend/`, `infra/`, `docs/`.
-- Front-end planejado no roadmap: Criar estrutura `frontend/` com apps `admin`, `pdv`, `kds`, `site-publico`.
+- Back-end planejado no roadmap: Criar estrutura `back-end/`, `infra/`, `docs/`.
+- Front-end planejado no roadmap: Criar estrutura `front-end/` com apps `admin`, `pdv`, `kds`, `site-publico`.
 - A história deve deixar uma fatia funcional testável no ambiente correspondente.
 
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: backend/core-domain, backend/local-app, backend/online-app e backend/shared-infra
+- `back-end/` — módulo alvo: back-end/core-domain, back-end/local-app, back-end/online-app e back-end/shared-infra
 
 Front-end:
-- `frontend/` — app/feature alvo: frontend/admin, frontend/pdv, frontend/kds e frontend/site-publico
+- `front-end/` — app/feature alvo: front-end/admin, front-end/pdv, front-end/kds e front-end/site-publico
 
 **Tarefas de implementação:**
 1. Ler a história, identificar se ela pertence ao ambiente local, online ou compartilhado e confirmar o módulo alvo antes de alterar arquivos.
-2. Implementar o back-end previsto: Criar estrutura `backend/`, `infra/`, `docs/`.
-3. Implementar o front-end previsto: Criar estrutura `frontend/` com apps `admin`, `pdv`, `kds`, `site-publico`.
+2. Implementar o back-end previsto: Criar estrutura `back-end/`, `infra/`, `docs/`.
+3. Implementar o front-end previsto: Criar estrutura `front-end/` com apps `admin`, `pdv`, `kds`, `site-publico`.
 4. Criar ou ajustar DTOs, mappers, services/use cases, controllers/endpoints e modelos TypeScript necessários.
 5. Atualizar OpenAPI/contratos, quando houver endpoint novo ou alteração de payload.
 6. Rodar testes unitários e, quando houver persistência, usar teste de integração com banco/container se o projeto já estiver preparado.
 
 **Regras e cuidados obrigatórios:**
 - manter monólito modular, sem criar microserviços.
-- aplicar arquitetura hexagonal no back-end: adapter -> application -> domain.
+- aplicar arquitetura modular em camadas no back-end: web -> service -> entity/repository.
 - separar domínio, aplicação, portas e adapters de infraestrutura.
 - aplicar arquitetura front-end por features com domain, application, data-access, ui e pages.
 - deixar build e testes executáveis desde a primeira entrega.
@@ -147,18 +147,18 @@ Front-end:
 **Prompt para colar no Codex CLI:**
 
 ~~~text
-Implemente somente a história S01-H01: Como dev, quero criar o monorepo para organizar backend, frontend, infra e docs.
+Implemente somente a história S01-H01: Como dev, quero criar o monorepo para organizar back-end, front-end, infra e docs.
 
 Contexto obrigatório:
 - Sprint: Sprint 01 — Fundação técnica
 - Domínio: Fundação técnica
 - Documentos de referência: ARQ, README
-- Back-end esperado: Criar estrutura `backend/`, `infra/`, `docs/`.
-- Front-end esperado: Criar estrutura `frontend/` com apps `admin`, `pdv`, `kds`, `site-publico`.
+- Back-end esperado: Criar estrutura `back-end/`, `infra/`, `docs/`.
+- Front-end esperado: Criar estrutura `front-end/` com apps `admin`, `pdv`, `kds`, `site-publico`.
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: ARQ, README.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Teste de arquitetura verificando pacotes obrigatórios com ArchUnit..
 5. Crie/ajuste testes unitários do front-end: Teste simples validando que cada app Angular inicial renderiza o shell..
@@ -171,7 +171,7 @@ Regras de execução:
 **Domínio técnico:** Fundação técnica
 
 **Documentos que justificam a implementação:**
-- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, back-end hexagonal, front-end por features/camadas, comunicação HTTPS e separação entre operação local e canais online.
+- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, back-end em camadas, front-end por features/camadas, comunicação HTTPS e separação entre operação local e canais online.
 - `deploy-local.md`: Docker Compose local, Nginx, health checks, backup, IP fixo e segurança local.
 
 **Escopo funcional detalhado:**
@@ -183,10 +183,10 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: backend/core-domain, backend/local-app, backend/online-app e backend/shared-infra
+- `back-end/` — módulo alvo: back-end/core-domain, back-end/local-app, back-end/online-app e back-end/shared-infra
 
 Front-end:
-- `frontend/` — app/feature alvo: frontend/admin, frontend/pdv, frontend/kds e frontend/site-publico
+- `front-end/` — app/feature alvo: front-end/admin, front-end/pdv, front-end/kds e front-end/site-publico
 
 **Tarefas de implementação:**
 1. Ler a história, identificar se ela pertence ao ambiente local, online ou compartilhado e confirmar o módulo alvo antes de alterar arquivos.
@@ -198,7 +198,7 @@ Front-end:
 
 **Regras e cuidados obrigatórios:**
 - manter monólito modular, sem criar microserviços.
-- aplicar arquitetura hexagonal no back-end: adapter -> application -> domain.
+- aplicar arquitetura modular em camadas no back-end: web -> service -> entity/repository.
 - separar domínio, aplicação, portas e adapters de infraestrutura.
 - aplicar arquitetura front-end por features com domain, application, data-access, ui e pages.
 - deixar build e testes executáveis desde a primeira entrega.
@@ -230,7 +230,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: ARQ, DL.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Context load; `/api/ping` retorna 200; profile `local` carrega..
 5. Crie/ajuste testes unitários do front-end: Service HTTP chama `/api/ping` e trata sucesso/erro..
@@ -243,7 +243,7 @@ Regras de execução:
 **Domínio técnico:** Fundação técnica
 
 **Documentos que justificam a implementação:**
-- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, back-end hexagonal, front-end por features/camadas, comunicação HTTPS e separação entre operação local e canais online.
+- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, back-end em camadas, front-end por features/camadas, comunicação HTTPS e separação entre operação local e canais online.
 - `deploy-online.md`: VPS Hostinger, Nginx, HTTPS, Docker Compose, webhooks, CI/CD, backup e segurança online.
 
 **Escopo funcional detalhado:**
@@ -255,10 +255,10 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: backend/core-domain, backend/local-app, backend/online-app e backend/shared-infra
+- `back-end/` — módulo alvo: back-end/core-domain, back-end/local-app, back-end/online-app e back-end/shared-infra
 
 Front-end:
-- `frontend/` — app/feature alvo: frontend/admin, frontend/pdv, frontend/kds e frontend/site-publico
+- `front-end/` — app/feature alvo: front-end/admin, front-end/pdv, front-end/kds e front-end/site-publico
 
 **Tarefas de implementação:**
 1. Ler a história, identificar se ela pertence ao ambiente local, online ou compartilhado e confirmar o módulo alvo antes de alterar arquivos.
@@ -270,7 +270,7 @@ Front-end:
 
 **Regras e cuidados obrigatórios:**
 - manter monólito modular, sem criar microserviços.
-- aplicar arquitetura hexagonal no back-end: adapter -> application -> domain.
+- aplicar arquitetura modular em camadas no back-end: web -> service -> entity/repository.
 - separar domínio, aplicação, portas e adapters de infraestrutura.
 - aplicar arquitetura front-end por features com domain, application, data-access, ui e pages.
 - deixar build e testes executáveis desde a primeira entrega.
@@ -302,7 +302,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: ARQ, DO.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Context load; profile `online` exige variáveis obrigatórias..
 5. Crie/ajuste testes unitários do front-end: Configuração de environment é carregada corretamente..
@@ -326,10 +326,10 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: backend/core-domain, backend/local-app, backend/online-app e backend/shared-infra
+- `back-end/` — módulo alvo: back-end/core-domain, back-end/local-app, back-end/online-app e back-end/shared-infra
 
 Front-end:
-- `frontend/` — app/feature alvo: frontend/admin, frontend/pdv, frontend/kds e frontend/site-publico
+- `front-end/` — app/feature alvo: front-end/admin, front-end/pdv, front-end/kds e front-end/site-publico
 
 **Tarefas de implementação:**
 1. Ler a história, identificar se ela pertence ao ambiente local, online ou compartilhado e confirmar o módulo alvo antes de alterar arquivos.
@@ -341,7 +341,7 @@ Front-end:
 
 **Regras e cuidados obrigatórios:**
 - manter monólito modular, sem criar microserviços.
-- aplicar arquitetura hexagonal no back-end: adapter -> application -> domain.
+- aplicar arquitetura modular em camadas no back-end: web -> service -> entity/repository.
 - separar domínio, aplicação, portas e adapters de infraestrutura.
 - aplicar arquitetura front-end por features com domain, application, data-access, ui e pages.
 - deixar build e testes executáveis desde a primeira entrega.
@@ -373,7 +373,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Validação retorna 400; regra de negócio retorna código esperado; erro inesperado não vaza stacktrace..
 5. Crie/ajuste testes unitários do front-end: Interceptor converte erro HTTP em mensagem exibível..
@@ -386,7 +386,7 @@ Regras de execução:
 **Domínio técnico:** Fundação técnica
 
 **Documentos que justificam a implementação:**
-- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, back-end hexagonal, front-end por features/camadas, comunicação HTTPS e separação entre operação local e canais online.
+- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, back-end em camadas, front-end por features/camadas, comunicação HTTPS e separação entre operação local e canais online.
 
 **Escopo funcional detalhado:**
 - Implementar exatamente a capacidade descrita na história, sem antecipar histórias futuras.
@@ -397,10 +397,10 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: backend/core-domain, backend/local-app, backend/online-app e backend/shared-infra
+- `back-end/` — módulo alvo: back-end/core-domain, back-end/local-app, back-end/online-app e back-end/shared-infra
 
 Front-end:
-- `frontend/` — app/feature alvo: frontend/admin, frontend/pdv, frontend/kds e frontend/site-publico
+- `front-end/` — app/feature alvo: front-end/admin, front-end/pdv, front-end/kds e front-end/site-publico
 
 **Tarefas de implementação:**
 1. Ler a história, identificar se ela pertence ao ambiente local, online ou compartilhado e confirmar o módulo alvo antes de alterar arquivos.
@@ -412,7 +412,7 @@ Front-end:
 
 **Regras e cuidados obrigatórios:**
 - manter monólito modular, sem criar microserviços.
-- aplicar arquitetura hexagonal no back-end: adapter -> application -> domain.
+- aplicar arquitetura modular em camadas no back-end: web -> service -> entity/repository.
 - separar domínio, aplicação, portas e adapters de infraestrutura.
 - aplicar arquitetura front-end por features com domain, application, data-access, ui e pages.
 - deixar build e testes executáveis desde a primeira entrega.
@@ -444,7 +444,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: ARQ.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Build falha com teste quebrado; cobertura mínima configurada..
 5. Crie/ajuste testes unitários do front-end: `ng test` executa; componente base renderiza sem erro..
@@ -464,7 +464,7 @@ Regras de execução:
 
 **Documentos que justificam a implementação:**
 - `deploy-local.md`: Docker Compose local, Nginx, health checks, backup, IP fixo e segurança local.
-- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, back-end hexagonal, front-end por features/camadas, comunicação HTTPS e separação entre operação local e canais online.
+- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, back-end em camadas, front-end por features/camadas, comunicação HTTPS e separação entre operação local e canais online.
 
 **Escopo funcional detalhado:**
 - Implementar exatamente a capacidade descrita na história, sem antecipar histórias futuras.
@@ -475,10 +475,10 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: infra/local, infra/online, Docker Compose, Nginx e configurações de profile
+- `back-end/` — módulo alvo: infra/local, infra/online, Docker Compose, Nginx e configurações de profile
 
 Front-end:
-- `frontend/` — app/feature alvo: frontends servidos por Nginx/containers e environments Angular
+- `front-end/` — app/feature alvo: front-ends servidos por Nginx/containers e environments Angular
 
 **Tarefas de implementação:**
 1. Ler a história, identificar se ela pertence ao ambiente local, online ou compartilhado e confirmar o módulo alvo antes de alterar arquivos.
@@ -520,7 +520,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DL, ARQ.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Validar propriedades de conexão por profile; falha rápida sem `DB_HOST`..
 5. Crie/ajuste testes unitários do front-end: Environment local possui URL válida..
@@ -534,7 +534,7 @@ Regras de execução:
 
 **Documentos que justificam a implementação:**
 - `deploy-online.md`: VPS Hostinger, Nginx, HTTPS, Docker Compose, webhooks, CI/CD, backup e segurança online.
-- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, back-end hexagonal, front-end por features/camadas, comunicação HTTPS e separação entre operação local e canais online.
+- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, back-end em camadas, front-end por features/camadas, comunicação HTTPS e separação entre operação local e canais online.
 
 **Escopo funcional detalhado:**
 - Implementar exatamente a capacidade descrita na história, sem antecipar histórias futuras.
@@ -545,10 +545,10 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: infra/local, infra/online, Docker Compose, Nginx e configurações de profile
+- `back-end/` — módulo alvo: infra/local, infra/online, Docker Compose, Nginx e configurações de profile
 
 Front-end:
-- `frontend/` — app/feature alvo: frontends servidos por Nginx/containers e environments Angular
+- `front-end/` — app/feature alvo: front-ends servidos por Nginx/containers e environments Angular
 
 **Tarefas de implementação:**
 1. Ler a história, identificar se ela pertence ao ambiente local, online ou compartilhado e confirmar o módulo alvo antes de alterar arquivos.
@@ -590,7 +590,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DO, ARQ.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Profile online exige `JWT_SECRET` e `SYNC_MASTER_SECRET`..
 5. Crie/ajuste testes unitários do front-end: Environment produção não usa localhost..
@@ -616,10 +616,10 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: infra/local, infra/online, Docker Compose, Nginx e configurações de profile
+- `back-end/` — módulo alvo: infra/local, infra/online, Docker Compose, Nginx e configurações de profile
 
 Front-end:
-- `frontend/` — app/feature alvo: frontends servidos por Nginx/containers e environments Angular
+- `front-end/` — app/feature alvo: front-ends servidos por Nginx/containers e environments Angular
 
 **Tarefas de implementação:**
 1. Ler a história, identificar se ela pertence ao ambiente local, online ou compartilhado e confirmar o módulo alvo antes de alterar arquivos.
@@ -661,7 +661,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DL, DO, SYNC.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Health retorna `UP` com mocks; retorna `DOWN` quando dependência falha..
 5. Crie/ajuste testes unitários do front-end: Componente mostra `Online`, `Instável`, `Offline`..
@@ -685,10 +685,10 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: infra/local, infra/online, Docker Compose, Nginx e configurações de profile
+- `back-end/` — módulo alvo: infra/local, infra/online, Docker Compose, Nginx e configurações de profile
 
 Front-end:
-- `frontend/` — app/feature alvo: frontends servidos por Nginx/containers e environments Angular
+- `front-end/` — app/feature alvo: front-ends servidos por Nginx/containers e environments Angular
 
 **Tarefas de implementação:**
 1. Ler a história, identificar se ela pertence ao ambiente local, online ou compartilhado e confirmar o módulo alvo antes de alterar arquivos.
@@ -730,7 +730,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DL.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Validação de propriedades de CORS/proxy..
 5. Crie/ajuste testes unitários do front-end: Testar carregamento de base href..
@@ -755,10 +755,10 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: infra/local, infra/online, Docker Compose, Nginx e configurações de profile
+- `back-end/` — módulo alvo: infra/local, infra/online, Docker Compose, Nginx e configurações de profile
 
 Front-end:
-- `frontend/` — app/feature alvo: frontends servidos por Nginx/containers e environments Angular
+- `front-end/` — app/feature alvo: front-ends servidos por Nginx/containers e environments Angular
 
 **Tarefas de implementação:**
 1. Ler a história, identificar se ela pertence ao ambiente local, online ou compartilhado e confirmar o módulo alvo antes de alterar arquivos.
@@ -801,7 +801,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DL, DO.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Service de metadados de backup calcula status válido/atrasado..
 5. Crie/ajuste testes unitários do front-end: Pipe/formatação de data do último backup..
@@ -832,12 +832,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: security, users, roles, auth e audit
+- `back-end/` — módulo alvo: security, users, roles, auth e audit
 - `AuthController`, `AuthService`, `UserService`, `RoleService`, `SecurityConfig` quando aplicável
 - `User`, `Role`, `UserRepository`, `RoleRepository`, DTOs e mappers
 
 Front-end:
-- `frontend/` — app/feature alvo: admin/auth, guards, interceptors e tela de login
+- `front-end/` — app/feature alvo: admin/auth, guards, interceptors e tela de login
 - `auth.service.ts`, `auth.interceptor.ts`, `auth.guard.ts`, tela de login e componentes de usuário
 
 **Tarefas de implementação:**
@@ -881,7 +881,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Login válido retorna token; senha inválida retorna 401; usuário inativo é bloqueado..
 5. Crie/ajuste testes unitários do front-end: Form inválido bloqueia submit; sucesso armazena token; erro exibe mensagem..
@@ -905,12 +905,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: security, users, roles, auth e audit
+- `back-end/` — módulo alvo: security, users, roles, auth e audit
 - `AuthController`, `AuthService`, `UserService`, `RoleService`, `SecurityConfig` quando aplicável
 - `User`, `Role`, `UserRepository`, `RoleRepository`, DTOs e mappers
 
 Front-end:
-- `frontend/` — app/feature alvo: admin/auth, guards, interceptors e tela de login
+- `front-end/` — app/feature alvo: admin/auth, guards, interceptors e tela de login
 - `auth.service.ts`, `auth.interceptor.ts`, `auth.guard.ts`, tela de login e componentes de usuário
 
 **Tarefas de implementação:**
@@ -954,7 +954,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Token válido retorna usuário/perfis; token expirado retorna 401..
 5. Crie/ajuste testes unitários do front-end: Guard redireciona não autenticado para login..
@@ -979,12 +979,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: security, users, roles, auth e audit
+- `back-end/` — módulo alvo: security, users, roles, auth e audit
 - `AuthController`, `AuthService`, `UserService`, `RoleService`, `SecurityConfig` quando aplicável
 - `User`, `Role`, `UserRepository`, `RoleRepository`, DTOs e mappers
 
 Front-end:
-- `frontend/` — app/feature alvo: admin/auth, guards, interceptors e tela de login
+- `front-end/` — app/feature alvo: admin/auth, guards, interceptors e tela de login
 - `auth.service.ts`, `auth.interceptor.ts`, `auth.guard.ts`, tela de login e componentes de usuário
 
 **Tarefas de implementação:**
@@ -1028,7 +1028,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Username duplicado falha; senha é hasheada; perfil obrigatório..
 5. Crie/ajuste testes unitários do front-end: Form exige campos obrigatórios; lista renderiza usuários..
@@ -1053,12 +1053,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: security, users, roles, auth e audit
+- `back-end/` — módulo alvo: security, users, roles, auth e audit
 - `AuthController`, `AuthService`, `UserService`, `RoleService`, `SecurityConfig` quando aplicável
 - `User`, `Role`, `UserRepository`, `RoleRepository`, DTOs e mappers
 
 Front-end:
-- `frontend/` — app/feature alvo: admin/auth, guards, interceptors e tela de login
+- `front-end/` — app/feature alvo: admin/auth, guards, interceptors e tela de login
 - `auth.service.ts`, `auth.interceptor.ts`, `auth.guard.ts`, tela de login e componentes de usuário
 
 **Tarefas de implementação:**
@@ -1102,7 +1102,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, BD.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Usuário sem perfil operacional é recusado; perfil inexistente falha..
 5. Crie/ajuste testes unitários do front-end: Seleção múltipla mantém estado correto..
@@ -1115,7 +1115,7 @@ Regras de execução:
 **Domínio técnico:** Segurança e usuários
 
 **Documentos que justificam a implementação:**
-- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, back-end hexagonal, front-end por features/camadas, comunicação HTTPS e separação entre operação local e canais online.
+- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, back-end em camadas, front-end por features/camadas, comunicação HTTPS e separação entre operação local e canais online.
 - `fluxos-e-casos-de-uso.md`: fluxos funcionais, casos de uso, regras transversais, APIs sugeridas e critérios de aceite.
 
 **Escopo funcional detalhado:**
@@ -1127,12 +1127,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: security, users, roles, auth e audit
+- `back-end/` — módulo alvo: security, users, roles, auth e audit
 - `AuthController`, `AuthService`, `UserService`, `RoleService`, `SecurityConfig` quando aplicável
 - `User`, `Role`, `UserRepository`, `RoleRepository`, DTOs e mappers
 
 Front-end:
-- `frontend/` — app/feature alvo: admin/auth, guards, interceptors e tela de login
+- `front-end/` — app/feature alvo: admin/auth, guards, interceptors e tela de login
 - `auth.service.ts`, `auth.interceptor.ts`, `auth.guard.ts`, tela de login e componentes de usuário
 
 **Tarefas de implementação:**
@@ -1176,7 +1176,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: ARQ, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Usuário sem permissão recebe 403; admin acessa tudo..
 5. Crie/ajuste testes unitários do front-end: Botão crítico oculta/desabilita sem perfil..
@@ -1206,12 +1206,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: core-domain, migrations Flyway, repositories e audit
+- `back-end/` — módulo alvo: core-domain, migrations Flyway, repositories e audit
 - `resources/db/migration/Vxxx__*.sql`
 - entidades JPA, enums, repositories e migrations Flyway
 
 Front-end:
-- `frontend/` — app/feature alvo: models TypeScript, services base e mocks de contrato
+- `front-end/` — app/feature alvo: models TypeScript, services base e mocks de contrato
 - modelos TypeScript em `shared/models` e services HTTP base
 
 **Tarefas de implementação:**
@@ -1256,7 +1256,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: BD.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Migration executa em banco vazio; migration duplicada falha; tabelas esperadas existem..
 5. Crie/ajuste testes unitários do front-end: Testes de contratos mockados validam modelos TypeScript..
@@ -1281,12 +1281,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: core-domain, migrations Flyway, repositories e audit
+- `back-end/` — módulo alvo: core-domain, migrations Flyway, repositories e audit
 - `resources/db/migration/Vxxx__*.sql`
 - entidades JPA, enums, repositories e migrations Flyway
 
 Front-end:
-- `frontend/` — app/feature alvo: models TypeScript, services base e mocks de contrato
+- `front-end/` — app/feature alvo: models TypeScript, services base e mocks de contrato
 - modelos TypeScript em `shared/models` e services HTTP base
 
 **Tarefas de implementação:**
@@ -1329,7 +1329,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, BD.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Entidade preenche timestamps; BigDecimal não aceita valor negativo onde proibido..
 5. Crie/ajuste testes unitários do front-end: Modelos TypeScript compilam com campos obrigatórios..
@@ -1353,12 +1353,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: core-domain, migrations Flyway, repositories e audit
+- `back-end/` — módulo alvo: core-domain, migrations Flyway, repositories e audit
 - `resources/db/migration/Vxxx__*.sql`
 - entidades JPA, enums, repositories e migrations Flyway
 
 Front-end:
-- `frontend/` — app/feature alvo: models TypeScript, services base e mocks de contrato
+- `front-end/` — app/feature alvo: models TypeScript, services base e mocks de contrato
 - modelos TypeScript em `shared/models` e services HTTP base
 
 **Tarefas de implementação:**
@@ -1401,7 +1401,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: BD.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Repository persiste e busca entidade com Testcontainers..
 5. Crie/ajuste testes unitários do front-end: Service usa URL correta e método HTTP esperado..
@@ -1426,12 +1426,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: core-domain, migrations Flyway, repositories e audit
+- `back-end/` — módulo alvo: core-domain, migrations Flyway, repositories e audit
 - `resources/db/migration/Vxxx__*.sql`
 - entidades JPA, enums, repositories e migrations Flyway
 
 Front-end:
-- `frontend/` — app/feature alvo: models TypeScript, services base e mocks de contrato
+- `front-end/` — app/feature alvo: models TypeScript, services base e mocks de contrato
 - modelos TypeScript em `shared/models` e services HTTP base
 
 **Tarefas de implementação:**
@@ -1474,7 +1474,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, BD.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Roles são criados uma única vez; execução repetida não duplica..
 5. Crie/ajuste testes unitários do front-end: Select de roles carrega opções mockadas..
@@ -1499,12 +1499,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: core-domain, migrations Flyway, repositories e audit
+- `back-end/` — módulo alvo: core-domain, migrations Flyway, repositories e audit
 - `resources/db/migration/Vxxx__*.sql`
 - entidades JPA, enums, repositories e migrations Flyway
 
 Front-end:
-- `frontend/` — app/feature alvo: models TypeScript, services base e mocks de contrato
+- `front-end/` — app/feature alvo: models TypeScript, services base e mocks de contrato
 - modelos TypeScript em `shared/models` e services HTTP base
 
 **Tarefas de implementação:**
@@ -1547,7 +1547,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Audit log grava ação, usuário, entidade e timestamp; não aceita ação vazia..
 5. Crie/ajuste testes unitários do front-end: Componente de tabela renderiza logs mockados..
@@ -1579,12 +1579,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: catalog/category/product
+- `back-end/` — módulo alvo: catalog/category/product
 - controllers e use cases de `Category`, `Product`, `ProductAvailability`
 - DTOs request/response e mappers MapStruct
 
 Front-end:
-- `frontend/` — app/feature alvo: admin/catalog e integrações iniciais do PDV
+- `front-end/` — app/feature alvo: admin/catalog e integrações iniciais do PDV
 - páginas admin de catálogo, componentes de formulário/listagem e services de catálogo
 
 **Tarefas de implementação:**
@@ -1630,7 +1630,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, BD, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Nome obrigatório; ordem default; categoria ativa por padrão..
 5. Crie/ajuste testes unitários do front-end: Form valida nome; submit chama service; erro aparece..
@@ -1655,12 +1655,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: catalog/category/product
+- `back-end/` — módulo alvo: catalog/category/product
 - controllers e use cases de `Category`, `Product`, `ProductAvailability`
 - DTOs request/response e mappers MapStruct
 
 Front-end:
-- `frontend/` — app/feature alvo: admin/catalog e integrações iniciais do PDV
+- `front-end/` — app/feature alvo: admin/catalog e integrações iniciais do PDV
 - páginas admin de catálogo, componentes de formulário/listagem e services de catálogo
 
 **Tarefas de implementação:**
@@ -1706,7 +1706,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Não edita categoria inexistente; atualiza `updatedAt`; preserva ID..
 5. Crie/ajuste testes unitários do front-end: Modal/form edição popula valores..
@@ -1731,12 +1731,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: catalog/category/product
+- `back-end/` — módulo alvo: catalog/category/product
 - controllers e use cases de `Category`, `Product`, `ProductAvailability`
 - DTOs request/response e mappers MapStruct
 
 Front-end:
-- `frontend/` — app/feature alvo: admin/catalog e integrações iniciais do PDV
+- `front-end/` — app/feature alvo: admin/catalog e integrações iniciais do PDV
 - páginas admin de catálogo, componentes de formulário/listagem e services de catálogo
 
 **Tarefas de implementação:**
@@ -1783,7 +1783,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Categoria oculta no PDV não aparece em consulta PDV..
 5. Crie/ajuste testes unitários do front-end: Checkboxes refletem estado e atualizam payload..
@@ -1809,12 +1809,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: catalog/category/product
+- `back-end/` — módulo alvo: catalog/category/product
 - controllers e use cases de `Category`, `Product`, `ProductAvailability`
 - DTOs request/response e mappers MapStruct
 
 Front-end:
-- `frontend/` — app/feature alvo: admin/catalog e integrações iniciais do PDV
+- `front-end/` — app/feature alvo: admin/catalog e integrações iniciais do PDV
 - páginas admin de catálogo, componentes de formulário/listagem e services de catálogo
 
 **Tarefas de implementação:**
@@ -1860,7 +1860,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, BD, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Preço obrigatório; categoria deve existir; unidade obrigatória; setor obrigatório..
 5. Crie/ajuste testes unitários do front-end: Form valida preço, categoria, unidade e setor..
@@ -1885,12 +1885,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: catalog/category/product
+- `back-end/` — módulo alvo: catalog/category/product
 - controllers e use cases de `Category`, `Product`, `ProductAvailability`
 - DTOs request/response e mappers MapStruct
 
 Front-end:
-- `frontend/` — app/feature alvo: admin/catalog e integrações iniciais do PDV
+- `front-end/` — app/feature alvo: admin/catalog e integrações iniciais do PDV
 - páginas admin de catálogo, componentes de formulário/listagem e services de catálogo
 
 **Tarefas de implementação:**
@@ -1936,7 +1936,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, SYNC.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Alterar preço gera evento `PRODUCT_PRICE_CHANGED`; produto inexistente retorna erro..
 5. Crie/ajuste testes unitários do front-end: Filtro por nome/categoria funciona com dados mockados..
@@ -1961,12 +1961,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: catalog/category/product
+- `back-end/` — módulo alvo: catalog/category/product
 - controllers e use cases de `Category`, `Product`, `ProductAvailability`
 - DTOs request/response e mappers MapStruct
 
 Front-end:
-- `frontend/` — app/feature alvo: admin/catalog e integrações iniciais do PDV
+- `front-end/` — app/feature alvo: admin/catalog e integrações iniciais do PDV
 - páginas admin de catálogo, componentes de formulário/listagem e services de catálogo
 
 **Tarefas de implementação:**
@@ -2011,7 +2011,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, DOM.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Produto inativo não retorna como vendável; barcode inexistente retorna 404..
 5. Crie/ajuste testes unitários do front-end: Campo captura Enter e chama service..
@@ -2042,12 +2042,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: catalog/availability e sync event
+- `back-end/` — módulo alvo: catalog/availability e sync event
 - controllers e use cases de `Category`, `Product`, `ProductAvailability`
 - DTOs request/response e mappers MapStruct
 
 Front-end:
-- `frontend/` — app/feature alvo: admin/availability e indicadores no PDV
+- `front-end/` — app/feature alvo: admin/availability e indicadores no PDV
 - páginas admin de catálogo, componentes de formulário/listagem e services de catálogo
 
 **Tarefas de implementação:**
@@ -2092,7 +2092,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Produto indisponível exige motivo conforme status; salva usuário responsável..
 5. Crie/ajuste testes unitários do front-end: Toggle altera estado visual e envia motivo..
@@ -2117,12 +2117,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: catalog/availability e sync event
+- `back-end/` — módulo alvo: catalog/availability e sync event
 - controllers e use cases de `Category`, `Product`, `ProductAvailability`
 - DTOs request/response e mappers MapStruct
 
 Front-end:
-- `frontend/` — app/feature alvo: admin/availability e indicadores no PDV
+- `front-end/` — app/feature alvo: admin/availability e indicadores no PDV
 - páginas admin de catálogo, componentes de formulário/listagem e services de catálogo
 
 **Tarefas de implementação:**
@@ -2167,7 +2167,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, SYNC.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Produto `UNAVAILABLE` não aparece em `sellOnline`..
 5. Crie/ajuste testes unitários do front-end: Badge “Indisponível” aparece corretamente..
@@ -2192,12 +2192,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: catalog/availability e sync event
+- `back-end/` — módulo alvo: catalog/availability e sync event
 - controllers e use cases de `Category`, `Product`, `ProductAvailability`
 - DTOs request/response e mappers MapStruct
 
 Front-end:
-- `frontend/` — app/feature alvo: admin/availability e indicadores no PDV
+- `front-end/` — app/feature alvo: admin/availability e indicadores no PDV
 - páginas admin de catálogo, componentes de formulário/listagem e services de catálogo
 
 **Tarefas de implementação:**
@@ -2242,7 +2242,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, DOM.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Produto inativo é removido; produto sem `sellOnPdv` não aparece..
 5. Crie/ajuste testes unitários do front-end: Lista renderiza produtos agrupados por categoria..
@@ -2267,12 +2267,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: catalog/availability e sync event
+- `back-end/` — módulo alvo: catalog/availability e sync event
 - controllers e use cases de `Category`, `Product`, `ProductAvailability`
 - DTOs request/response e mappers MapStruct
 
 Front-end:
-- `frontend/` — app/feature alvo: admin/availability e indicadores no PDV
+- `front-end/` — app/feature alvo: admin/availability e indicadores no PDV
 - páginas admin de catálogo, componentes de formulário/listagem e services de catálogo
 
 **Tarefas de implementação:**
@@ -2318,7 +2318,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: SYNC, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Alteração cria evento PENDING; falha não desfaz alteração local..
 5. Crie/ajuste testes unitários do front-end: Indicador renderiza pendente/sincronizado..
@@ -2343,12 +2343,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: catalog/availability e sync event
+- `back-end/` — módulo alvo: catalog/availability e sync event
 - controllers e use cases de `Category`, `Product`, `ProductAvailability`
 - DTOs request/response e mappers MapStruct
 
 Front-end:
-- `frontend/` — app/feature alvo: admin/availability e indicadores no PDV
+- `front-end/` — app/feature alvo: admin/availability e indicadores no PDV
 - páginas admin de catálogo, componentes de formulário/listagem e services de catálogo
 
 **Tarefas de implementação:**
@@ -2394,7 +2394,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Audit contém usuário, oldValue, newValue e entityId..
 5. Crie/ajuste testes unitários do front-end: Tabela de histórico renderiza mocks..
@@ -2426,11 +2426,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: cash/cash-register/cash-movement
+- `back-end/` — módulo alvo: cash/cash-register/cash-movement
 - `CashRegisterController`, `CashRegisterService`, `CashMovementService`, repositories e DTOs
 
 Front-end:
-- `frontend/` — app/feature alvo: pdv/cash e admin/cash-summary
+- `front-end/` — app/feature alvo: pdv/cash e admin/cash-summary
 - componentes de abertura/fechamento, sangria, suprimento e resumo de caixa no app PDV
 
 **Tarefas de implementação:**
@@ -2476,7 +2476,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Valor inicial obrigatório; usuário sem permissão falha; caixa aberto duplicado é bloqueado..
 5. Crie/ajuste testes unitários do front-end: Form exige valor inicial; sucesso libera PDV..
@@ -2500,11 +2500,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: cash/cash-register/cash-movement
+- `back-end/` — módulo alvo: cash/cash-register/cash-movement
 - `CashRegisterController`, `CashRegisterService`, `CashMovementService`, repositories e DTOs
 
 Front-end:
-- `frontend/` — app/feature alvo: pdv/cash e admin/cash-summary
+- `front-end/` — app/feature alvo: pdv/cash e admin/cash-summary
 - componentes de abertura/fechamento, sangria, suprimento e resumo de caixa no app PDV
 
 **Tarefas de implementação:**
@@ -2550,7 +2550,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Retorna caixa aberto do operador; sem caixa retorna estado vazio..
 5. Crie/ajuste testes unitários do front-end: Header renderiza status corretamente..
@@ -2575,11 +2575,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: cash/cash-register/cash-movement
+- `back-end/` — módulo alvo: cash/cash-register/cash-movement
 - `CashRegisterController`, `CashRegisterService`, `CashMovementService`, repositories e DTOs
 
 Front-end:
-- `frontend/` — app/feature alvo: pdv/cash e admin/cash-summary
+- `front-end/` — app/feature alvo: pdv/cash e admin/cash-summary
 - componentes de abertura/fechamento, sangria, suprimento e resumo de caixa no app PDV
 
 **Tarefas de implementação:**
@@ -2626,7 +2626,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Motivo obrigatório; valor positivo; caixa fechado bloqueia..
 5. Crie/ajuste testes unitários do front-end: Form valida valor e motivo..
@@ -2651,11 +2651,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: cash/cash-register/cash-movement
+- `back-end/` — módulo alvo: cash/cash-register/cash-movement
 - `CashRegisterController`, `CashRegisterService`, `CashMovementService`, repositories e DTOs
 
 Front-end:
-- `frontend/` — app/feature alvo: pdv/cash e admin/cash-summary
+- `front-end/` — app/feature alvo: pdv/cash e admin/cash-summary
 - componentes de abertura/fechamento, sangria, suprimento e resumo de caixa no app PDV
 
 **Tarefas de implementação:**
@@ -2702,7 +2702,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Valor positivo; usuário autorizado; movimento vinculado ao caixa..
 5. Crie/ajuste testes unitários do front-end: Submit chama endpoint correto..
@@ -2727,11 +2727,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: cash/cash-register/cash-movement
+- `back-end/` — módulo alvo: cash/cash-register/cash-movement
 - `CashRegisterController`, `CashRegisterService`, `CashMovementService`, repositories e DTOs
 
 Front-end:
-- `frontend/` — app/feature alvo: pdv/cash e admin/cash-summary
+- `front-end/` — app/feature alvo: pdv/cash e admin/cash-summary
 - componentes de abertura/fechamento, sangria, suprimento e resumo de caixa no app PDV
 
 **Tarefas de implementação:**
@@ -2777,7 +2777,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Calcula esperado; diferença registrada; caixa fechado não recebe movimento..
 5. Crie/ajuste testes unitários do front-end: Tela calcula diferença visualmente; exige justificativa se divergente..
@@ -2801,11 +2801,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: cash/cash-register/cash-movement
+- `back-end/` — módulo alvo: cash/cash-register/cash-movement
 - `CashRegisterController`, `CashRegisterService`, `CashMovementService`, repositories e DTOs
 
 Front-end:
-- `frontend/` — app/feature alvo: pdv/cash e admin/cash-summary
+- `front-end/` — app/feature alvo: pdv/cash e admin/cash-summary
 - componentes de abertura/fechamento, sangria, suprimento e resumo de caixa no app PDV
 
 **Tarefas de implementação:**
@@ -2851,7 +2851,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Agrupa por método; inclui sangria/suprimento/diferença..
 5. Crie/ajuste testes unitários do front-end: Tabela de resumo renderiza totais..
@@ -2882,12 +2882,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: pdv/sales/order/order-item
+- `back-end/` — módulo alvo: pdv/sales/order/order-item
 - `PdvController`, `SaleService`, `OrderService`, `OrderItemService`, `PaymentService`, `CashMovementService`
 - regras de totalização, desconto, finalização e cancelamento
 
 Front-end:
-- `frontend/` — app/feature alvo: pdv/sale-screen, product-search e cart
+- `front-end/` — app/feature alvo: pdv/sale-screen, product-search e cart
 - tela principal do PDV, carrinho, busca de produto, pagamento, desconto, cancelamento e impressão
 
 **Tarefas de implementação:**
@@ -2932,7 +2932,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Sem caixa aberto falha; cria Order origem PDV; status CREATED..
 5. Crie/ajuste testes unitários do front-end: Botão cria venda e inicializa carrinho..
@@ -2957,12 +2957,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: pdv/sales/order/order-item
+- `back-end/` — módulo alvo: pdv/sales/order/order-item
 - `PdvController`, `SaleService`, `OrderService`, `OrderItemService`, `PaymentService`, `CashMovementService`
 - regras de totalização, desconto, finalização e cancelamento
 
 Front-end:
-- `frontend/` — app/feature alvo: pdv/sale-screen, product-search e cart
+- `front-end/` — app/feature alvo: pdv/sale-screen, product-search e cart
 - tela principal do PDV, carrinho, busca de produto, pagamento, desconto, cancelamento e impressão
 
 **Tarefas de implementação:**
@@ -3007,7 +3007,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, PDV.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Produto inativo bloqueia; salva snapshot de nome/preço; total calculado..
 5. Crie/ajuste testes unitários do front-end: Carrinho adiciona item e atualiza subtotal..
@@ -3032,12 +3032,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: pdv/sales/order/order-item
+- `back-end/` — módulo alvo: pdv/sales/order/order-item
 - `PdvController`, `SaleService`, `OrderService`, `OrderItemService`, `PaymentService`, `CashMovementService`
 - regras de totalização, desconto, finalização e cancelamento
 
 Front-end:
-- `frontend/` — app/feature alvo: pdv/sale-screen, product-search e cart
+- `front-end/` — app/feature alvo: pdv/sale-screen, product-search e cart
 - tela principal do PDV, carrinho, busca de produto, pagamento, desconto, cancelamento e impressão
 
 **Tarefas de implementação:**
@@ -3081,7 +3081,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, DOM.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Quantidade zero/negativa falha; total recalcula; venda finalizada bloqueia..
 5. Crie/ajuste testes unitários do front-end: Quantidade altera total visual..
@@ -3105,12 +3105,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: pdv/sales/order/order-item
+- `back-end/` — módulo alvo: pdv/sales/order/order-item
 - `PdvController`, `SaleService`, `OrderService`, `OrderItemService`, `PaymentService`, `CashMovementService`
 - regras de totalização, desconto, finalização e cancelamento
 
 Front-end:
-- `frontend/` — app/feature alvo: pdv/sale-screen, product-search e cart
+- `front-end/` — app/feature alvo: pdv/sale-screen, product-search e cart
 - tela principal do PDV, carrinho, busca de produto, pagamento, desconto, cancelamento e impressão
 
 **Tarefas de implementação:**
@@ -3154,7 +3154,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Item inexistente retorna erro; total recalcula; venda finalizada bloqueia..
 5. Crie/ajuste testes unitários do front-end: Item some do carrinho..
@@ -3178,12 +3178,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: pdv/sales/order/order-item
+- `back-end/` — módulo alvo: pdv/sales/order/order-item
 - `PdvController`, `SaleService`, `OrderService`, `OrderItemService`, `PaymentService`, `CashMovementService`
 - regras de totalização, desconto, finalização e cancelamento
 
 Front-end:
-- `frontend/` — app/feature alvo: pdv/sale-screen, product-search e cart
+- `front-end/` — app/feature alvo: pdv/sale-screen, product-search e cart
 - tela principal do PDV, carrinho, busca de produto, pagamento, desconto, cancelamento e impressão
 
 **Tarefas de implementação:**
@@ -3228,7 +3228,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Busca ignora produtos não vendáveis; barcode inexistente retorna aviso..
 5. Crie/ajuste testes unitários do front-end: Busca filtra lista; scanner por Enter adiciona item..
@@ -3253,12 +3253,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: pdv/sales/order/order-item
+- `back-end/` — módulo alvo: pdv/sales/order/order-item
 - `PdvController`, `SaleService`, `OrderService`, `OrderItemService`, `PaymentService`, `CashMovementService`
 - regras de totalização, desconto, finalização e cancelamento
 
 Front-end:
-- `frontend/` — app/feature alvo: pdv/sale-screen, product-search e cart
+- `front-end/` — app/feature alvo: pdv/sale-screen, product-search e cart
 - tela principal do PDV, carrinho, busca de produto, pagamento, desconto, cancelamento e impressão
 
 **Tarefas de implementação:**
@@ -3303,7 +3303,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, PDV.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Total = soma itens - desconto + taxas; arredondamento monetário correto..
 5. Crie/ajuste testes unitários do front-end: Componente totaliza payload recebido..
@@ -3334,12 +3334,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: payment e cash-movement
+- `back-end/` — módulo alvo: payment e cash-movement
 - `PdvController`, `SaleService`, `OrderService`, `OrderItemService`, `PaymentService`, `CashMovementService`
 - regras de totalização, desconto, finalização e cancelamento
 
 Front-end:
-- `frontend/` — app/feature alvo: pdv/payment-screen
+- `front-end/` — app/feature alvo: pdv/payment-screen
 - tela principal do PDV, carrinho, busca de produto, pagamento, desconto, cancelamento e impressão
 
 **Tarefas de implementação:**
@@ -3384,7 +3384,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, DOM.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Valor menor que total falha; troco calculado; Payment `PAID`..
 5. Crie/ajuste testes unitários do front-end: Troco é exibido; valor inválido bloqueia botão..
@@ -3408,12 +3408,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: payment e cash-movement
+- `back-end/` — módulo alvo: payment e cash-movement
 - `PdvController`, `SaleService`, `OrderService`, `OrderItemService`, `PaymentService`, `CashMovementService`
 - regras de totalização, desconto, finalização e cancelamento
 
 Front-end:
-- `frontend/` — app/feature alvo: pdv/payment-screen
+- `front-end/` — app/feature alvo: pdv/payment-screen
 - tela principal do PDV, carrinho, busca de produto, pagamento, desconto, cancelamento e impressão
 
 **Tarefas de implementação:**
@@ -3457,7 +3457,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Valor deve bater com total; cria CashMovement..
 5. Crie/ajuste testes unitários do front-end: Confirmação atualiza estado de pagamento..
@@ -3482,12 +3482,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: payment e cash-movement
+- `back-end/` — módulo alvo: payment e cash-movement
 - `PdvController`, `SaleService`, `OrderService`, `OrderItemService`, `PaymentService`, `CashMovementService`
 - regras de totalização, desconto, finalização e cancelamento
 
 Front-end:
-- `frontend/` — app/feature alvo: pdv/payment-screen
+- `front-end/` — app/feature alvo: pdv/payment-screen
 - tela principal do PDV, carrinho, busca de produto, pagamento, desconto, cancelamento e impressão
 
 **Tarefas de implementação:**
@@ -3531,7 +3531,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, DOM.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Método inválido falha; valor positivo; status pago..
 5. Crie/ajuste testes unitários do front-end: Select de método monta payload correto..
@@ -3556,12 +3556,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: payment e cash-movement
+- `back-end/` — módulo alvo: payment e cash-movement
 - `PdvController`, `SaleService`, `OrderService`, `OrderItemService`, `PaymentService`, `CashMovementService`
 - regras de totalização, desconto, finalização e cancelamento
 
 Front-end:
-- `frontend/` — app/feature alvo: pdv/payment-screen
+- `front-end/` — app/feature alvo: pdv/payment-screen
 - tela principal do PDV, carrinho, busca de produto, pagamento, desconto, cancelamento e impressão
 
 **Tarefas de implementação:**
@@ -3606,7 +3606,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Soma menor/maior que total falha; cada pagamento gera CashMovement..
 5. Crie/ajuste testes unitários do front-end: Saldo restante recalcula; não permite finalizar com saldo aberto..
@@ -3631,12 +3631,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: payment e cash-movement
+- `back-end/` — módulo alvo: payment e cash-movement
 - `PdvController`, `SaleService`, `OrderService`, `OrderItemService`, `PaymentService`, `CashMovementService`
 - regras de totalização, desconto, finalização e cancelamento
 
 Front-end:
-- `frontend/` — app/feature alvo: pdv/payment-screen
+- `front-end/` — app/feature alvo: pdv/payment-screen
 - tela principal do PDV, carrinho, busca de produto, pagamento, desconto, cancelamento e impressão
 
 **Tarefas de implementação:**
@@ -3681,7 +3681,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, PDV.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Cada Payment cria uma movimentação; caixa fechado bloqueia..
 5. Crie/ajuste testes unitários do front-end: Lista de pagamentos renderiza por método..
@@ -3712,12 +3712,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: pdv/finish, printing, discount, cancellation e audit
+- `back-end/` — módulo alvo: pdv/finish, printing, discount, cancellation e audit
 - `PdvController`, `SaleService`, `OrderService`, `OrderItemService`, `PaymentService`, `CashMovementService`
 - regras de totalização, desconto, finalização e cancelamento
 
 Front-end:
-- `frontend/` — app/feature alvo: pdv/finalization, discount-modal, cancel-modal e print actions
+- `front-end/` — app/feature alvo: pdv/finalization, discount-modal, cancel-modal e print actions
 - tela principal do PDV, carrinho, busca de produto, pagamento, desconto, cancelamento e impressão
 
 **Tarefas de implementação:**
@@ -3763,7 +3763,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Sem itens falha; sem pagamento falha; status final correto..
 5. Crie/ajuste testes unitários do front-end: Botão desabilita sem itens/pagamento..
@@ -3788,12 +3788,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: pdv/finish, printing, discount, cancellation e audit
+- `back-end/` — módulo alvo: pdv/finish, printing, discount, cancellation e audit
 - `PdvController`, `SaleService`, `OrderService`, `OrderItemService`, `PaymentService`, `CashMovementService`
 - regras de totalização, desconto, finalização e cancelamento
 
 Front-end:
-- `frontend/` — app/feature alvo: pdv/finalization, discount-modal, cancel-modal e print actions
+- `front-end/` — app/feature alvo: pdv/finalization, discount-modal, cancel-modal e print actions
 - tela principal do PDV, carrinho, busca de produto, pagamento, desconto, cancelamento e impressão
 
 **Tarefas de implementação:**
@@ -3840,7 +3840,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, SYNC.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Evento PENDING criado; falha de sync não desfaz venda..
 5. Crie/ajuste testes unitários do front-end: Badge de pendência exibido..
@@ -3866,12 +3866,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: pdv/finish, printing, discount, cancellation e audit
+- `back-end/` — módulo alvo: pdv/finish, printing, discount, cancellation e audit
 - `PdvController`, `SaleService`, `OrderService`, `OrderItemService`, `PaymentService`, `CashMovementService`
 - regras de totalização, desconto, finalização e cancelamento
 
 Front-end:
-- `frontend/` — app/feature alvo: pdv/finalization, discount-modal, cancel-modal e print actions
+- `front-end/` — app/feature alvo: pdv/finalization, discount-modal, cancel-modal e print actions
 - tela principal do PDV, carrinho, busca de produto, pagamento, desconto, cancelamento e impressão
 
 **Tarefas de implementação:**
@@ -3916,7 +3916,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, DL, HW.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Geração de comando não duplica venda; falha de impressão retorna erro controlado..
 5. Crie/ajuste testes unitários do front-end: Estado de impressão mostra sucesso/erro..
@@ -3941,12 +3941,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: pdv/finish, printing, discount, cancellation e audit
+- `back-end/` — módulo alvo: pdv/finish, printing, discount, cancellation e audit
 - `PdvController`, `SaleService`, `OrderService`, `OrderItemService`, `PaymentService`, `CashMovementService`
 - regras de totalização, desconto, finalização e cancelamento
 
 Front-end:
-- `frontend/` — app/feature alvo: pdv/finalization, discount-modal, cancel-modal e print actions
+- `front-end/` — app/feature alvo: pdv/finalization, discount-modal, cancel-modal e print actions
 - tela principal do PDV, carrinho, busca de produto, pagamento, desconto, cancelamento e impressão
 
 **Tarefas de implementação:**
@@ -3992,7 +3992,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, HW.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Só aciona gaveta para dinheiro; não aciona para Pix/cartão..
 5. Crie/ajuste testes unitários do front-end: Componente mostra ação apenas quando aplicável..
@@ -4017,12 +4017,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: pdv/finish, printing, discount, cancellation e audit
+- `back-end/` — módulo alvo: pdv/finish, printing, discount, cancellation e audit
 - `PdvController`, `SaleService`, `OrderService`, `OrderItemService`, `PaymentService`, `CashMovementService`
 - regras de totalização, desconto, finalização e cancelamento
 
 Front-end:
-- `frontend/` — app/feature alvo: pdv/finalization, discount-modal, cancel-modal e print actions
+- `front-end/` — app/feature alvo: pdv/finalization, discount-modal, cancel-modal e print actions
 - tela principal do PDV, carrinho, busca de produto, pagamento, desconto, cancelamento e impressão
 
 **Tarefas de implementação:**
@@ -4068,7 +4068,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Limite permitido aplica; acima exige gerente; desconto negativo falha..
 5. Crie/ajuste testes unitários do front-end: Form alterna valor/percentual; calcula preview..
@@ -4093,12 +4093,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: pdv/finish, printing, discount, cancellation e audit
+- `back-end/` — módulo alvo: pdv/finish, printing, discount, cancellation e audit
 - `PdvController`, `SaleService`, `OrderService`, `OrderItemService`, `PaymentService`, `CashMovementService`
 - regras de totalização, desconto, finalização e cancelamento
 
 Front-end:
-- `frontend/` — app/feature alvo: pdv/finalization, discount-modal, cancel-modal e print actions
+- `front-end/` — app/feature alvo: pdv/finalization, discount-modal, cancel-modal e print actions
 - tela principal do PDV, carrinho, busca de produto, pagamento, desconto, cancelamento e impressão
 
 **Tarefas de implementação:**
@@ -4145,7 +4145,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Motivo obrigatório; sem permissão falha; gera AuditLog e ajuste financeiro..
 5. Crie/ajuste testes unitários do front-end: Form exige motivo; usuário sem perfil não vê ação..
@@ -4177,11 +4177,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: kds/tickets, websocket e integração com order
+- `back-end/` — módulo alvo: kds/tickets, websocket e integração com order
 - `KdsController`, `KdsTicketService`, `KdsWebSocketPublisher`, entidades KDS e DTOs
 
 Front-end:
-- `frontend/` — app/feature alvo: kds/board, sector-filter e websocket-client
+- `front-end/` — app/feature alvo: kds/board, sector-filter e websocket-client
 - app KDS, board por colunas, filtro por setor, cards de pedido e cliente WebSocket
 
 **Tarefas de implementação:**
@@ -4227,7 +4227,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: KDS, PDV, DOM.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Itens `SEM_PREPARO` não geram ticket; setores diferentes geram tickets diferentes..
 5. Crie/ajuste testes unitários do front-end: Lista renderiza tickets por setor..
@@ -4251,11 +4251,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: kds/tickets, websocket e integração com order
+- `back-end/` — módulo alvo: kds/tickets, websocket e integração com order
 - `KdsController`, `KdsTicketService`, `KdsWebSocketPublisher`, entidades KDS e DTOs
 
 Front-end:
-- `frontend/` — app/feature alvo: kds/board, sector-filter e websocket-client
+- `front-end/` — app/feature alvo: kds/board, sector-filter e websocket-client
 - app KDS, board por colunas, filtro por setor, cards de pedido e cliente WebSocket
 
 **Tarefas de implementação:**
@@ -4300,7 +4300,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: KDS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Filtro retorna apenas setor; setor inválido falha..
 5. Crie/ajuste testes unitários do front-end: Seleção de setor atualiza lista..
@@ -4314,7 +4314,7 @@ Regras de execução:
 
 **Documentos que justificam a implementação:**
 - `kds.md`: tickets por setor, WebSocket, status de preparo, tempo de espera e operação local da cozinha.
-- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, back-end hexagonal, front-end por features/camadas, comunicação HTTPS e separação entre operação local e canais online.
+- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, back-end em camadas, front-end por features/camadas, comunicação HTTPS e separação entre operação local e canais online.
 
 **Escopo funcional detalhado:**
 - Implementar exatamente a capacidade descrita na história, sem antecipar histórias futuras.
@@ -4325,11 +4325,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: kds/tickets, websocket e integração com order
+- `back-end/` — módulo alvo: kds/tickets, websocket e integração com order
 - `KdsController`, `KdsTicketService`, `KdsWebSocketPublisher`, entidades KDS e DTOs
 
 Front-end:
-- `frontend/` — app/feature alvo: kds/board, sector-filter e websocket-client
+- `front-end/` — app/feature alvo: kds/board, sector-filter e websocket-client
 - app KDS, board por colunas, filtro por setor, cards de pedido e cliente WebSocket
 
 **Tarefas de implementação:**
@@ -4375,7 +4375,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: KDS, ARQ.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Evento emitido com payload esperado; erro de WebSocket não quebra transação..
 5. Crie/ajuste testes unitários do front-end: Ao receber evento, card é adicionado..
@@ -4399,11 +4399,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: kds/tickets, websocket e integração com order
+- `back-end/` — módulo alvo: kds/tickets, websocket e integração com order
 - `KdsController`, `KdsTicketService`, `KdsWebSocketPublisher`, entidades KDS e DTOs
 
 Front-end:
-- `frontend/` — app/feature alvo: kds/board, sector-filter e websocket-client
+- `front-end/` — app/feature alvo: kds/board, sector-filter e websocket-client
 - app KDS, board por colunas, filtro por setor, cards de pedido e cliente WebSocket
 
 **Tarefas de implementação:**
@@ -4447,7 +4447,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: KDS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Tempo calculado corretamente; timezone não altera ordem..
 5. Crie/ajuste testes unitários do front-end: Timer atualiza visualmente sem recarregar..
@@ -4471,11 +4471,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: kds/tickets, websocket e integração com order
+- `back-end/` — módulo alvo: kds/tickets, websocket e integração com order
 - `KdsController`, `KdsTicketService`, `KdsWebSocketPublisher`, entidades KDS e DTOs
 
 Front-end:
-- `frontend/` — app/feature alvo: kds/board, sector-filter e websocket-client
+- `front-end/` — app/feature alvo: kds/board, sector-filter e websocket-client
 - app KDS, board por colunas, filtro por setor, cards de pedido e cliente WebSocket
 
 **Tarefas de implementação:**
@@ -4520,7 +4520,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: KDS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Status mapeado corretamente no DTO..
 5. Crie/ajuste testes unitários do front-end: Ticket aparece na coluna certa..
@@ -4551,11 +4551,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: kds/status transitions e order readiness
+- `back-end/` — módulo alvo: kds/status transitions e order readiness
 - `KdsController`, `KdsTicketService`, `KdsWebSocketPublisher`, entidades KDS e DTOs
 
 Front-end:
-- `frontend/` — app/feature alvo: kds/actions, pdv/ready-notifications e expedition view
+- `front-end/` — app/feature alvo: kds/actions, pdv/ready-notifications e expedition view
 - app KDS, board por colunas, filtro por setor, cards de pedido e cliente WebSocket
 
 **Tarefas de implementação:**
@@ -4600,7 +4600,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: KDS, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: WAITING → IN_PREPARATION permitido; READY → start bloqueado..
 5. Crie/ajuste testes unitários do front-end: Card muda para coluna Em preparo..
@@ -4624,11 +4624,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: kds/status transitions e order readiness
+- `back-end/` — módulo alvo: kds/status transitions e order readiness
 - `KdsController`, `KdsTicketService`, `KdsWebSocketPublisher`, entidades KDS e DTOs
 
 Front-end:
-- `frontend/` — app/feature alvo: kds/actions, pdv/ready-notifications e expedition view
+- `front-end/` — app/feature alvo: kds/actions, pdv/ready-notifications e expedition view
 - app KDS, board por colunas, filtro por setor, cards de pedido e cliente WebSocket
 
 **Tarefas de implementação:**
@@ -4673,7 +4673,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: KDS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Item em preparo vira READY; item cancelado não pode ficar pronto..
 5. Crie/ajuste testes unitários do front-end: Item aparece concluído..
@@ -4697,11 +4697,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: kds/status transitions e order readiness
+- `back-end/` — módulo alvo: kds/status transitions e order readiness
 - `KdsController`, `KdsTicketService`, `KdsWebSocketPublisher`, entidades KDS e DTOs
 
 Front-end:
-- `frontend/` — app/feature alvo: kds/actions, pdv/ready-notifications e expedition view
+- `front-end/` — app/feature alvo: kds/actions, pdv/ready-notifications e expedition view
 - app KDS, board por colunas, filtro por setor, cards de pedido e cliente WebSocket
 
 **Tarefas de implementação:**
@@ -4746,7 +4746,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: KDS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Todos itens ficam READY; `readyAt` preenchido..
 5. Crie/ajuste testes unitários do front-end: Ticket muda para coluna Pronto..
@@ -4771,11 +4771,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: kds/status transitions e order readiness
+- `back-end/` — módulo alvo: kds/status transitions e order readiness
 - `KdsController`, `KdsTicketService`, `KdsWebSocketPublisher`, entidades KDS e DTOs
 
 Front-end:
-- `frontend/` — app/feature alvo: kds/actions, pdv/ready-notifications e expedition view
+- `front-end/` — app/feature alvo: kds/actions, pdv/ready-notifications e expedition view
 - app KDS, board por colunas, filtro por setor, cards de pedido e cliente WebSocket
 
 **Tarefas de implementação:**
@@ -4820,7 +4820,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: KDS, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Com um ticket pendente, pedido não fica READY; todos prontos, fica READY..
 5. Crie/ajuste testes unitários do front-end: Banner/alerta no PDV indica pedido pronto..
@@ -4845,11 +4845,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: kds/status transitions e order readiness
+- `back-end/` — módulo alvo: kds/status transitions e order readiness
 - `KdsController`, `KdsTicketService`, `KdsWebSocketPublisher`, entidades KDS e DTOs
 
 Front-end:
-- `frontend/` — app/feature alvo: kds/actions, pdv/ready-notifications e expedition view
+- `front-end/` — app/feature alvo: kds/actions, pdv/ready-notifications e expedition view
 - app KDS, board por colunas, filtro por setor, cards de pedido e cliente WebSocket
 
 **Tarefas de implementação:**
@@ -4894,7 +4894,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: KDS, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: READY → FINISHED permitido; CREATED → FINISHED bloqueado..
 5. Crie/ajuste testes unitários do front-end: Ação some após finalização..
@@ -4925,12 +4925,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: sync/outbox, worker local, endpoint online e HMAC
+- `back-end/` — módulo alvo: sync/outbox, worker local, endpoint online e HMAC
 - `SyncEventService`, `SyncWorker`, `SyncController`, `InboxService`, `HmacSignatureService`
 - política de retry e endpoints de ACK/fail/status
 
 Front-end:
-- `frontend/` — app/feature alvo: sync status badges e painel futuro
+- `front-end/` — app/feature alvo: sync status badges e painel futuro
 - badges de status, painel de sincronização, filtros e ações de reprocessar/ignorar
 
 **Tarefas de implementação:**
@@ -4977,7 +4977,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: SYNC, BD.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Evento tem UUID, tipo, entidade, payload, status PENDING..
 5. Crie/ajuste testes unitários do front-end: Badge exibe PENDING/SYNCED/FAILED..
@@ -5001,12 +5001,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: sync/outbox, worker local, endpoint online e HMAC
+- `back-end/` — módulo alvo: sync/outbox, worker local, endpoint online e HMAC
 - `SyncEventService`, `SyncWorker`, `SyncController`, `InboxService`, `HmacSignatureService`
 - política de retry e endpoints de ACK/fail/status
 
 Front-end:
-- `frontend/` — app/feature alvo: sync status badges e painel futuro
+- `front-end/` — app/feature alvo: sync status badges e painel futuro
 - badges de status, painel de sincronização, filtros e ações de reprocessar/ignorar
 
 **Tarefas de implementação:**
@@ -5053,7 +5053,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: SYNC.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Envio sucesso marca SYNCED; falha marca RETRYING/FAILED..
 5. Crie/ajuste testes unitários do front-end: Tela reflete mudança de status mockada..
@@ -5067,7 +5067,7 @@ Regras de execução:
 
 **Documentos que justificam a implementação:**
 - `sincronizacao.md`: Outbox, Inbox, Retry, HMAC, idempotência, push local → online e pull online → local.
-- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, back-end hexagonal, front-end por features/camadas, comunicação HTTPS e separação entre operação local e canais online.
+- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, back-end em camadas, front-end por features/camadas, comunicação HTTPS e separação entre operação local e canais online.
 
 **Escopo funcional detalhado:**
 - Implementar exatamente a capacidade descrita na história, sem antecipar histórias futuras.
@@ -5078,12 +5078,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: sync/outbox, worker local, endpoint online e HMAC
+- `back-end/` — módulo alvo: sync/outbox, worker local, endpoint online e HMAC
 - `SyncEventService`, `SyncWorker`, `SyncController`, `InboxService`, `HmacSignatureService`
 - política de retry e endpoints de ACK/fail/status
 
 Front-end:
-- `frontend/` — app/feature alvo: sync status badges e painel futuro
+- `front-end/` — app/feature alvo: sync status badges e painel futuro
 - badges de status, painel de sincronização, filtros e ações de reprocessar/ignorar
 
 **Tarefas de implementação:**
@@ -5130,7 +5130,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: SYNC, ARQ.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Evento duplicado não reprocessa; assinatura inválida retorna 401..
 5. Crie/ajuste testes unitários do front-end: Tabela de eventos mockados renderiza..
@@ -5154,12 +5154,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: sync/outbox, worker local, endpoint online e HMAC
+- `back-end/` — módulo alvo: sync/outbox, worker local, endpoint online e HMAC
 - `SyncEventService`, `SyncWorker`, `SyncController`, `InboxService`, `HmacSignatureService`
 - política de retry e endpoints de ACK/fail/status
 
 Front-end:
-- `frontend/` — app/feature alvo: sync status badges e painel futuro
+- `front-end/` — app/feature alvo: sync status badges e painel futuro
 - badges de status, painel de sincronização, filtros e ações de reprocessar/ignorar
 
 **Tarefas de implementação:**
@@ -5205,7 +5205,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: SYNC.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Assinatura válida passa; payload alterado falha; timestamp antigo pode falhar..
 5. Crie/ajuste testes unitários do front-end: N/A..
@@ -5229,12 +5229,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: sync/outbox, worker local, endpoint online e HMAC
+- `back-end/` — módulo alvo: sync/outbox, worker local, endpoint online e HMAC
 - `SyncEventService`, `SyncWorker`, `SyncController`, `InboxService`, `HmacSignatureService`
 - política de retry e endpoints de ACK/fail/status
 
 Front-end:
-- `frontend/` — app/feature alvo: sync status badges e painel futuro
+- `front-end/` — app/feature alvo: sync status badges e painel futuro
 - badges de status, painel de sincronização, filtros e ações de reprocessar/ignorar
 
 **Tarefas de implementação:**
@@ -5280,7 +5280,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: SYNC.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Retry incrementa contador; excedeu tentativas vira FAILED..
 5. Crie/ajuste testes unitários do front-end: Componente mostra contador mockado..
@@ -5300,7 +5300,7 @@ Regras de execução:
 
 **Documentos que justificam a implementação:**
 - `README.md`: visão geral do projeto, módulos sugeridos e ordem de leitura da documentação.
-- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, back-end hexagonal, front-end por features/camadas, comunicação HTTPS e separação entre operação local e canais online.
+- `arquitetura.md`: arquitetura híbrida local + online, monólito modular, back-end em camadas, front-end por features/camadas, comunicação HTTPS e separação entre operação local e canais online.
 
 **Escopo funcional detalhado:**
 - Implementar exatamente a capacidade descrita na história, sem antecipar histórias futuras.
@@ -5311,12 +5311,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: public-menu e catalog public API
+- `back-end/` — módulo alvo: public-menu e catalog public API
 - controllers e use cases de `Category`, `Product`, `ProductAvailability`
 - DTOs request/response e mappers MapStruct
 
 Front-end:
-- `frontend/` — app/feature alvo: site-publico/home, menu e product cards
+- `front-end/` — app/feature alvo: site-publico/home, menu e product cards
 - páginas admin de catálogo, componentes de formulário/listagem e services de catálogo
 
 **Tarefas de implementação:**
@@ -5359,7 +5359,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: README, ARQ.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Endpoint público não exige login; payload básico válido..
 5. Crie/ajuste testes unitários do front-end: Home renderiza nome, seções e CTA..
@@ -5384,12 +5384,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: public-menu e catalog public API
+- `back-end/` — módulo alvo: public-menu e catalog public API
 - controllers e use cases de `Category`, `Product`, `ProductAvailability`
 - DTOs request/response e mappers MapStruct
 
 Front-end:
-- `frontend/` — app/feature alvo: site-publico/home, menu e product cards
+- `front-end/` — app/feature alvo: site-publico/home, menu e product cards
 - páginas admin de catálogo, componentes de formulário/listagem e services de catálogo
 
 **Tarefas de implementação:**
@@ -5433,7 +5433,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Só categorias ativas e `showOnline=true`..
 5. Crie/ajuste testes unitários do front-end: Categorias aparecem ordenadas..
@@ -5458,12 +5458,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: public-menu e catalog public API
+- `back-end/` — módulo alvo: public-menu e catalog public API
 - controllers e use cases de `Category`, `Product`, `ProductAvailability`
 - DTOs request/response e mappers MapStruct
 
 Front-end:
-- `frontend/` — app/feature alvo: site-publico/home, menu e product cards
+- `front-end/` — app/feature alvo: site-publico/home, menu e product cards
 - páginas admin de catálogo, componentes de formulário/listagem e services de catálogo
 
 **Tarefas de implementação:**
@@ -5507,7 +5507,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Produto indisponível não aparece; promocional usa preço correto..
 5. Crie/ajuste testes unitários do front-end: Card mostra preço/promocional corretamente..
@@ -5531,12 +5531,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: public-menu e catalog public API
+- `back-end/` — módulo alvo: public-menu e catalog public API
 - controllers e use cases de `Category`, `Product`, `ProductAvailability`
 - DTOs request/response e mappers MapStruct
 
 Front-end:
-- `frontend/` — app/feature alvo: site-publico/home, menu e product cards
+- `front-end/` — app/feature alvo: site-publico/home, menu e product cards
 - páginas admin de catálogo, componentes de formulário/listagem e services de catálogo
 
 **Tarefas de implementação:**
@@ -5580,7 +5580,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Busca ignora inativos; resultado vazio retorna lista vazia..
 5. Crie/ajuste testes unitários do front-end: Busca filtra por nome..
@@ -5604,12 +5604,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: public-menu e catalog public API
+- `back-end/` — módulo alvo: public-menu e catalog public API
 - controllers e use cases de `Category`, `Product`, `ProductAvailability`
 - DTOs request/response e mappers MapStruct
 
 Front-end:
-- `frontend/` — app/feature alvo: site-publico/home, menu e product cards
+- `front-end/` — app/feature alvo: site-publico/home, menu e product cards
 - páginas admin de catálogo, componentes de formulário/listagem e services de catálogo
 
 **Tarefas de implementação:**
@@ -5654,7 +5654,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Preview usa mesmas regras do público..
 5. Crie/ajuste testes unitários do front-end: Preview exibe status e canal..
@@ -5685,11 +5685,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: online/order, customer, address e checkout validation
+- `back-end/` — módulo alvo: online/order, customer, address e checkout validation
 - `PublicOrderController`, `CheckoutService`, `CustomerService`, `OrderService`, `PaymentService`, `SyncEventService`
 
 Front-end:
-- `frontend/` — app/feature alvo: site-publico/cart, checkout e order-status
+- `front-end/` — app/feature alvo: site-publico/cart, checkout e order-status
 - carrinho do site, checkout, formulário de cliente/endereço e página de status
 
 **Tarefas de implementação:**
@@ -5734,7 +5734,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Produto indisponível é recusado; preço recalculado no servidor..
 5. Crie/ajuste testes unitários do front-end: Carrinho adiciona/remove item e recalcula visual..
@@ -5758,11 +5758,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: online/order, customer, address e checkout validation
+- `back-end/` — módulo alvo: online/order, customer, address e checkout validation
 - `PublicOrderController`, `CheckoutService`, `CustomerService`, `OrderService`, `PaymentService`, `SyncEventService`
 
 Front-end:
-- `frontend/` — app/feature alvo: site-publico/cart, checkout e order-status
+- `front-end/` — app/feature alvo: site-publico/cart, checkout e order-status
 - carrinho do site, checkout, formulário de cliente/endereço e página de status
 
 **Tarefas de implementação:**
@@ -5806,7 +5806,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Nome e telefone obrigatórios; e-mail inválido falha se informado..
 5. Crie/ajuste testes unitários do front-end: Form valida campos obrigatórios..
@@ -5831,11 +5831,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: online/order, customer, address e checkout validation
+- `back-end/` — módulo alvo: online/order, customer, address e checkout validation
 - `PublicOrderController`, `CheckoutService`, `CustomerService`, `OrderService`, `PaymentService`, `SyncEventService`
 
 Front-end:
-- `frontend/` — app/feature alvo: site-publico/cart, checkout e order-status
+- `front-end/` — app/feature alvo: site-publico/cart, checkout e order-status
 - carrinho do site, checkout, formulário de cliente/endereço e página de status
 
 **Tarefas de implementação:**
@@ -5879,7 +5879,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Delivery sem endereço falha; pickup não exige endereço..
 5. Crie/ajuste testes unitários do front-end: Campo endereço aparece apenas em entrega..
@@ -5904,11 +5904,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: online/order, customer, address e checkout validation
+- `back-end/` — módulo alvo: online/order, customer, address e checkout validation
 - `PublicOrderController`, `CheckoutService`, `CustomerService`, `OrderService`, `PaymentService`, `SyncEventService`
 
 Front-end:
-- `frontend/` — app/feature alvo: site-publico/cart, checkout e order-status
+- `front-end/` — app/feature alvo: site-publico/cart, checkout e order-status
 - carrinho do site, checkout, formulário de cliente/endereço e página de status
 
 **Tarefas de implementação:**
@@ -5953,7 +5953,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: FLUXOS, DOM.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Pedido sem itens falha; snapshot de nome/preço salvo; status inicial correto..
 5. Crie/ajuste testes unitários do front-end: Confirmação mostra número/status..
@@ -5978,11 +5978,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: online/order, customer, address e checkout validation
+- `back-end/` — módulo alvo: online/order, customer, address e checkout validation
 - `PublicOrderController`, `CheckoutService`, `CustomerService`, `OrderService`, `PaymentService`, `SyncEventService`
 
 Front-end:
-- `frontend/` — app/feature alvo: site-publico/cart, checkout e order-status
+- `front-end/` — app/feature alvo: site-publico/cart, checkout e order-status
 - carrinho do site, checkout, formulário de cliente/endereço e página de status
 
 **Tarefas de implementação:**
@@ -6027,7 +6027,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: SYNC, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Evento PENDING criado; pedido fica SENT_TO_STORE/aguardando envio..
 5. Crie/ajuste testes unitários do front-end: Página de status exibe “aguardando confirmação da loja”..
@@ -6058,11 +6058,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: payment online, gateway adapter e webhook
-- `OnlinePaymentController`, `PaymentGatewayPort`, adapter mock/inicial, `PaymentWebhookController`
+- `back-end/` — módulo alvo: payment online, gateway adapter e webhook
+- `OnlinePaymentController`, `PaymentGatewayService`, integração mock/inicial, `PaymentWebhookController`
 
 Front-end:
-- `frontend/` — app/feature alvo: checkout/payment e order status
+- `front-end/` — app/feature alvo: checkout/payment e order status
 - etapa de pagamento no checkout, instruções de pagamento e status do pedido
 
 **Tarefas de implementação:**
@@ -6107,7 +6107,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Cria Payment PENDING; pedido fica PAYMENT_PENDING..
 5. Crie/ajuste testes unitários do front-end: Seleção de método altera etapa de pagamento..
@@ -6124,23 +6124,23 @@ Regras de execução:
 
 **Escopo funcional detalhado:**
 - Implementar exatamente a capacidade descrita na história, sem antecipar histórias futuras.
-- Back-end planejado no roadmap: Interface `PaymentGatewayPort`.
+- Back-end planejado no roadmap: Interface `PaymentGatewayService`.
 - Front-end planejado no roadmap: Tela mostra instruções/dados retornados.
 - A história deve deixar uma fatia funcional testável no ambiente correspondente.
 
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: payment online, gateway adapter e webhook
-- `OnlinePaymentController`, `PaymentGatewayPort`, adapter mock/inicial, `PaymentWebhookController`
+- `back-end/` — módulo alvo: payment online, gateway adapter e webhook
+- `OnlinePaymentController`, `PaymentGatewayService`, integração mock/inicial, `PaymentWebhookController`
 
 Front-end:
-- `frontend/` — app/feature alvo: checkout/payment e order status
+- `front-end/` — app/feature alvo: checkout/payment e order status
 - etapa de pagamento no checkout, instruções de pagamento e status do pedido
 
 **Tarefas de implementação:**
 1. Ler a história, identificar se ela pertence ao ambiente local, online ou compartilhado e confirmar o módulo alvo antes de alterar arquivos.
-2. Implementar o back-end previsto: Interface `PaymentGatewayPort`.
+2. Implementar o back-end previsto: Interface `PaymentGatewayService`.
 3. Implementar o front-end previsto: Tela mostra instruções/dados retornados.
 4. Criar ou ajustar DTOs, mappers, services/use cases, controllers/endpoints e modelos TypeScript necessários.
 5. Atualizar OpenAPI/contratos, quando houver endpoint novo ou alteração de payload.
@@ -6174,12 +6174,12 @@ Contexto obrigatório:
 - Sprint: Sprint 16 — Pagamento online e webhook
 - Domínio: Pagamento online e webhook
 - Documentos de referência: FLUXOS
-- Back-end esperado: Interface `PaymentGatewayPort`.
+- Back-end esperado: Interface `PaymentGatewayService`.
 - Front-end esperado: Tela mostra instruções/dados retornados.
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Adapter mock retorna cobrança; falha do gateway retorna erro controlado..
 5. Crie/ajuste testes unitários do front-end: Componente renderiza QR/instruções mockadas..
@@ -6204,11 +6204,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: payment online, gateway adapter e webhook
-- `OnlinePaymentController`, `PaymentGatewayPort`, adapter mock/inicial, `PaymentWebhookController`
+- `back-end/` — módulo alvo: payment online, gateway adapter e webhook
+- `OnlinePaymentController`, `PaymentGatewayService`, integração mock/inicial, `PaymentWebhookController`
 
 Front-end:
-- `frontend/` — app/feature alvo: checkout/payment e order status
+- `front-end/` — app/feature alvo: checkout/payment e order status
 - etapa de pagamento no checkout, instruções de pagamento e status do pedido
 
 **Tarefas de implementação:**
@@ -6253,7 +6253,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DO, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Assinatura inválida falha; payload bruto é registrado; webhook duplicado é idempotente..
 5. Crie/ajuste testes unitários do front-end: Status muda conforme polling/mock..
@@ -6278,11 +6278,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: payment online, gateway adapter e webhook
-- `OnlinePaymentController`, `PaymentGatewayPort`, adapter mock/inicial, `PaymentWebhookController`
+- `back-end/` — módulo alvo: payment online, gateway adapter e webhook
+- `OnlinePaymentController`, `PaymentGatewayService`, integração mock/inicial, `PaymentWebhookController`
 
 Front-end:
-- `frontend/` — app/feature alvo: checkout/payment e order status
+- `front-end/` — app/feature alvo: checkout/payment e order status
 - etapa de pagamento no checkout, instruções de pagamento e status do pedido
 
 **Tarefas de implementação:**
@@ -6302,7 +6302,7 @@ Front-end:
 - payload bruto deve ser registrado para auditoria técnica.
 
 **Testes obrigatórios:**
-- Back-end: Frontend não consegue confirmar pagamento; só webhook altera para PAID.
+- Back-end: Front-end não consegue confirmar pagamento; só webhook altera para PAID.
 - Front-end: Status “Pago” aparece após atualização.
 - Adicionar testes negativos para validações críticas quando a história alterar regra de negócio.
 - Não remover testes existentes para fazer a suíte passar.
@@ -6328,9 +6328,9 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
-4. Crie/ajuste testes unitários do back-end: Frontend não consegue confirmar pagamento; só webhook altera para PAID..
+4. Crie/ajuste testes unitários do back-end: Front-end não consegue confirmar pagamento; só webhook altera para PAID..
 5. Crie/ajuste testes unitários do front-end: Status “Pago” aparece após atualização..
 6. Ao final, rode os testes aplicáveis e informe arquivos alterados, testes executados e pendências.
 ~~~
@@ -6353,11 +6353,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: payment online, gateway adapter e webhook
-- `OnlinePaymentController`, `PaymentGatewayPort`, adapter mock/inicial, `PaymentWebhookController`
+- `back-end/` — módulo alvo: payment online, gateway adapter e webhook
+- `OnlinePaymentController`, `PaymentGatewayService`, integração mock/inicial, `PaymentWebhookController`
 
 Front-end:
-- `frontend/` — app/feature alvo: checkout/payment e order status
+- `front-end/` — app/feature alvo: checkout/payment e order status
 - etapa de pagamento no checkout, instruções de pagamento e status do pedido
 
 **Tarefas de implementação:**
@@ -6402,7 +6402,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Status recusado não cria envio para loja; expirado bloqueia pagamento antigo..
 5. Crie/ajuste testes unitários do front-end: Mensagem de recusado/expirado aparece..
@@ -6432,12 +6432,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: sync pull, ACK, inbox, painel status e reprocessamento
+- `back-end/` — módulo alvo: sync pull, ACK, inbox, painel status e reprocessamento
 - `SyncEventService`, `SyncWorker`, `SyncController`, `InboxService`, `HmacSignatureService`
 - política de retry e endpoints de ACK/fail/status
 
 Front-end:
-- `frontend/` — app/feature alvo: admin/sync-panel, pdv/online-orders e kds/origin
+- `front-end/` — app/feature alvo: admin/sync-panel, pdv/online-orders e kds/origin
 - badges de status, painel de sincronização, filtros e ações de reprocessar/ignorar
 
 **Tarefas de implementação:**
@@ -6484,7 +6484,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: SYNC.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Retorna apenas eventos da loja; sem assinatura válida falha..
 5. Crie/ajuste testes unitários do front-end: Lista de pendências renderiza..
@@ -6509,12 +6509,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: sync pull, ACK, inbox, painel status e reprocessamento
+- `back-end/` — módulo alvo: sync pull, ACK, inbox, painel status e reprocessamento
 - `SyncEventService`, `SyncWorker`, `SyncController`, `InboxService`, `HmacSignatureService`
 - política de retry e endpoints de ACK/fail/status
 
 Front-end:
-- `frontend/` — app/feature alvo: admin/sync-panel, pdv/online-orders e kds/origin
+- `front-end/` — app/feature alvo: admin/sync-panel, pdv/online-orders e kds/origin
 - badges de status, painel de sincronização, filtros e ações de reprocessar/ignorar
 
 **Tarefas de implementação:**
@@ -6561,7 +6561,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: SYNC, DOM.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Evento duplicado não cria pedido duplicado; cliente/endereço persistem..
 5. Crie/ajuste testes unitários do front-end: Pedido aparece na lista local..
@@ -6585,12 +6585,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: sync pull, ACK, inbox, painel status e reprocessamento
+- `back-end/` — módulo alvo: sync pull, ACK, inbox, painel status e reprocessamento
 - `SyncEventService`, `SyncWorker`, `SyncController`, `InboxService`, `HmacSignatureService`
 - política de retry e endpoints de ACK/fail/status
 
 Front-end:
-- `frontend/` — app/feature alvo: admin/sync-panel, pdv/online-orders e kds/origin
+- `front-end/` — app/feature alvo: admin/sync-panel, pdv/online-orders e kds/origin
 - badges de status, painel de sincronização, filtros e ações de reprocessar/ignorar
 
 **Tarefas de implementação:**
@@ -6637,7 +6637,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: SYNC.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: ACK marca online como RECEIVED_BY_STORE; ACK duplicado é seguro..
 5. Crie/ajuste testes unitários do front-end: Badge de status atualiza..
@@ -6662,12 +6662,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: sync pull, ACK, inbox, painel status e reprocessamento
+- `back-end/` — módulo alvo: sync pull, ACK, inbox, painel status e reprocessamento
 - `SyncEventService`, `SyncWorker`, `SyncController`, `InboxService`, `HmacSignatureService`
 - política de retry e endpoints de ACK/fail/status
 
 Front-end:
-- `frontend/` — app/feature alvo: admin/sync-panel, pdv/online-orders e kds/origin
+- `front-end/` — app/feature alvo: admin/sync-panel, pdv/online-orders e kds/origin
 - badges de status, painel de sincronização, filtros e ações de reprocessar/ignorar
 
 **Tarefas de implementação:**
@@ -6715,7 +6715,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: KDS, SYNC.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Pedido online com setores gera tickets; sem preparo não gera..
 5. Crie/ajuste testes unitários do front-end: Card mostra origem correta..
@@ -6740,12 +6740,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: sync pull, ACK, inbox, painel status e reprocessamento
+- `back-end/` — módulo alvo: sync pull, ACK, inbox, painel status e reprocessamento
 - `SyncEventService`, `SyncWorker`, `SyncController`, `InboxService`, `HmacSignatureService`
 - política de retry e endpoints de ACK/fail/status
 
 Front-end:
-- `frontend/` — app/feature alvo: admin/sync-panel, pdv/online-orders e kds/origin
+- `front-end/` — app/feature alvo: admin/sync-panel, pdv/online-orders e kds/origin
 - badges de status, painel de sincronização, filtros e ações de reprocessar/ignorar
 
 **Tarefas de implementação:**
@@ -6793,7 +6793,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: SYNC, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Filtra PENDING/FAILED; mensagem de erro retornada..
 5. Crie/ajuste testes unitários do front-end: Filtros funcionam; cards mostram contadores..
@@ -6818,12 +6818,12 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: sync pull, ACK, inbox, painel status e reprocessamento
+- `back-end/` — módulo alvo: sync pull, ACK, inbox, painel status e reprocessamento
 - `SyncEventService`, `SyncWorker`, `SyncController`, `InboxService`, `HmacSignatureService`
 - política de retry e endpoints de ACK/fail/status
 
 Front-end:
-- `frontend/` — app/feature alvo: admin/sync-panel, pdv/online-orders e kds/origin
+- `front-end/` — app/feature alvo: admin/sync-panel, pdv/online-orders e kds/origin
 - badges de status, painel de sincronização, filtros e ações de reprocessar/ignorar
 
 **Tarefas de implementação:**
@@ -6871,7 +6871,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: SYNC, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Sem permissão falha; ignorar exige motivo; reprocessar altera status..
 5. Crie/ajuste testes unitários do front-end: Modal exige motivo para ignorar..
@@ -6902,11 +6902,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: actuator, health, version, scripts e pipeline
+- `back-end/` — módulo alvo: actuator, health, version, scripts e pipeline
 - `HealthController`/Actuator config, `/version`, scripts, pipeline e documentação operacional
 
 Front-end:
-- `frontend/` — app/feature alvo: operational panels, version footer e roteiros de homologação
+- `front-end/` — app/feature alvo: operational panels, version footer e roteiros de homologação
 - painéis operacionais, footer de versão e telas de status
 
 **Tarefas de implementação:**
@@ -6951,7 +6951,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DL, SYNC.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Health reflete dependência falha; pendências são contadas..
 5. Crie/ajuste testes unitários do front-end: Painel renderiza status e alertas..
@@ -6976,11 +6976,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: actuator, health, version, scripts e pipeline
+- `back-end/` — módulo alvo: actuator, health, version, scripts e pipeline
 - `HealthController`/Actuator config, `/version`, scripts, pipeline e documentação operacional
 
 Front-end:
-- `frontend/` — app/feature alvo: operational panels, version footer e roteiros de homologação
+- `front-end/` — app/feature alvo: operational panels, version footer e roteiros de homologação
 - painéis operacionais, footer de versão e telas de status
 
 **Tarefas de implementação:**
@@ -7025,7 +7025,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DO, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Webhook indisponível afeta status; DB down retorna DOWN..
 5. Crie/ajuste testes unitários do front-end: Tela exibe status online..
@@ -7049,11 +7049,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: actuator, health, version, scripts e pipeline
+- `back-end/` — módulo alvo: actuator, health, version, scripts e pipeline
 - `HealthController`/Actuator config, `/version`, scripts, pipeline e documentação operacional
 
 Front-end:
-- `frontend/` — app/feature alvo: operational panels, version footer e roteiros de homologação
+- `front-end/` — app/feature alvo: operational panels, version footer e roteiros de homologação
 - painéis operacionais, footer de versão e telas de status
 
 **Tarefas de implementação:**
@@ -7096,7 +7096,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DO.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Pipeline falha com testes quebrados; imagem recebe tag..
 5. Crie/ajuste testes unitários do front-end: Build front falha com lint/test quebrado..
@@ -7122,11 +7122,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: actuator, health, version, scripts e pipeline
+- `back-end/` — módulo alvo: actuator, health, version, scripts e pipeline
 - `HealthController`/Actuator config, `/version`, scripts, pipeline e documentação operacional
 
 Front-end:
-- `frontend/` — app/feature alvo: operational panels, version footer e roteiros de homologação
+- `front-end/` — app/feature alvo: operational panels, version footer e roteiros de homologação
 - painéis operacionais, footer de versão e telas de status
 
 **Tarefas de implementação:**
@@ -7173,7 +7173,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: PDV, KDS, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Testes de serviços cobrem cada etapa principal..
 5. Crie/ajuste testes unitários do front-end: Testes de componentes cobrem fluxo simulado..
@@ -7199,11 +7199,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: actuator, health, version, scripts e pipeline
+- `back-end/` — módulo alvo: actuator, health, version, scripts e pipeline
 - `HealthController`/Actuator config, `/version`, scripts, pipeline e documentação operacional
 
 Front-end:
-- `frontend/` — app/feature alvo: operational panels, version footer e roteiros de homologação
+- `front-end/` — app/feature alvo: operational panels, version footer e roteiros de homologação
 - painéis operacionais, footer de versão e telas de status
 
 **Tarefas de implementação:**
@@ -7250,7 +7250,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: FLUXOS, SYNC, DO.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Webhook + sync idempotente em sequência..
 5. Crie/ajuste testes unitários do front-end: Checkout e status renderizam etapas..
@@ -7275,11 +7275,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: actuator, health, version, scripts e pipeline
+- `back-end/` — módulo alvo: actuator, health, version, scripts e pipeline
 - `HealthController`/Actuator config, `/version`, scripts, pipeline e documentação operacional
 
 Front-end:
-- `frontend/` — app/feature alvo: operational panels, version footer e roteiros de homologação
+- `front-end/` — app/feature alvo: operational panels, version footer e roteiros de homologação
 - painéis operacionais, footer de versão e telas de status
 
 **Tarefas de implementação:**
@@ -7322,7 +7322,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DL, DO.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Endpoint `/version` retorna versão/commit..
 5. Crie/ajuste testes unitários do front-end: Footer mostra versão..
@@ -7353,11 +7353,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: stock-movement, baixa por venda e availability automation
+- `back-end/` — módulo alvo: stock-movement, baixa por venda e availability automation
 - `StockMovementService`, `StockController`, integração com finalização de venda e disponibilidade
 
 Front-end:
-- `frontend/` — app/feature alvo: admin/stock-adjustment e stock badges
+- `front-end/` — app/feature alvo: admin/stock-adjustment e stock badges
 - tela de ajuste de estoque, badges de estoque e histórico
 
 **Tarefas de implementação:**
@@ -7402,7 +7402,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Quantidade positiva; produto obrigatório; usuário obrigatório..
 5. Crie/ajuste testes unitários do front-end: Form valida produto/quantidade..
@@ -7426,11 +7426,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: stock-movement, baixa por venda e availability automation
+- `back-end/` — módulo alvo: stock-movement, baixa por venda e availability automation
 - `StockMovementService`, `StockController`, integração com finalização de venda e disponibilidade
 
 Front-end:
-- `frontend/` — app/feature alvo: admin/stock-adjustment e stock badges
+- `front-end/` — app/feature alvo: admin/stock-adjustment e stock badges
 - tela de ajuste de estoque, badges de estoque e histórico
 
 **Tarefas de implementação:**
@@ -7475,7 +7475,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Motivo obrigatório; movimento audita usuário..
 5. Crie/ajuste testes unitários do front-end: Modal exige motivo..
@@ -7500,11 +7500,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: stock-movement, baixa por venda e availability automation
+- `back-end/` — módulo alvo: stock-movement, baixa por venda e availability automation
 - `StockMovementService`, `StockController`, integração com finalização de venda e disponibilidade
 
 Front-end:
-- `frontend/` — app/feature alvo: admin/stock-adjustment e stock badges
+- `front-end/` — app/feature alvo: admin/stock-adjustment e stock badges
 - tela de ajuste de estoque, badges de estoque e histórico
 
 **Tarefas de implementação:**
@@ -7549,7 +7549,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Venda baixa quantidade correta; venda cancelada ajusta conforme regra..
 5. Crie/ajuste testes unitários do front-end: Coluna estoque renderiza quantidade..
@@ -7574,11 +7574,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: stock-movement, baixa por venda e availability automation
+- `back-end/` — módulo alvo: stock-movement, baixa por venda e availability automation
 - `StockMovementService`, `StockController`, integração com finalização de venda e disponibilidade
 
 Front-end:
-- `frontend/` — app/feature alvo: admin/stock-adjustment e stock badges
+- `front-end/` — app/feature alvo: admin/stock-adjustment e stock badges
 - tela de ajuste de estoque, badges de estoque e histórico
 
 **Tarefas de implementação:**
@@ -7623,7 +7623,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, SYNC.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Estoque zero cria `PRODUCT_UNAVAILABLE`; sob encomenda não bloqueia..
 5. Crie/ajuste testes unitários do front-end: Badge atualiza no catálogo..
@@ -7647,11 +7647,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: stock-movement, baixa por venda e availability automation
+- `back-end/` — módulo alvo: stock-movement, baixa por venda e availability automation
 - `StockMovementService`, `StockController`, integração com finalização de venda e disponibilidade
 
 Front-end:
-- `frontend/` — app/feature alvo: admin/stock-adjustment e stock badges
+- `front-end/` — app/feature alvo: admin/stock-adjustment e stock badges
 - tela de ajuste de estoque, badges de estoque e histórico
 
 **Tarefas de implementação:**
@@ -7696,7 +7696,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: SYNC.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Evento criado e idempotente..
 5. Crie/ajuste testes unitários do front-end: Status de sync aparece..
@@ -7727,11 +7727,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: whatsapp webhook, conversation, assisted order e message adapter
-- `WhatsappWebhookController`, `ConversationService`, `AssistedOrderService`, adapter de mensagens
+- `back-end/` — módulo alvo: whatsapp webhook, conversation, assisted order e message adapter
+- `WhatsappWebhookController`, `ConversationService`, `AssistedOrderService`, serviço de mensagens
 
 Front-end:
-- `frontend/` — app/feature alvo: admin/whatsapp conversations e assisted cart
+- `front-end/` — app/feature alvo: admin/whatsapp conversations e assisted cart
 - painel de conversas, busca de produtos WhatsApp e carrinho assistido
 
 **Tarefas de implementação:**
@@ -7777,7 +7777,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DO, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Assinatura inválida falha; mensagem duplicada é ignorada..
 5. Crie/ajuste testes unitários do front-end: Lista renderiza conversa e última mensagem..
@@ -7802,11 +7802,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: whatsapp webhook, conversation, assisted order e message adapter
-- `WhatsappWebhookController`, `ConversationService`, `AssistedOrderService`, adapter de mensagens
+- `back-end/` — módulo alvo: whatsapp webhook, conversation, assisted order e message adapter
+- `WhatsappWebhookController`, `ConversationService`, `AssistedOrderService`, serviço de mensagens
 
 Front-end:
-- `frontend/` — app/feature alvo: admin/whatsapp conversations e assisted cart
+- `front-end/` — app/feature alvo: admin/whatsapp conversations e assisted cart
 - painel de conversas, busca de produtos WhatsApp e carrinho assistido
 
 **Tarefas de implementação:**
@@ -7853,7 +7853,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Produto sem canal WhatsApp não aparece..
 5. Crie/ajuste testes unitários do front-end: Busca filtra catálogo WhatsApp..
@@ -7878,11 +7878,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: whatsapp webhook, conversation, assisted order e message adapter
-- `WhatsappWebhookController`, `ConversationService`, `AssistedOrderService`, adapter de mensagens
+- `back-end/` — módulo alvo: whatsapp webhook, conversation, assisted order e message adapter
+- `WhatsappWebhookController`, `ConversationService`, `AssistedOrderService`, serviço de mensagens
 
 Front-end:
-- `frontend/` — app/feature alvo: admin/whatsapp conversations e assisted cart
+- `front-end/` — app/feature alvo: admin/whatsapp conversations e assisted cart
 - painel de conversas, busca de produtos WhatsApp e carrinho assistido
 
 **Tarefas de implementação:**
@@ -7928,7 +7928,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: DOM, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Pedido exige cliente/telefone; snapshot salvo..
 5. Crie/ajuste testes unitários do front-end: Carrinho assistido adiciona itens..
@@ -7952,11 +7952,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: whatsapp webhook, conversation, assisted order e message adapter
-- `WhatsappWebhookController`, `ConversationService`, `AssistedOrderService`, adapter de mensagens
+- `back-end/` — módulo alvo: whatsapp webhook, conversation, assisted order e message adapter
+- `WhatsappWebhookController`, `ConversationService`, `AssistedOrderService`, serviço de mensagens
 
 Front-end:
-- `frontend/` — app/feature alvo: admin/whatsapp conversations e assisted cart
+- `front-end/` — app/feature alvo: admin/whatsapp conversations e assisted cart
 - painel de conversas, busca de produtos WhatsApp e carrinho assistido
 
 **Tarefas de implementação:**
@@ -8001,7 +8001,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Falha do provider não cancela pedido; erro é registrado..
 5. Crie/ajuste testes unitários do front-end: Preview do resumo formatado..
@@ -8026,11 +8026,11 @@ Regras de execução:
 **Arquivos/módulos prováveis:**
 
 Back-end:
-- `backend/` — módulo alvo: whatsapp webhook, conversation, assisted order e message adapter
-- `WhatsappWebhookController`, `ConversationService`, `AssistedOrderService`, adapter de mensagens
+- `back-end/` — módulo alvo: whatsapp webhook, conversation, assisted order e message adapter
+- `WhatsappWebhookController`, `ConversationService`, `AssistedOrderService`, serviço de mensagens
 
 Front-end:
-- `frontend/` — app/feature alvo: admin/whatsapp conversations e assisted cart
+- `front-end/` — app/feature alvo: admin/whatsapp conversations e assisted cart
 - painel de conversas, busca de produtos WhatsApp e carrinho assistido
 
 **Tarefas de implementação:**
@@ -8076,7 +8076,7 @@ Contexto obrigatório:
 
 Regras de execução:
 1. Antes de alterar código, leia `docs/roadmap-sprints-sistema-mnss.md` e os documentos citados: SYNC, FLUXOS.
-2. Preserve a arquitetura de monólito modular local + online, com back-end hexagonal e front-end por features/camadas.
+2. Preserve a arquitetura de monólito modular local + online, com back-end em camadas e front-end por features/camadas.
 3. Não implemente histórias futuras nem refatore fora do escopo necessário.
 4. Crie/ajuste testes unitários do back-end: Evento idempotente; ACK atualiza status..
 5. Crie/ajuste testes unitários do front-end: Status renderiza corretamente..

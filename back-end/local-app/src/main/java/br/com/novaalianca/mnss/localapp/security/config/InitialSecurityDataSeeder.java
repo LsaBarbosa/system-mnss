@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @ConditionalOnProperty(prefix = "mnss.security", name = "enabled", havingValue = "true", matchIfMissing = true)
+@org.springframework.context.annotation.Profile("!smoke-test")
 class InitialSecurityDataSeeder implements ApplicationRunner {
     private static final Map<RoleName, String> ROLE_DESCRIPTIONS = Map.of(
             RoleName.ADMIN, "Acesso administrativo completo",
@@ -23,6 +24,7 @@ class InitialSecurityDataSeeder implements ApplicationRunner {
             RoleName.CAIXA, "Operacao de caixa",
             RoleName.ATENDENTE, "Atendimento e pedidos",
             RoleName.COZINHA, "Producao e KDS",
+            RoleName.EXPEDICAO, "Expedicao e finalizacao de pedidos",
             RoleName.ENTREGADOR, "Entrega de pedidos",
             RoleName.CONSULTA, "Acesso somente leitura");
 

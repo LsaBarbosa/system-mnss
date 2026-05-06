@@ -26,7 +26,7 @@ class AuthController {
     }
 
     @GetMapping("/me")
-    UserResponse me(@RequestAttribute(AuthenticatedUserInterceptor.AUTHENTICATED_USER_ATTRIBUTE) AuthenticatedUser user) {
+    UserResponse me(@RequestAttribute(AuthenticatedUser.AUTHENTICATED_USER_ATTRIBUTE) AuthenticatedUser user) {
         return authService.toResponse(user);
     }
 }

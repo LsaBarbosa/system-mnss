@@ -12,6 +12,8 @@ public record AuthenticatedUser(
         boolean active,
         Set<RoleName> roles) {
 
+    public static final String AUTHENTICATED_USER_ATTRIBUTE = "mnssAuthenticatedUser";
+
     public boolean hasAnyRole(Set<RoleName> requiredRoles) {
         return roles.contains(RoleName.ADMIN) || roles.stream().anyMatch(requiredRoles::contains);
     }

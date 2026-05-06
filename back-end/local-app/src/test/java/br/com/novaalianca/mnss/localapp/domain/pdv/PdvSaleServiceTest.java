@@ -29,9 +29,9 @@ import br.com.novaalianca.mnss.localapp.domain.order.OrderItemStatus;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderOrigin;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderRepository;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderStatus;
-import br.com.novaalianca.mnss.localapp.domain.payment.PaymentStatus;
+import br.com.novaalianca.mnss.core.payment.PaymentStatus;
 import br.com.novaalianca.mnss.localapp.domain.payment.PaymentRepository;
-import br.com.novaalianca.mnss.localapp.domain.payment.PaymentMethod;
+import br.com.novaalianca.mnss.core.payment.PaymentMethod;
 import br.com.novaalianca.mnss.localapp.domain.payment.PaymentEntity;
 import br.com.novaalianca.mnss.localapp.domain.stock.StockService;
 import br.com.novaalianca.mnss.localapp.security.user.RoleName;
@@ -126,7 +126,7 @@ class PdvSaleServiceTest {
         UUID saleId = UUID.randomUUID();
         UUID productId = UUID.randomUUID();
         ProductEntity product = product(productId);
-        product.update(null, null, null, null, null, null, null, null, null, null, null, null, false, null, null, null, null);
+        product.update(null, null, null, null, null, null, null, null, null, null, null, null, false, null, null, null, null, null);
         when(orderRepository.findById(saleId)).thenReturn(Optional.of(sale(saleId)));
         when(productRepository.findById(productId)).thenReturn(Optional.of(product));
 
@@ -248,7 +248,7 @@ class PdvSaleServiceTest {
         when(orderRepository.findById(saleId)).thenReturn(Optional.of(sale));
         when(orderItemRepository.findByOrderIdOrderByCreatedAtAsc(saleId)).thenReturn(List.of());
 
-        assertThatThrownBy(() -> service().finishSale(saleId))
+        assertThatThrownBy(() -> service().finishSale(saleId, UUID.randomUUID()))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("status", HttpStatus.BAD_REQUEST);
     }
@@ -262,7 +262,7 @@ class PdvSaleServiceTest {
         when(orderItemRepository.findByOrderIdOrderByCreatedAtAsc(saleId)).thenReturn(List.of(item(sale, product(UUID.randomUUID()), UUID.randomUUID(), BigDecimal.ONE)));
         when(paymentRepository.findByOrderIdOrderByCreatedAtAsc(saleId)).thenReturn(List.of());
 
-        assertThatThrownBy(() -> service().finishSale(saleId))
+        assertThatThrownBy(() -> service().finishSale(saleId, UUID.randomUUID()))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("status", HttpStatus.BAD_REQUEST);
     }
@@ -334,7 +334,7 @@ class PdvSaleServiceTest {
         when(paymentRepository.findByOrderIdOrderByCreatedAtAsc(saleId)).thenReturn(List.of(payment));
         when(orderRepository.save(any())).thenAnswer(i -> i.getArgument(0));
 
-        service().finishSale(saleId);
+        service().finishSale(saleId, UUID.randomUUID());
 
         assertThat(sale.getStatus()).isEqualTo(OrderStatus.FINISHED);
         verify(hardwareAdapterService).openDrawer();
@@ -354,7 +354,7 @@ class PdvSaleServiceTest {
         when(orderItemRepository.findByOrderIdOrderByCreatedAtAsc(saleId)).thenReturn(items);
         when(paymentRepository.findByOrderIdOrderByCreatedAtAsc(saleId)).thenReturn(List.of(payment));
 
-        service().finishSale(saleId);
+        service().finishSale(saleId, UUID.randomUUID());
 
         verify(hardwareAdapterService, never()).openDrawer();
         verify(hardwareAdapterService).printReceipt(eq(sale), eq(items), any());

@@ -23,6 +23,104 @@ paths:
       responses:
         '200':
           description: Estado tecnico da aplicacao.
+  /api/sync/events:
+    post:
+      summary: Recebe um evento de sincronizacao vindo da loja.
+      operationId: receiveSyncEvent
+      parameters:
+        - name: X-Store-ID
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-Signature
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SyncEventRequest'
+      responses:
+        '200':
+          description: Evento recebido com sucesso ou duplicado ignorado.
+        '401':
+          description: Assinatura ou Store ID invalidos.
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/sync/pending:
+    get:
+      summary: Retorna eventos pendentes para serem baixados pela loja.
+      operationId: getPendingSyncEvents
+      parameters:
+        - name: X-Store-ID
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-Signature
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de eventos pendentes.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SyncEventResponse'
+        '401':
+          description: Assinatura ou Store ID invalidos.
+  /api/sync/events/{id}/ack:
+    post:
+      summary: Confirma o recebimento de um evento pela loja.
+      operationId: acknowledgeSyncEvent
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-Store-ID
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-Signature
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Evento confirmado.
+        '404':
+          description: Evento nao encontrado.
+  /api/sync/status:
+    get:
+      summary: Retorna estatisticas de sincronizacao para o dashboard.
+      operationId: getSyncStatus
+      responses:
+        '200':
+          description: Contagem de eventos por status.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: integer
 components:
   responses:
     ValidationError:
@@ -92,7 +190,8 @@ components:
         - environment
         - offlineCriticalOperation
         - message
-        - checkedAt
+        - version
+        - timestamp
         - components
       properties:
         status:
@@ -108,7 +207,10 @@ components:
         message:
           type: string
           example: Canais externos, webhooks e sincronizacao via HTTPS
-        checkedAt:
+        version:
+          type: string
+          example: 1.0.0
+        timestamp:
           type: string
           format: date-time
         components:
@@ -119,3 +221,80 @@ components:
             db: UP
             redis: UP
             rabbit: UP
+    SyncEventRequest:
+      type: object
+      required:
+        - aggregateType
+        - eventType
+        - payload
+      properties:
+        aggregateType:
+          type: string
+        aggregateId:
+          type: string
+          format: uuid
+        eventType:
+          type: string
+        payload:
+          type: object
+    SyncEventResponse:
+      type: object
+      required:
+        - id
+        - idempotencyKey
+        - direction
+        - sourceEnvironment
+        - targetEnvironment
+        - aggregateType
+        - eventType
+        - payload
+        - status
+        - retryCount
+        - createdAt
+        - updatedAt
+        - version
+      properties:
+        id:
+          type: string
+          format: uuid
+        idempotencyKey:
+          type: string
+        direction:
+          type: string
+          enum: [LOCAL_TO_ONLINE, ONLINE_TO_LOCAL]
+        sourceEnvironment:
+          type: string
+          enum: [LOCAL, ONLINE]
+        targetEnvironment:
+          type: string
+          enum: [LOCAL, ONLINE]
+        aggregateType:
+          type: string
+        aggregateId:
+          type: string
+          format: uuid
+        eventType:
+          type: string
+        payload:
+          type: object
+        status:
+          type: string
+          enum: [PENDING, PROCESSING, SYNCED, FAILED, RETRYING, IGNORED, RECEIVED_BY_STORE, DEAD_LETTER]
+        retryCount:
+          type: integer
+        nextRetryAt:
+          type: string
+          format: date-time
+        lastError:
+          type: string
+        processedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        version:
+          type: integer

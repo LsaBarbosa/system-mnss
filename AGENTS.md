@@ -50,8 +50,8 @@ Consequências obrigatórias:
 
 ### Back-end
 
-- Java 25
-- Spring Boot
+- Java 21
+- Spring Boot 3.x
 - Spring Security
 - Spring Data JPA
 - PostgreSQL
@@ -103,7 +103,7 @@ Regras:
 
 - Não criar microserviços no início.
 - Não separar serviços antes de necessidade real de escala ou isolamento.
-- Separar domínio, aplicação e infraestrutura dentro do monólito modular.
+- Organizar o monólito modular em camadas por domínio (web, service, entity, repository, dto).
 - Manter módulos coesos por domínio.
 - Evitar acoplamento direto entre front-end e regras críticas de negócio.
 - Toda regra crítica deve ficar no back-end.
@@ -112,13 +112,13 @@ Regras:
 
 ```text
 nova-alianca-system/
-├── backend/
+├── back-end/
 │   ├── core-domain/
 │   ├── local-app/
 │   ├── online-app/
 │   ├── sync-module/
 │   └── shared-infra/
-├── frontend/
+├── front-end/
 │   ├── site-publico/
 │   ├── admin/
 │   ├── pdv/
@@ -186,9 +186,11 @@ Regras:
 - Usar `Instant`, `LocalDateTime` ou tipos equivalentes com consistência definida no projeto.
 - Usar DTOs explícitos para entrada e saída de APIs.
 - Não expor entidades JPA diretamente em controllers.
-- Usar services/use cases para regras de aplicação.
-- Usar exceptions de negócio padronizadas.
-- Não vazar stacktrace ou detalhes internos em resposta HTTP.
+- Controllers não devem conter regra de negócio.
+- Services concentram regra de aplicação e negócio.
+- Entities representam persistência e estado de domínio.
+- Repositories ficam isolados por módulo.
+- DTOs não devem expor entidades diretamente.
 - Criar testes unitários para regras de negócio.
 - Criar testes de integração quando houver persistência relevante.
 
@@ -355,15 +357,15 @@ Ajustar os comandos conforme a estrutura real do repositório.
 ### Back-end
 
 ```bash
-cd backend
-./mvnw test
-./mvnw verify
+cd back-end
+./gradlew test
+./gradlew check
 ```
 
 ### Front-end
 
 ```bash
-cd frontend
+cd front-end
 npm install
 npm test
 npm run build

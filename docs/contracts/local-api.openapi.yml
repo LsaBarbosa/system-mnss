@@ -2,6 +2,15 @@ openapi: 3.0.3
 info:
   title: Sistema MNSS Local API
   version: 0.0.1
+  description: |
+    API para operação local da Padaria Nova Aliança.
+    
+    ### WebSocket Events
+    O sistema publica eventos em tempo real para sincronização de telas:
+    
+    - `/topic/kds/tickets`: Enviado quando um ticket é criado ou atualizado. Payload: `KdsTicketResponse`.
+    - `/topic/kds/tickets/{sector}`: Mesmo evento acima, mas filtrado por setor (ex: `COZINHA`, `FORNO`).
+    - `/topic/orders/ready`: Enviado quando um pedido completo está pronto para entrega. Payload: `UUID` (ID do pedido).
 paths:
   /api/auth/login:
     post:
@@ -552,6 +561,291 @@ paths:
           $ref: '#/components/responses/BusinessError'
         default:
           $ref: '#/components/responses/UnexpectedError'
+  /api/pdv/sales/{saleId}/payment:
+    post:
+      summary: Registra pagamento parcial ou total de uma venda PDV.
+      operationId: payPdvSale
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: saleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePaymentRequest'
+      responses:
+        '201':
+          description: Pagamento registrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          $ref: '#/components/responses/BusinessError'
+        '404':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/pdv/sales/{saleId}/finish:
+    post:
+      summary: Finaliza a venda PDV após pagamentos completos.
+      operationId: finishPdvSale
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: saleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Venda finalizada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PdvSaleResponse'
+        '400':
+          $ref: '#/components/responses/BusinessError'
+        '403':
+          $ref: '#/components/responses/BusinessError'
+        '404':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/pdv/sales/{saleId}/discount:
+    post:
+      summary: Aplica desconto ao total da venda PDV.
+      operationId: applyPdvSaleDiscount
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: saleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDiscountRequest'
+      responses:
+        '200':
+          description: Desconto aplicado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PdvSaleResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          $ref: '#/components/responses/BusinessError'
+        '404':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/pdv/sales/{saleId}/cancel:
+    post:
+      summary: Cancela uma venda PDV em aberto.
+      operationId: cancelPdvSale
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: saleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelSaleRequest'
+      responses:
+        '200':
+          description: Venda cancelada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PdvSaleResponse'
+        '403':
+          $ref: '#/components/responses/BusinessError'
+        '404':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/pdv/sales/{saleId}/print:
+    post:
+      summary: Solicita a reimpressão do comprovante de venda.
+      operationId: reprintPdvSaleReceipt
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: saleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Impressão enviada com sucesso.
+        '403':
+          $ref: '#/components/responses/BusinessError'
+        '404':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/kds/tickets:
+    get:
+      summary: Lista tickets de preparo ativos no KDS.
+      operationId: getKdsTickets
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: sector
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/PreparationSector'
+      responses:
+        '200':
+          description: Tickets encontrados.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/KdsTicketResponse'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/kds/tickets/{id}/start:
+    patch:
+      summary: Marca início do preparo de um ticket.
+      operationId: startKdsTicket
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Ticket atualizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KdsTicketResponse'
+        '404':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/kds/tickets/{id}/ready:
+    patch:
+      summary: Marca ticket como pronto para entrega/expedição.
+      operationId: readyKdsTicket
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Ticket atualizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KdsTicketResponse'
+        '404':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/kds/tickets/{id}/finish:
+    patch:
+      summary: Marca ticket como finalizado/entregue ao cliente.
+      operationId: finishKdsTicket
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Ticket atualizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KdsTicketResponse'
+        '404':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/kds/items/{id}/ready:
+    patch:
+      summary: Marca um item específico de um ticket como pronto.
+      operationId: readyKdsItem
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Item atualizado.
+        '404':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/kds/orders/{id}/finish:
+    patch:
+      summary: Finaliza todos os tickets vinculados a um pedido.
+      operationId: finishKdsOrder
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Tickets do pedido finalizados.
+        '404':
+          $ref: '#/components/responses/BusinessError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
   /api/orders/{orderId}/payments:
     post:
       summary: Registra pagamento e finaliza venda local.
@@ -938,7 +1232,8 @@ components:
         - environment
         - offlineCriticalOperation
         - message
-        - checkedAt
+        - version
+        - timestamp
         - components
       properties:
         status:
@@ -954,7 +1249,10 @@ components:
         message:
           type: string
           example: PDV, caixa, KDS e banco local devem operar sem internet
-        checkedAt:
+        version:
+          type: string
+          example: 1.0.0
+        timestamp:
           type: string
           format: date-time
         components:
@@ -1253,6 +1551,24 @@ components:
           format: decimal
           minimum: 0.001
           example: 2
+    CreateDiscountRequest:
+      type: object
+      required:
+        - amount
+      properties:
+        amount:
+          type: number
+          format: double
+          minimum: 0
+          example: 5.50
+    CancelSaleRequest:
+      type: object
+      required:
+        - reason
+      properties:
+        reason:
+          type: string
+          example: Cliente desistiu da compra
     PdvSaleResponse:
       type: object
       required:
@@ -1351,6 +1667,69 @@ components:
         updatedAt:
           type: string
           format: date-time
+    KdsTicketResponse:
+      type: object
+      required:
+        - id
+        - orderId
+        - ticketNumber
+        - origin
+        - sector
+        - status
+        - createdAt
+        - items
+      properties:
+        id:
+          type: string
+          format: uuid
+        orderId:
+          type: string
+          format: uuid
+        ticketNumber:
+          type: integer
+          format: int64
+        origin:
+          $ref: '#/components/schemas/OrderOrigin'
+        sector:
+          $ref: '#/components/schemas/PreparationSector'
+        status:
+          $ref: '#/components/schemas/KdsTicketStatus'
+        createdAt:
+          type: string
+          format: date-time
+        startedAt:
+          type: string
+          format: date-time
+        readyAt:
+          type: string
+          format: date-time
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/KdsTicketItemResponse'
+    KdsTicketItemResponse:
+      type: object
+      required:
+        - id
+        - productName
+        - quantity
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        productName:
+          type: string
+        quantity:
+          type: number
+        observation:
+          type: string
+        status:
+          $ref: '#/components/schemas/KdsTicketStatus'
+    KdsTicketStatus:
+      type: string
+      enum: [WAITING, IN_PREPARATION, READY, FINISHED, CANCELED]
+      example: WAITING
     CreatePaymentRequest:
       type: object
       required:
@@ -1766,3 +2145,64 @@ components:
         - COZINHA
         - ENTREGADOR
         - CONSULTA
+    SyncEventResponse:
+      type: object
+      required:
+        - id
+        - idempotencyKey
+        - direction
+        - sourceEnvironment
+        - targetEnvironment
+        - aggregateType
+        - eventType
+        - payload
+        - status
+        - retryCount
+        - createdAt
+        - updatedAt
+        - version
+      properties:
+        id:
+          type: string
+          format: uuid
+        idempotencyKey:
+          type: string
+        direction:
+          type: string
+          enum: [LOCAL_TO_ONLINE, ONLINE_TO_LOCAL]
+        sourceEnvironment:
+          type: string
+          enum: [LOCAL, ONLINE]
+        targetEnvironment:
+          type: string
+          enum: [LOCAL, ONLINE]
+        aggregateType:
+          type: string
+        aggregateId:
+          type: string
+          format: uuid
+        eventType:
+          type: string
+        payload:
+          type: object
+        status:
+          type: string
+          enum: [PENDING, PROCESSING, SYNCED, FAILED, RETRYING, IGNORED, RECEIVED_BY_STORE, DEAD_LETTER]
+        retryCount:
+          type: integer
+        nextRetryAt:
+          type: string
+          format: date-time
+        lastError:
+          type: string
+        processedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        version:
+          type: integer

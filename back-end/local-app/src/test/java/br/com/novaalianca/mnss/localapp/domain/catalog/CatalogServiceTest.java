@@ -161,6 +161,7 @@ class CatalogServiceTest {
                         null,
                         null,
                         null,
+                        null,
                         null), null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("unitType must not be null");
@@ -194,6 +195,7 @@ class CatalogServiceTest {
                         null,
                         null,
                         null,
+                        null,
                         null),
                 null);
 
@@ -208,7 +210,7 @@ class CatalogServiceTest {
 
         assertThatThrownBy(() -> service().updateProduct(
                         id,
-                        new PatchProductRequest(null, null, null, new BigDecimal("1.50"), null, null, null, null, null, null, null, null, null, null, null, null, null),
+                        new PatchProductRequest(null, null, null, new BigDecimal("1.50"), null, null, null, null, null, null, null, null, null, null, null, null, null, null),
                         null))
                 .isInstanceOf(BusinessException.class)
                 .extracting("status")
@@ -232,6 +234,7 @@ class CatalogServiceTest {
                 null,
                 null,
                 false,
+                null,
                 null,
                 null,
                 null,
@@ -402,9 +405,9 @@ class CatalogServiceTest {
         CategoryEntity category = category(categoryId, "Paes");
         ProductEntity sellable = product(category, UUID.randomUUID());
         ProductEntity inactive = product(category, UUID.randomUUID());
-        inactive.update(null, null, null, null, null, null, null, null, null, null, null, null, false, null, null, null, null);
+        inactive.update(null, null, null, null, null, null, null, null, null, null, null, null, false, null, null, null, null, null);
         ProductEntity withoutPdv = product(category, UUID.randomUUID());
-        withoutPdv.update(null, null, null, null, null, null, null, null, null, null, null, null, null, null, false, null, null);
+        withoutPdv.update(null, null, null, null, null, null, null, null, null, null, null, null, null, null, false, null, null, null);
         when(categoryRepository.findAllByOrderByDisplayOrderAscNameAsc()).thenReturn(List.of(category));
         when(productRepository.findAllByOrderByNameAsc()).thenReturn(List.of(sellable, inactive, withoutPdv));
 
@@ -421,11 +424,11 @@ class CatalogServiceTest {
         CategoryEntity bakery = category(bakeryId, "Paes");
         CategoryEntity drinks = category(drinksId, "Bebidas");
         ProductEntity filtered = product(bakery, UUID.randomUUID());
-        filtered.update(null, "Pao integral", null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+        filtered.update(null, "Pao integral", null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
         ProductEntity otherName = product(bakery, UUID.randomUUID());
-        otherName.update(null, "Baguete", null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+        otherName.update(null, "Baguete", null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
         ProductEntity otherCategory = product(drinks, UUID.randomUUID());
-        otherCategory.update(null, "Pao liquido", null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+        otherCategory.update(null, "Pao liquido", null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
         when(categoryRepository.findAllByOrderByDisplayOrderAscNameAsc()).thenReturn(List.of(bakery, drinks));
         when(productRepository.findAllByOrderByNameAsc()).thenReturn(List.of(filtered, otherName, otherCategory));
 
@@ -440,7 +443,7 @@ class CatalogServiceTest {
     void sellableBarcodeSearchRejectsMissingOrNotSellableProduct() {
         String barcode = "789100000001";
         ProductEntity inactive = product();
-        inactive.update(null, null, null, null, null, null, null, barcode, null, null, null, null, false, null, null, null, null);
+        inactive.update(null, null, null, null, null, null, null, barcode, null, null, null, null, false, null, null, null, null, null);
         when(productRepository.findByBarcode("missing")).thenReturn(Optional.empty());
         when(productRepository.findByBarcode(barcode)).thenReturn(Optional.of(inactive));
 
@@ -458,7 +461,7 @@ class CatalogServiceTest {
     void sellableBarcodeSearchReturnsProductSnapshot() {
         String barcode = "789100000001";
         ProductEntity product = product();
-        product.update(null, null, null, null, null, null, null, barcode, null, null, null, null, null, null, null, null, null);
+        product.update(null, null, null, null, null, null, null, barcode, null, null, null, null, null, null, null, null, null, null);
         when(productRepository.findByBarcode(barcode)).thenReturn(Optional.of(product));
 
         ProductResponse response = service().findSellableProductByBarcode(barcode);
@@ -493,6 +496,7 @@ class CatalogServiceTest {
                 null,
                 UnitType.UNIT,
                 PreparationSector.SEM_PREPARO,
+                null,
                 null,
                 null,
                 null,

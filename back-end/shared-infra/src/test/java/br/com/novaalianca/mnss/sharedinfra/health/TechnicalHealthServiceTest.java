@@ -41,7 +41,7 @@ class TechnicalHealthServiceTest {
                 .containsEntry("db", "UP")
                 .containsEntry("redis", "UP")
                 .containsEntry("rabbit", "UP");
-        assertThat(response.checkedAt()).isEqualTo(NOW);
+        assertThat(response.timestamp()).isEqualTo(NOW);
     }
 
     @Test
@@ -61,6 +61,6 @@ class TechnicalHealthServiceTest {
     }
 
     private TechnicalHealthService service() {
-        return new TechnicalHealthService(healthEndpoint, Clock.fixed(NOW, ZoneOffset.UTC));
+        return new TechnicalHealthService(healthEndpoint, Clock.fixed(NOW, ZoneOffset.UTC), "0.0.1-TEST");
     }
 }

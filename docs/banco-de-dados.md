@@ -439,18 +439,22 @@ CREATE TABLE stock_movements (
 ```sql
 CREATE TABLE sync_events (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    event_type VARCHAR(80) NOT NULL,
-    entity_type VARCHAR(80) NOT NULL,
-    entity_id UUID NOT NULL,
+    idempotency_key VARCHAR(120) NOT NULL UNIQUE,
+    direction VARCHAR(40) NOT NULL,
+    source_environment VARCHAR(40) NOT NULL,
+    target_environment VARCHAR(40) NOT NULL,
+    aggregate_type VARCHAR(80) NOT NULL,
+    aggregate_id UUID,
+    event_type VARCHAR(120) NOT NULL,
     payload JSONB NOT NULL,
-    origin VARCHAR(30) NOT NULL,
-    destination VARCHAR(30) NOT NULL,
-    status VARCHAR(30) NOT NULL,
+    status VARCHAR(40) NOT NULL,
     retry_count INTEGER NOT NULL DEFAULT 0,
-    error_message TEXT,
+    next_retry_at TIMESTAMP,
+    last_error TEXT,
+    processed_at TIMESTAMP,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    synced_at TIMESTAMP
+    version INTEGER NOT NULL DEFAULT 0
 );
 ```
 
@@ -459,7 +463,8 @@ CREATE TABLE sync_events (
 ```sql
 CREATE INDEX idx_sync_events_status ON sync_events(status);
 CREATE INDEX idx_sync_events_created_at ON sync_events(created_at);
-CREATE INDEX idx_sync_events_entity ON sync_events(entity_type, entity_id);
+CREATE INDEX idx_sync_events_aggregate ON sync_events(aggregate_type, aggregate_id);
+CREATE INDEX idx_sync_events_idempotency ON sync_events(idempotency_key);
 ```
 
 ## 6.18 Audit Logs

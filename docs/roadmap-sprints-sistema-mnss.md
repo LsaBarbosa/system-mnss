@@ -14,7 +14,7 @@
 6. O desenvolvimento deve ocorrer sempre com **back-end e front-end em paralelo** dentro da mesma sprint.
 7. Cada sprint deve entregar uma fatia funcional validável.
 8. O MVP deve priorizar primeiro a operação local e depois completar o fluxo online.
-9. O back-end deve seguir **arquitetura hexagonal** dentro do monólito modular: `adapter -> application -> domain`.
+9. O back-end deve seguir **arquitetura modular em camadas** dentro do monólito modular: `web -> service -> entity/repository`.
 10. O front-end deve seguir **arquitetura Angular por features**, com camadas `domain`, `application`, `data-access`, `ui` e `pages`.
 
 ---
@@ -104,7 +104,7 @@
 
 | ID | História pequena | Back-end | Front-end | Testes unitários back-end | Testes unitários front-end | Docs |
 |---|---|---|---|---|---|---|
-| S01-H01 | Como dev, quero criar o monorepo para organizar backend, frontend, infra e docs. | Criar estrutura `backend/`, `infra/`, `docs/`. | Criar estrutura `frontend/` com apps `admin`, `pdv`, `kds`, `site-publico`. | Verificar estrutura modular básica e pacotes. | Teste simples validando que cada app Angular inicial renderiza o shell. | ARQ, README |
+| S01-H01 | Como dev, quero criar o monorepo para organizar back-end, front-end, infra e docs. | Criar estrutura `back-end/`, `infra/`, `docs/`. | Criar estrutura `front-end/` com apps `admin`, `pdv`, `kds`, `site-publico`. | Verificar estrutura modular básica e pacotes. | Teste simples validando que cada app Angular inicial renderiza o shell. | ARQ, README |
 | S01-H02 | Como dev, quero criar o bootstrap da API local. | Criar `local-app` Spring Boot com `/actuator/health` e `/api/ping`. | Criar environment local apontando para API local. | Context load; `/api/ping` retorna 200; profile `local` carrega. | Service HTTP chama `/api/ping` e trata sucesso/erro. | ARQ, DL |
 | S01-H03 | Como dev, quero criar o bootstrap da API online. | Criar `online-app` Spring Boot com profile `online`. | Criar environment online para `site-publico` e `admin`. | Context load; profile `online` exige variáveis obrigatórias. | Configuração de environment é carregada corretamente. | ARQ, DO |
 | S01-H04 | Como dev, quero padronizar resposta de erro. | Criar `ApiError`, `BusinessException`, `GlobalExceptionHandler`. | Criar componente/shared service para exibir erro padronizado. | Validação retorna 400; regra de negócio retorna código esperado; erro inesperado não vaza stacktrace. | Interceptor converte erro HTTP em mensagem exibível. | FLUXOS |
@@ -166,7 +166,7 @@
 **Referências e motivo:**
 - BD define PostgreSQL, Flyway, UUID, `NUMERIC(12,2)`, timestamps e tabelas iniciais.
 - DOM define agregados: Product, Order, Cash, Customer e Sync.
-- FLUXOS reforça regras transversais: UUID, BigDecimal, auditoria e não confiar no frontend.
+- FLUXOS reforça regras transversais: UUID, BigDecimal, auditoria e não confiar no front-end.
 
 | ID | História pequena | Back-end | Front-end | Testes unitários back-end | Testes unitários front-end | Docs |
 |---|---|---|---|---|---|---|
@@ -306,8 +306,8 @@
 | ID | História pequena | Back-end | Front-end | Testes unitários back-end | Testes unitários front-end | Docs |
 |---|---|---|---|---|---|---|
 | S10-H01 | Como operador, quero finalizar venda paga. | `POST /api/pdv/sales/{saleId}/finish`. | Botão finalizar venda. | Sem itens falha; sem pagamento falha; status final correto. | Botão desabilita sem itens/pagamento. | PDV, FLUXOS |
-| S10-H02 | Como sistema, quero criar evento de sync ao finalizar venda. | Criar `SyncEvent SALE_FINISHED`. | Mostrar status “pendente de sync”. | Evento PENDING criado; falha de sync não desfaz venda. | Badge de pendência exibido. | PDV, SYNC |
-| S10-H03 | Como operador, quero imprimir comprovante. | Criar serviço de impressão abstrato/adapter. | Botão imprimir/reimprimir comprovante. | Geração de comando não duplica venda; falha de impressão retorna erro controlado. | Estado de impressão mostra sucesso/erro. | PDV, DL, HW |
+| S10-H02 | Como sistema, quero criar evento de sync ao finalizar venda. | Criar `SyncEvent` com `idempotencyKey`. | Mostrar status “pendente de sync”. | Status PENDING criado; processed_at nulo; idempotency_key persistida. | Badge de pendência exibido. | PDV, SYNC |
+| S10-H03 | Como operador, quero imprimir comprovante. | Criar serviço de impressão. | Botão imprimir/reimprimir comprovante. | Geração de comando não duplica venda; falha de impressão retorna erro controlado. | Estado de impressão mostra sucesso/erro. | PDV, DL, HW |
 | S10-H04 | Como operador, quero abrir gaveta em pagamento dinheiro. | Adapter envia comando de gaveta. | Indicação visual de gaveta acionada. | Só aciona gaveta para dinheiro; não aciona para Pix/cartão. | Componente mostra ação apenas quando aplicável. | PDV, HW |
 | S10-H05 | Como operador, quero aplicar desconto. | `POST /api/pdv/sales/{saleId}/discount`. | Modal de desconto por valor/percentual. | Limite permitido aplica; acima exige gerente; desconto negativo falha. | Form alterna valor/percentual; calcula preview. | PDV, FLUXOS |
 | S10-H06 | Como gerente, quero cancelar venda finalizada. | `POST /api/pdv/sales/{saleId}/cancel`. | Modal motivo + autorização. | Motivo obrigatório; sem permissão falha; gera AuditLog e ajuste financeiro. | Form exige motivo; usuário sem perfil não vê ação. | PDV, FLUXOS |
@@ -419,9 +419,9 @@
 | ID | História pequena | Back-end | Front-end | Testes unitários back-end | Testes unitários front-end | Docs |
 |---|---|---|---|---|---|---|
 | S16-H01 | Como cliente, quero escolher pagamento online. | `POST /api/payments/online`. | Opção Pix/cartão online no checkout. | Cria Payment PENDING; pedido fica PAYMENT_PENDING. | Seleção de método altera etapa de pagamento. | DOM, FLUXOS |
-| S16-H02 | Como sistema, quero integrar gateway via adapter. | Interface `PaymentGatewayPort`. | Tela mostra instruções/dados retornados. | Adapter mock retorna cobrança; falha do gateway retorna erro controlado. | Componente renderiza QR/instruções mockadas. | FLUXOS |
+| S16-H02 | Como sistema, quero integrar gateway de pagamento. | Interface `PaymentGatewayService`. | Tela mostra instruções/dados retornados. | Integração mock retorna cobrança; falha do gateway retorna erro controlado. | Componente renderiza QR/instruções mockadas. | FLUXOS |
 | S16-H03 | Como gateway, quero enviar webhook. | `POST /api/payments/webhook`. | Página de status consulta pedido. | Assinatura inválida falha; payload bruto é registrado; webhook duplicado é idempotente. | Status muda conforme polling/mock. | DO, FLUXOS |
-| S16-H04 | Como sistema, quero aprovar pagamento por webhook. | Atualizar `PaymentStatus.PAID` e `Order.PAID`. | Página de pedido mostra pago. | Frontend não consegue confirmar pagamento; só webhook altera para PAID. | Status “Pago” aparece após atualização. | DOM, FLUXOS |
+| S16-H04 | Como sistema, quero aprovar pagamento por webhook. | Atualizar `PaymentStatus.PAID` e `Order.PAID`. | Página de pedido mostra pago. | Front-end não consegue confirmar pagamento; só webhook altera para PAID. | Status “Pago” aparece após atualização. | DOM, FLUXOS |
 | S16-H05 | Como sistema, quero tratar pagamento recusado/expirado. | Atualizar para REFUSED/EXPIRED. | Mostrar instrução para nova tentativa. | Status recusado não cria envio para loja; expirado bloqueia pagamento antigo. | Mensagem de recusado/expirado aparece. | DOM, FLUXOS |
 
 **Critério de aceite da sprint:** pagamento online é criado, webhook atualiza status e duplicidade é bloqueada.

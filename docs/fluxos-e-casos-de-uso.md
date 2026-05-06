@@ -16,8 +16,8 @@ Este documento consolida os **fluxos da aplicação** e o **mapeamento de casos 
 
 O foco é transformar as decisões técnicas em fluxos funcionais claros para orientar:
 
-- Desenvolvimento backend.
-- Desenvolvimento frontend.
+- Desenvolvimento back-end.
+- Desenvolvimento front-end.
 - Modelagem de APIs.
 - Criação de testes.
 - Planejamento de sprints.
@@ -228,7 +228,7 @@ API Local inicializa
 ↓
 Flyway executa migrations pendentes
 ↓
-Nginx Local expõe a API e frontends locais
+Nginx Local expõe a API e front-ends locais
 ↓
 Sync Worker Local inicializa
 ↓
@@ -358,7 +358,7 @@ Sistema carrega perfis e permissões
 ↓
 Sistema gera token JWT ou sessão local segura
 ↓
-Frontend armazena credencial temporária
+Front-end armazena credencial temporária
 ↓
 Usuário acessa recursos conforme permissão
 ```
@@ -1349,7 +1349,7 @@ Permitir que clientes consultem produtos disponíveis no site ou WhatsApp.
 ```text
 Cliente acessa site ou cardápio online
 ↓
-Frontend consulta API pública
+Front-end consulta API pública
 ↓
 API Online busca categorias e produtos visíveis
 ↓
@@ -1482,7 +1482,7 @@ Gateway envia webhook
 
 ### Regras
 
-- Pagamento online não deve ser confirmado pelo frontend.
+- Pagamento online não deve ser confirmado pelo front-end.
 - Confirmação depende de webhook ou consulta confiável ao gateway.
 - Transação deve guardar transactionId e gateway.
 - Pagamento recusado deve atualizar pedido.
@@ -1925,7 +1925,7 @@ Sistema persiste AuditLog
 
 ### Regras
 
-- Auditoria não deve depender do frontend.
+- Auditoria não deve depender do front-end.
 - Ação crítica não deve ocorrer sem usuário identificável, salvo processos técnicos identificados.
 - Logs de auditoria não devem ser editáveis pelo usuário comum.
 
@@ -2834,7 +2834,7 @@ PAYMENT_CREATED
 
 ### Regras
 
-- Frontend não confirma pagamento.
+- Front-end não confirma pagamento.
 - Webhook deve ser idempotente.
 - Assinatura deve ser validada.
 
@@ -3443,7 +3443,7 @@ GET  /api/sync/health
 
 ## 13.1 Segurança
 
-- Nunca confiar apenas no frontend.
+- Nunca confiar apenas no front-end.
 - Usuário inativo não autentica.
 - Ações críticas exigem permissão.
 - Algumas ações podem exigir senha de gerente.
@@ -3470,7 +3470,7 @@ GET  /api/sync/health
 
 - Pagamento presencial pode ser confirmado manualmente.
 - Pagamento online depende de confirmação do gateway.
-- Pagamento online não deve ser confirmado pelo frontend.
+- Pagamento online não deve ser confirmado pelo front-end.
 - Pagamento misto deve fechar exatamente o total da venda.
 - Estorno/cancelamento deve gerar auditoria e ajuste financeiro.
 
@@ -3563,7 +3563,7 @@ GET  /api/sync/health
 
 # 16. Recomendações de implementação
 
-## 16.1 Ordem recomendada backend
+## 16.1 Ordem recomendada back-end
 
 ```text
 1. Estrutura modular do projeto.
@@ -3584,7 +3584,7 @@ GET  /api/sync/health
 16. Observabilidade.
 ```
 
-## 16.2 Ordem recomendada frontend
+## 16.2 Ordem recomendada front-end
 
 ```text
 1. Login.

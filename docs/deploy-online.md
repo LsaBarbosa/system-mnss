@@ -383,7 +383,7 @@ Pipeline recomendado:
 ```text
 Push na branch main
 ↓
-Build backend
+Build back-end
 ↓
 Testes
 ↓

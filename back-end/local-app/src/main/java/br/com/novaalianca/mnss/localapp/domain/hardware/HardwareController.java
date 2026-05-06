@@ -1,6 +1,6 @@
 package br.com.novaalianca.mnss.localapp.domain.hardware;
 
-import br.com.novaalianca.mnss.localapp.security.auth.RequiresRole;
+import org.springframework.security.access.prepost.PreAuthorize;
 import br.com.novaalianca.mnss.localapp.security.user.RoleName;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/hardware")
-@RequiresRole({RoleName.ADMIN, RoleName.GERENTE, RoleName.CAIXA, RoleName.ATENDENTE})
+@PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'CAIXA', 'ATENDENTE')")
 class HardwareController {
     private final HardwareAdapterService hardwareAdapterService;
 

@@ -21,4 +21,7 @@ public class MockRepositoriesConfig {
     @MockBean private br.com.novaalianca.mnss.localapp.domain.catalog.ProductRepository productRepository;
     @MockBean private br.com.novaalianca.mnss.localapp.domain.catalog.ProductAvailabilityRepository productAvailabilityRepository;
     @MockBean private org.springframework.web.client.RestTemplate restTemplate;
+    @MockBean private br.com.novaalianca.mnss.localapp.security.auth.AuthService authService;
+    @MockBean private br.com.novaalianca.mnss.localapp.security.user.RoleRepository roleRepository;
+    @MockBean private br.com.novaalianca.mnss.localapp.security.user.UserRepository userRepository;
 }

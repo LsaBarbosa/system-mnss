@@ -31,6 +31,7 @@ class HealthControllerTest {
                         "online",
                         false,
                         "ready",
+                        "1.0.0",
                         Instant.parse("2026-05-04T12:00:00Z"),
                         Map.of("db", "UP", "redis", "UP", "rabbit", "UP")));
 
@@ -39,6 +40,8 @@ class HealthControllerTest {
                 .andExpect(jsonPath("$.status").value("UP"))
                 .andExpect(jsonPath("$.environment").value("online"))
                 .andExpect(jsonPath("$.offlineCriticalOperation").value(false))
+                .andExpect(jsonPath("$.version").value("1.0.0"))
+                .andExpect(jsonPath("$.timestamp").value("2026-05-04T12:00:00Z"))
                 .andExpect(jsonPath("$.components.rabbit").value("UP"));
     }
 
@@ -53,6 +56,7 @@ class HealthControllerTest {
                         "online",
                         false,
                         "rabbit down",
+                        "1.0.0",
                         Instant.parse("2026-05-04T12:00:00Z"),
                         Map.of("db", "UP", "redis", "UP", "rabbit", "DOWN")));
 

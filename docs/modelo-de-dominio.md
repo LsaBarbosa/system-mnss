@@ -37,7 +37,7 @@ Security
 Audit
 ```
 
-A arquitetura backend deverá seguir uma organização modular, mantendo regras de negócio separadas de infraestrutura.
+A arquitetura back-end deverá seguir uma organização modular, mantendo regras de negócio separadas de infraestrutura.
 
 ## 3. Domínios principais
 
@@ -456,7 +456,7 @@ public enum PaymentStatus {
 - Pagamento presencial pode ser confirmado manualmente pelo operador.
 - Pagamento em dinheiro pode acionar gaveta.
 - Pagamento cancelado deve gerar log de auditoria.
-- Pagamento online não deve ser confirmado apenas pelo frontend.
+- Pagamento online não deve ser confirmado apenas pelo front-end.
 
 ---
 
@@ -639,18 +639,22 @@ Campos sugeridos:
 
 ```text
 id
+idempotencyKey
+direction
+sourceEnvironment
+targetEnvironment
+aggregateType
+aggregateId
 eventType
-entityType
-entityId
 payload
-origin
-destination
 status
 retryCount
-errorMessage
+nextRetryAt
+lastError
+processedAt
 createdAt
 updatedAt
-syncedAt
+version
 ```
 
 ### Enum: SyncStatus
@@ -662,14 +666,25 @@ public enum SyncStatus {
     SYNCED,
     FAILED,
     RETRYING,
-    IGNORED
+    IGNORED,
+    RECEIVED_BY_STORE,
+    DEAD_LETTER
 }
 ```
 
-### Enum: SyncOrigin
+### Enum: SyncDirection
 
 ```java
-public enum SyncOrigin {
+public enum SyncDirection {
+    LOCAL_TO_ONLINE,
+    ONLINE_TO_LOCAL
+}
+```
+
+### Enum: SyncEnvironment
+
+```java
+public enum SyncEnvironment {
     LOCAL,
     ONLINE
 }
@@ -816,9 +831,9 @@ SyncOutbox
 - Tabelas devem possuir `created_at` e `updated_at`.
 - Alterações críticas devem gerar auditoria.
 - Valores monetários devem usar `BigDecimal`.
-- Datas no backend devem usar `Instant`, `LocalDateTime` ou `OffsetDateTime` conforme contexto.
+- Datas no back-end devem usar `Instant`, `LocalDateTime` ou `OffsetDateTime` conforme contexto.
 - Status devem ser enums.
-- Nunca depender do frontend para validar regra crítica.
+- Nunca depender do front-end para validar regra crítica.
 
 ## 6. Prioridade de implementação do domínio
 

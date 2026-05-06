@@ -1,0 +1,433 @@
+> Task :core-domain:compileJava UP-TO-DATE
+> Task :core-domain:processResources NO-SOURCE
+> Task :core-domain:classes UP-TO-DATE
+> Task :core-domain:jar UP-TO-DATE
+> Task :shared-infra:compileJava UP-TO-DATE
+> Task :sync-module:compileJava UP-TO-DATE
+> Task :sync-module:processResources NO-SOURCE
+> Task :sync-module:classes UP-TO-DATE
+> Task :sync-module:jar UP-TO-DATE
+> Task :local-app:compileJava UP-TO-DATE
+> Task :local-app:processResources UP-TO-DATE
+> Task :local-app:classes UP-TO-DATE
+
+> Task :local-app:compileTestJava FAILED
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:8: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.payment.PaymentRepository paymentRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:8: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.payment.PaymentRepository paymentRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:8: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.payment.PaymentRepository paymentRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:9: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.order.OrderRepository orderRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:9: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.order.OrderRepository orderRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:9: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.order.OrderRepository orderRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:10: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.order.OrderItemRepository orderItemRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:10: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.order.OrderItemRepository orderItemRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:10: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.order.OrderItemRepository orderItemRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:11: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.cash.CashRegisterRepository cashRegisterRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:11: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.cash.CashRegisterRepository cashRegisterRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:11: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.cash.CashRegisterRepository cashRegisterRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:12: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.cash.CashMovementRepository cashMovementRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:12: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.cash.CashMovementRepository cashMovementRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:12: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.cash.CashMovementRepository cashMovementRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:13: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.stock.StockMovementRepository stockMovementRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:13: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.stock.StockMovementRepository stockMovementRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:13: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.stock.StockMovementRepository stockMovementRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:14: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.kds.KdsTicketRepository kdsTicketRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:14: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.kds.KdsTicketRepository kdsTicketRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:14: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.kds.KdsTicketRepository kdsTicketRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:15: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.kds.KdsTicketItemRepository kdsTicketItemRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:15: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.kds.KdsTicketItemRepository kdsTicketItemRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:15: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.kds.KdsTicketItemRepository kdsTicketItemRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:16: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.sync.SyncEventRepository syncEventRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:16: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.sync.SyncEventRepository syncEventRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:16: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.sync.SyncEventRepository syncEventRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:17: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.audit.AuditLogRepository auditLogRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:17: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.audit.AuditLogRepository auditLogRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:17: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.audit.AuditLogRepository auditLogRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:18: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.customer.CustomerAddressRepository customerAddressRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:18: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.customer.CustomerAddressRepository customerAddressRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:18: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.customer.CustomerAddressRepository customerAddressRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:19: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.customer.CustomerRepository customerRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:19: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.customer.CustomerRepository customerRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:19: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.customer.CustomerRepository customerRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:20: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.catalog.CategoryRepository categoryRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:20: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.catalog.CategoryRepository categoryRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:20: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.catalog.CategoryRepository categoryRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:21: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.catalog.ProductRepository productRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:21: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.catalog.ProductRepository productRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:21: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.catalog.ProductRepository productRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:22: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.catalog.ProductAvailabilityRepository productAvailabilityRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:22: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.catalog.ProductAvailabilityRepository productAvailabilityRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:22: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private br.com.novaalianca.mnss.localapp.domain.catalog.ProductAvailabilityRepository productAvailabilityRepository;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:23: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private org.springframework.web.client.RestTemplate restTemplate;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:23: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private org.springframework.web.client.RestTemplate restTemplate;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:23: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean private org.springframework.web.client.RestTemplate restTemplate;
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/payment/PaymentServiceTest.java:89: error: cannot find symbol
+                new CreatePaymentRequest(PaymentMethod.PIX, new BigDecimal("2.40"), "tx-123", "manual"),
+                                         ^
+  symbol:   variable PaymentMethod
+  location: class PaymentServiceTest
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/payment/PaymentServiceTest.java:92: error: cannot find symbol
+        assertThat(response.status()).isEqualTo(PaymentStatus.PAID);
+                                                ^
+  symbol:   variable PaymentStatus
+  location: class PaymentServiceTest
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/payment/PaymentServiceTest.java:94: error: cannot find symbol
+        assertThat(response.orderPaymentStatus()).isEqualTo(PaymentStatus.PAID);
+                                                            ^
+  symbol:   variable PaymentStatus
+  location: class PaymentServiceTest
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/payment/PaymentServiceTest.java:97: error: cannot find symbol
+        verify(cashRegisterService).recordSaleMovement(cashRegisterId, PaymentMethod.PIX, new BigDecimal("2.40"), orderId, actorId);
+                                                                       ^
+  symbol:   variable PaymentMethod
+  location: class PaymentServiceTest
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/payment/PaymentServiceTest.java:117: error: cannot find symbol
+                new CreatePaymentRequest(PaymentMethod.CREDIT_CARD, new BigDecimal("10.00"), null, null),
+                                         ^
+  symbol:   variable PaymentMethod
+  location: class PaymentServiceTest
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/payment/PaymentServiceTest.java:135: error: cannot find symbol
+                        new CreatePaymentRequest(PaymentMethod.CASH, new BigDecimal("5.00"), null, null),
+                                                 ^
+  symbol:   variable PaymentMethod
+  location: class PaymentServiceTest
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/payment/PaymentServiceTest.java:151: error: cannot find symbol
+        PaymentEntity pastPayment = new PaymentEntity(order, PaymentMethod.CASH, PaymentStatus.PAID, new BigDecimal("9.90"));
+                                                             ^
+  symbol:   variable PaymentMethod
+  location: class PaymentServiceTest
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/payment/PaymentServiceTest.java:151: error: cannot find symbol
+        PaymentEntity pastPayment = new PaymentEntity(order, PaymentMethod.CASH, PaymentStatus.PAID, new BigDecimal("9.90"));
+                                                                                 ^
+  symbol:   variable PaymentStatus
+  location: class PaymentServiceTest
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/payment/PaymentServiceTest.java:156: error: cannot find symbol
+                        new CreatePaymentRequest(PaymentMethod.CASH, new BigDecimal("9.90"), null, null),
+                                                 ^
+  symbol:   variable PaymentMethod
+  location: class PaymentServiceTest
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/payment/PaymentServiceTest.java:177: error: cannot find symbol
+                        new CreatePaymentRequest(PaymentMethod.CASH, new BigDecimal("9.90"), null, null),
+                                                 ^
+  symbol:   variable PaymentMethod
+  location: class PaymentServiceTest
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/payment/PaymentServiceTest.java:193: error: cannot find symbol
+                        new CreatePaymentRequest(PaymentMethod.CASH, new BigDecimal("1.00"), null, null),
+                                                 ^
+  symbol:   variable PaymentMethod
+  location: class PaymentServiceTest
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/payment/PaymentServiceTest.java:216: error: cannot find symbol
+                new CreatePaymentRequest(PaymentMethod.DEBIT_CARD, new BigDecimal("3.00"), " auth ", " stone "),
+                                         ^
+  symbol:   variable PaymentMethod
+  location: class PaymentServiceTest
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/payment/PaymentServiceTest.java:221: error: cannot find symbol
+        assertThat(captor.getValue().getMethod()).isEqualTo(PaymentMethod.DEBIT_CARD);
+                                                            ^
+  symbol:   variable PaymentMethod
+  location: class PaymentServiceTest
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/payment/PaymentServiceTest.java:245: error: cannot find symbol
+                new CreatePaymentRequest(PaymentMethod.CASH, new BigDecimal("15.00"), null, null),
+                                         ^
+  symbol:   variable PaymentMethod
+  location: class PaymentServiceTest
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/payment/PaymentServiceTest.java:268: error: cannot find symbol
+                new CreatePaymentRequest(PaymentMethod.CREDIT_CARD, new BigDecimal("20.00"), null, null),
+                                         ^
+  symbol:   variable PaymentMethod
+  location: class PaymentServiceTest
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/payment/PaymentServiceTest.java:294: error: cannot find symbol
+                PaymentStatus.PENDING,
+                ^
+  symbol:   variable PaymentStatus
+  location: class PaymentServiceTest
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/cash/CashRegisterPermissionTest.java:25: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/cash/CashRegisterPermissionTest.java:25: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/cash/CashRegisterPermissionTest.java:25: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/cash/CashRegisterPermissionTest.java:28: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/cash/CashRegisterPermissionTest.java:28: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/cash/CashRegisterPermissionTest.java:28: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+    @MockBean
+     ^
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/catalog/CatalogServiceTest.java:49: error: constructor CreateCategoryRequest in record CreateCategoryRequest cannot be applied to given types;
+        assertThatThrownBy(() -> service().createCategory(new CreateCategoryRequest(
+                                                          ^
+  required: String,String,Integer,String,Boolean,Boolean,Boolean,Boolean
+  found:    String,<null>,<null>,<null>,<null>,<null>,<null>,<null>,<null>
+  reason: actual and formal argument lists differ in length
+/home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/catalog/CatalogServiceTest.java:224: error: method update in class ProductEntity cannot be applied to given types;
+        product.update(
+               ^
+  required: CategoryEntity,String,String,BigDecimal,BigDecimal,BigDecimal,String,String,String,UnitType,PreparationSector,Integer,Boolean,Boolean,Boolean,Boolean,Boolean,Boolean
+  found:    <null>,<null>,<null>,<null>,<null>,<null>,<null>,String,<null>,<null>,<null>,<null>,boolean,<null>,<null>,<null>,<null>
+  reason: actual and formal argument lists differ in length
+18 errors
+54 warnings
+
+[Incubating] Problems report is available at: file:///home/kronos/V%C3%ADdeos/system-mnss/back-end/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':local-app:compileTestJava'.
+> Compilation failed; see the compiler output below.
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/catalog/CatalogServiceTest.java:49: error: constructor CreateCategoryRequest in record CreateCategoryRequest cannot be applied to given types;
+          assertThatThrownBy(() -> service().createCategory(new CreateCategoryRequest(
+                                                            ^
+    required: String,String,Integer,String,Boolean,Boolean,Boolean,Boolean
+    found:    String,<null>,<null>,<null>,<null>,<null>,<null>,<null>,<null>
+    reason: actual and formal argument lists differ in length
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/catalog/CatalogServiceTest.java:224: error: method update in class ProductEntity cannot be applied to given types;
+          product.update(
+                 ^
+    required: CategoryEntity,String,String,BigDecimal,BigDecimal,BigDecimal,String,String,String,UnitType,PreparationSector,Integer,Boolean,Boolean,Boolean,Boolean,Boolean,Boolean
+    found:    <null>,<null>,<null>,<null>,<null>,<null>,<null>,String,<null>,<null>,<null>,<null>,boolean,<null>,<null>,<null>,<null>
+    reason: actual and formal argument lists differ in length
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/payment/PaymentServiceTest.java:89: error: cannot find symbol
+                  new CreatePaymentRequest(PaymentMethod.PIX, new BigDecimal("2.40"), "tx-123", "manual"),
+                                           ^
+    symbol:   variable PaymentMethod
+    location: class PaymentServiceTest
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/payment/PaymentServiceTest.java:92: error: cannot find symbol
+          assertThat(response.status()).isEqualTo(PaymentStatus.PAID);
+                                                  ^
+    symbol:   variable PaymentStatus
+    location: class PaymentServiceTest
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/payment/PaymentServiceTest.java:94: error: cannot find symbol
+          assertThat(response.orderPaymentStatus()).isEqualTo(PaymentStatus.PAID);
+                                                              ^
+    symbol:   variable PaymentStatus
+    location: class PaymentServiceTest
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/payment/PaymentServiceTest.java:97: error: cannot find symbol
+          verify(cashRegisterService).recordSaleMovement(cashRegisterId, PaymentMethod.PIX, new BigDecimal("2.40"), orderId, actorId);
+                                                                         ^
+    symbol:   variable PaymentMethod
+    location: class PaymentServiceTest
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/payment/PaymentServiceTest.java:117: error: cannot find symbol
+                  new CreatePaymentRequest(PaymentMethod.CREDIT_CARD, new BigDecimal("10.00"), null, null),
+                                           ^
+    symbol:   variable PaymentMethod
+    location: class PaymentServiceTest
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/payment/PaymentServiceTest.java:135: error: cannot find symbol
+                          new CreatePaymentRequest(PaymentMethod.CASH, new BigDecimal("5.00"), null, null),
+                                                   ^
+    symbol:   variable PaymentMethod
+    location: class PaymentServiceTest
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/payment/PaymentServiceTest.java:151: error: cannot find symbol
+          PaymentEntity pastPayment = new PaymentEntity(order, PaymentMethod.CASH, PaymentStatus.PAID, new BigDecimal("9.90"));
+                                                               ^
+    symbol:   variable PaymentMethod
+    location: class PaymentServiceTest
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/payment/PaymentServiceTest.java:151: error: cannot find symbol
+          PaymentEntity pastPayment = new PaymentEntity(order, PaymentMethod.CASH, PaymentStatus.PAID, new BigDecimal("9.90"));
+                                                                                   ^
+    symbol:   variable PaymentStatus
+    location: class PaymentServiceTest
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/payment/PaymentServiceTest.java:156: error: cannot find symbol
+                          new CreatePaymentRequest(PaymentMethod.CASH, new BigDecimal("9.90"), null, null),
+                                                   ^
+    symbol:   variable PaymentMethod
+    location: class PaymentServiceTest
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/payment/PaymentServiceTest.java:177: error: cannot find symbol
+                          new CreatePaymentRequest(PaymentMethod.CASH, new BigDecimal("9.90"), null, null),
+                                                   ^
+    symbol:   variable PaymentMethod
+    location: class PaymentServiceTest
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/payment/PaymentServiceTest.java:193: error: cannot find symbol
+                          new CreatePaymentRequest(PaymentMethod.CASH, new BigDecimal("1.00"), null, null),
+                                                   ^
+    symbol:   variable PaymentMethod
+    location: class PaymentServiceTest
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/payment/PaymentServiceTest.java:216: error: cannot find symbol
+                  new CreatePaymentRequest(PaymentMethod.DEBIT_CARD, new BigDecimal("3.00"), " auth ", " stone "),
+                                           ^
+    symbol:   variable PaymentMethod
+    location: class PaymentServiceTest
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/payment/PaymentServiceTest.java:221: error: cannot find symbol
+          assertThat(captor.getValue().getMethod()).isEqualTo(PaymentMethod.DEBIT_CARD);
+                                                              ^
+    symbol:   variable PaymentMethod
+    location: class PaymentServiceTest
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/payment/PaymentServiceTest.java:245: error: cannot find symbol
+                  new CreatePaymentRequest(PaymentMethod.CASH, new BigDecimal("15.00"), null, null),
+                                           ^
+    symbol:   variable PaymentMethod
+    location: class PaymentServiceTest
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/payment/PaymentServiceTest.java:268: error: cannot find symbol
+                  new CreatePaymentRequest(PaymentMethod.CREDIT_CARD, new BigDecimal("20.00"), null, null),
+                                           ^
+    symbol:   variable PaymentMethod
+    location: class PaymentServiceTest
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/payment/PaymentServiceTest.java:294: error: cannot find symbol
+                  PaymentStatus.PENDING,
+                  ^
+    symbol:   variable PaymentStatus
+    location: class PaymentServiceTest
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:8: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+      @MockBean private br.com.novaalianca.mnss.localapp.domain.payment.PaymentRepository paymentRepository;
+       ^
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:9: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+      @MockBean private br.com.novaalianca.mnss.localapp.domain.order.OrderRepository orderRepository;
+       ^
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:10: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+      @MockBean private br.com.novaalianca.mnss.localapp.domain.order.OrderItemRepository orderItemRepository;
+       ^
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:11: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+      @MockBean private br.com.novaalianca.mnss.localapp.domain.cash.CashRegisterRepository cashRegisterRepository;
+       ^
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:12: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+      @MockBean private br.com.novaalianca.mnss.localapp.domain.cash.CashMovementRepository cashMovementRepository;
+       ^
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:13: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+      @MockBean private br.com.novaalianca.mnss.localapp.domain.stock.StockMovementRepository stockMovementRepository;
+       ^
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:14: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+      @MockBean private br.com.novaalianca.mnss.localapp.domain.kds.KdsTicketRepository kdsTicketRepository;
+       ^
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:15: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+      @MockBean private br.com.novaalianca.mnss.localapp.domain.kds.KdsTicketItemRepository kdsTicketItemRepository;
+       ^
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:16: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+      @MockBean private br.com.novaalianca.mnss.localapp.domain.sync.SyncEventRepository syncEventRepository;
+       ^
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:17: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+      @MockBean private br.com.novaalianca.mnss.localapp.domain.audit.AuditLogRepository auditLogRepository;
+       ^
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:18: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+      @MockBean private br.com.novaalianca.mnss.localapp.domain.customer.CustomerAddressRepository customerAddressRepository;
+       ^
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:19: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+      @MockBean private br.com.novaalianca.mnss.localapp.domain.customer.CustomerRepository customerRepository;
+       ^
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:20: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+      @MockBean private br.com.novaalianca.mnss.localapp.domain.catalog.CategoryRepository categoryRepository;
+       ^
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:21: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+      @MockBean private br.com.novaalianca.mnss.localapp.domain.catalog.ProductRepository productRepository;
+       ^
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:22: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+      @MockBean private br.com.novaalianca.mnss.localapp.domain.catalog.ProductAvailabilityRepository productAvailabilityRepository;
+       ^
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/config/MockRepositoriesConfig.java:23: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+      @MockBean private org.springframework.web.client.RestTemplate restTemplate;
+       ^
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/cash/CashRegisterPermissionTest.java:25: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+      @MockBean
+       ^
+  /home/kronos/Vídeos/system-mnss/back-end/local-app/src/test/java/br/com/novaalianca/mnss/localapp/domain/cash/CashRegisterPermissionTest.java:28: warning: [removal] MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+      @MockBean
+       ^
+  18 errors
+  54 warnings
+
+* Try:
+> Check your code and dependencies to fix the compilation error(s)
+> Run with --scan to get full insights.
+
+BUILD FAILED in 2s
+8 actionable tasks: 1 executed, 7 up-to-date

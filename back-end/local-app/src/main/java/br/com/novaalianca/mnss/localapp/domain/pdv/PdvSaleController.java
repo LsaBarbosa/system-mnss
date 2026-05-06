@@ -1,8 +1,7 @@
 package br.com.novaalianca.mnss.localapp.domain.pdv;
 
 import br.com.novaalianca.mnss.localapp.security.auth.AuthenticatedUser;
-import br.com.novaalianca.mnss.localapp.security.auth.AuthenticatedUserInterceptor;
-import br.com.novaalianca.mnss.localapp.security.auth.RequiresRole;
+import org.springframework.security.access.prepost.PreAuthorize;
 import br.com.novaalianca.mnss.localapp.security.user.RoleName;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -10,8 +9,7 @@ import java.util.List;
 import br.com.novaalianca.mnss.localapp.domain.payment.CreatePaymentRequest;
 import br.com.novaalianca.mnss.localapp.domain.payment.PaymentResponse;
 import br.com.novaalianca.mnss.localapp.domain.payment.PaymentService;
-import br.com.novaalianca.mnss.localapp.security.auth.AuthenticatedUser;
-import br.com.novaalianca.mnss.localapp.security.user.RoleName;
+import br.com.novaalianca.mnss.localapp.domain.payment.PaymentService;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -28,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/pdv/sales")
-@RequiresRole({RoleName.ADMIN, RoleName.GERENTE, RoleName.CAIXA, RoleName.ATENDENTE})
+@PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'CAIXA', 'ATENDENTE')")
 class PdvSaleController {
     private final PdvSaleService pdvSaleService;
     private final PaymentService paymentService;
@@ -114,12 +112,12 @@ class PdvSaleController {
     }
 
     private UUID authenticatedUserId(HttpServletRequest request) {
-        Object attribute = request.getAttribute(AuthenticatedUserInterceptor.AUTHENTICATED_USER_ATTRIBUTE);
+        Object attribute = request.getAttribute(AuthenticatedUser.AUTHENTICATED_USER_ATTRIBUTE);
         return attribute instanceof AuthenticatedUser user ? user.id() : null;
     }
 
     private List<String> authenticatedUserRoles(HttpServletRequest request) {
-        Object attribute = request.getAttribute(AuthenticatedUserInterceptor.AUTHENTICATED_USER_ATTRIBUTE);
+        Object attribute = request.getAttribute(AuthenticatedUser.AUTHENTICATED_USER_ATTRIBUTE);
         if (attribute instanceof AuthenticatedUser user) {
             return user.roles().stream().map(RoleName::name).collect(Collectors.toList());
         }

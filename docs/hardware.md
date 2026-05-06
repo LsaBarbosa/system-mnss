@@ -62,7 +62,7 @@ O servidor local é responsável por rodar:
 - Redis local
 - Nginx local
 - Sync Worker local
-- Frontends locais, se necessário
+- Front-ends locais, se necessário
 
 ## 5. Configuração mínima do servidor local
 

@@ -71,11 +71,17 @@ Usado para eventos online:
 
 ## 5. Padrão de sincronização
 
-A sincronização usará o padrão:
+O sistema usará o padrão **Outbox + Inbox + Retry** com um modelo evoluído para garantir máxima resiliência e rastreabilidade em ambientes instáveis.
 
-```text
-Outbox + Inbox + Retry
-```
+### 5.1 Por que o modelo evoluído?
+
+O modelo inicial foi expandido para suportar os desafios de uma operação híbrida local/online:
+
+1.  **Idempotência Garantida (`idempotency_key`)**: Essencial para evitar duplicidade de pedidos ou vendas em caso de retentativas automáticas após falhas de conexão HTTPS.
+2.  **Rastreabilidade por Agregado (`aggregate_type/id`)**: Facilita a auditoria e o rastreamento de todas as mudanças que ocorreram em um objeto de domínio específico (ex: um Pedido ou uma Categoria).
+3.  **Clareza de Fluxo (`source/target_environment`)**: Define explicitamente quem gerou o evento e quem deve processá-lo, simplificando a lógica de roteamento no Monólito Modular.
+4.  **Gestão de Falhas (`next_retry_at`, `last_error`)**: Permite monitoramento operacional detalhado e retentativas exponenciais baseadas no tempo, sem travar a fila de processamento.
+5.  **Controle de Concorrência (`version`)**: Garante que atualizações concorrentes não sobrescrevam dados de forma inconsistente durante a sincronização.
 
 ### Outbox
 
@@ -94,18 +100,22 @@ Reprocessa eventos com falha.
 ```sql
 CREATE TABLE sync_events (
     id UUID PRIMARY KEY,
-    event_type VARCHAR(80) NOT NULL,
-    entity_type VARCHAR(80) NOT NULL,
-    entity_id UUID NOT NULL,
+    idempotency_key VARCHAR(120) NOT NULL UNIQUE,
+    direction VARCHAR(40) NOT NULL,
+    source_environment VARCHAR(40) NOT NULL,
+    target_environment VARCHAR(40) NOT NULL,
+    aggregate_type VARCHAR(80) NOT NULL,
+    aggregate_id UUID,
+    event_type VARCHAR(120) NOT NULL,
     payload JSONB NOT NULL,
-    origin VARCHAR(30) NOT NULL,
-    destination VARCHAR(30) NOT NULL,
-    status VARCHAR(30) NOT NULL,
+    status VARCHAR(40) NOT NULL,
     retry_count INTEGER NOT NULL DEFAULT 0,
-    error_message TEXT,
-    created_at TIMESTAMP NOT NULL,
-    updated_at TIMESTAMP NOT NULL,
-    synced_at TIMESTAMP
+    next_retry_at TIMESTAMP,
+    last_error TEXT,
+    processed_at TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    version INTEGER NOT NULL DEFAULT 0
 );
 ```
 
@@ -124,12 +134,14 @@ IGNORED
 
 | Status | Significado |
 |---|---|
-| PENDING | Evento criado e aguardando envio |
+| PENDING | Evento criado e aguardando processamento |
 | PROCESSING | Evento em processamento |
 | SYNCED | Evento sincronizado com sucesso |
-| FAILED | Evento falhou |
-| RETRYING | Evento será reprocessado |
+| FAILED | Evento falhou e aguarda nova tentativa |
+| RETRYING | Evento em fila de reprocessamento |
 | IGNORED | Evento ignorado por regra de negócio |
+| RECEIVED_BY_STORE | Evento online recebido e confirmado pela loja |
+| DEAD_LETTER | Evento esgotou tentativas e exige intervenção |
 
 ## 8. Tipos de eventos
 
@@ -171,17 +183,13 @@ API local salva venda no PostgreSQL local
 ↓
 API local cria sync_event ORDER_CREATED ou SALE_FINISHED
 ↓
-Evento é publicado no RabbitMQ local
+Sync Worker local envia payload para API online
 ↓
-Sync Worker local lê evento
-↓
-Sync Worker envia payload para API online
-↓
-API online valida e grava dados
+API online valida idempotency_key e grava dados
 ↓
 API online responde sucesso
 ↓
-Sync Worker local marca evento como SYNCED
+Sync Worker local marca evento como SYNCED e processed_at = NOW()
 ```
 
 ### 9.2 Dados enviados local → online
@@ -309,16 +317,8 @@ Ou seja:
 - Antes de processar, verificar se o evento já foi recebido.
 - Se já foi processado, retornar sucesso sem reprocessar.
 
-Tabela opcional:
-
-```sql
-CREATE TABLE sync_inbox (
-    id UUID PRIMARY KEY,
-    event_id UUID NOT NULL UNIQUE,
-    origin VARCHAR(30) NOT NULL,
-    processed_at TIMESTAMP NOT NULL,
-    payload JSONB NOT NULL
-);
+Tabela opcional (Inbox):
+O modelo evoluído usa a própria tabela `sync_events` como Inbox no destino, validando a `idempotency_key` única.
 ```
 
 ## 14. Retry
@@ -522,13 +522,13 @@ Exemplo:
 
 ```json
 {
-  "eventId": "1685f57e-3394-4094-8d4f-7cc0a89e9a66",
+  "idempotencyKey": "order_12345_created_20260506",
+  "direction": "LOCAL_TO_ONLINE",
+  "sourceEnvironment": "LOCAL",
+  "targetEnvironment": "ONLINE",
+  "aggregateType": "ORDER",
+  "aggregateId": "1c9e3817-63df-4cde-8479-21b16454d0cb",
   "eventType": "ORDER_CREATED",
-  "entityType": "ORDER",
-  "entityId": "1c9e3817-63df-4cde-8479-21b16454d0cb",
-  "origin": "LOCAL",
-  "destination": "ONLINE",
-  "occurredAt": "2026-05-03T10:30:00Z",
   "payload": {
     "orderNumber": 1521,
     "totalAmount": 48.90,

@@ -1,6 +1,6 @@
 package br.com.novaalianca.mnss.localapp.security.user;
 
-import br.com.novaalianca.mnss.localapp.security.auth.RequiresRole;
+import org.springframework.security.access.prepost.PreAuthorize;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/users")
-@RequiresRole(RoleName.ADMIN)
+@PreAuthorize("hasRole('ADMIN')")
 @ConditionalOnProperty(prefix = "mnss.security", name = "enabled", havingValue = "true", matchIfMissing = true)
 class UserController {
     private final UserManagementService userManagementService;

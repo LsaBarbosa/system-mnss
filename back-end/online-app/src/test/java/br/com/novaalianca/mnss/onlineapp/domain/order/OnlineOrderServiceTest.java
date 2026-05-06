@@ -85,7 +85,8 @@ class OnlineOrderServiceTest {
         when(customerRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
         when(orderRepository.save(any())).thenAnswer(i -> {
             OnlineOrderEntity order = (OnlineOrderEntity) i.getArguments()[0];
-            // Simulate JPA setting the ID
+            // Simulate JPA assigning the identifier on persist.
+            order.assignId(UUID.randomUUID());
             return order;
         });
 
@@ -129,7 +130,11 @@ class OnlineOrderServiceTest {
         when(productRepository.findById(productId)).thenReturn(Optional.of(product));
         when(customerRepository.findByPhone(any())).thenReturn(Optional.empty());
         when(customerRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
-        when(orderRepository.save(any())).thenAnswer(i -> (OnlineOrderEntity) i.getArguments()[0]);
+        when(orderRepository.save(any())).thenAnswer(i -> {
+            OnlineOrderEntity order = (OnlineOrderEntity) i.getArguments()[0];
+            order.assignId(UUID.randomUUID());
+            return order;
+        });
 
         // When
         OnlineOrderResponse response = orderService.createOnlineOrder(request);

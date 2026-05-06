@@ -110,10 +110,11 @@ public class OnlinePaymentService {
             payment.markAsPaid(transactionId, payload);
             OnlineOrderEntity order = payment.getOrder();
             order.updateStatus(OrderStatus.SENT_TO_STORE);
-            
+            order.updatePaymentStatus(PaymentStatus.PAID);
+
             paymentRepository.save(payment);
             orderRepository.save(order);
-            
+
             createSyncEvent(order);
         } else if ("REFUSED".equalsIgnoreCase(status)) {
             payment.markAsRefused(transactionId, payload);

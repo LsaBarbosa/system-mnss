@@ -81,7 +81,7 @@ public class KdsTicketEntity extends BaseEntity {
     }
 
     public void start() {
-        this.status = KdsTicketStatus.PREPARING;
+        this.status = KdsTicketStatus.IN_PREPARATION;
         this.startedAt = Instant.now();
         touch();
     }
@@ -93,7 +93,7 @@ public class KdsTicketEntity extends BaseEntity {
     }
 
     public void finish() {
-        this.status = KdsTicketStatus.DELIVERED;
+        this.status = KdsTicketStatus.FINISHED;
         this.finishedAt = Instant.now();
         touch();
     }

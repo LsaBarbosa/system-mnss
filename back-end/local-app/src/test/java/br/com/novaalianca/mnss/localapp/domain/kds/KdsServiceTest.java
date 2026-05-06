@@ -59,7 +59,7 @@ class KdsServiceTest {
         OrderEntity order = mock(OrderEntity.class);
         UUID orderId = UUID.randomUUID();
         when(order.getId()).thenReturn(orderId);
-        KdsTicketEntity ticket = new KdsTicketEntity(order, PreparationSector.CHAPA, KdsTicketStatus.PREPARING);
+        KdsTicketEntity ticket = new KdsTicketEntity(order, PreparationSector.CHAPA, KdsTicketStatus.IN_PREPARATION);
         
         when(ticketRepository.findById(any())).thenReturn(Optional.of(ticket));
         when(ticketRepository.save(any())).thenAnswer(i -> i.getArgument(0));

@@ -35,6 +35,12 @@ services:
       SPRING_SECURITY_USER_PASSWORD: ${SPRING_SECURITY_USER_PASSWORD:-change_me}
     ports:
       - "127.0.0.1:${ONLINE_API_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     restart: unless-stopped
 
   nova-alianca-site:
@@ -97,6 +103,11 @@ services:
     volumes:
       - postgres_online_data:/var/lib/postgresql/data
       - ./postgres/backup:/backup
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nova_alianca}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
 
   rabbitmq-online:
@@ -110,6 +121,11 @@ services:
       - "127.0.0.1:15673:15672"
     volumes:
       - rabbitmq_online_data:/var/lib/rabbitmq
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 10s
+      retries: 5
     restart: unless-stopped
 
   redis-online:
@@ -120,6 +136,11 @@ services:
       - "127.0.0.1:6380:6379"
     volumes:
       - redis_online_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
 
 volumes:

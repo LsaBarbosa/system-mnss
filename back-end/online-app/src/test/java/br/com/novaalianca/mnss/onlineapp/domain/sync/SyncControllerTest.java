@@ -3,7 +3,6 @@ package br.com.novaalianca.mnss.onlineapp.domain.sync;
 import br.com.novaalianca.mnss.sharedinfra.security.HmacUtils;
 import br.com.novaalianca.mnss.sync.SyncDirection;
 import br.com.novaalianca.mnss.sync.SyncEnvironment;
-import br.com.novaalianca.mnss.sync.SyncEventDto;
 import br.com.novaalianca.mnss.sync.SyncEventEntity;
 import br.com.novaalianca.mnss.sync.SyncEventStatus;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -4,7 +4,7 @@ set -euo pipefail
 BACKUP_DIR="/backup"
 CONTAINER="postgres-local"
 DB="nova_alianca_local"
-USER="user"
+USER="nova_alianca"
 
 if [ -z "${1:-}" ]; then
     echo "Uso: $0 <arquivo_backup.sql>"

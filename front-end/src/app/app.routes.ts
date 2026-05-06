@@ -80,7 +80,7 @@ export const routes: Routes = [
     loadComponent: () => import('./features/kds/pages/kds-page.component').then(m => m.KdsPageComponent),
     canActivate: [authGuard, roleGuard],
     data: {
-      roles: ['ADMIN', 'GERENTE', 'COZINHA']
+      roles: ['ADMIN', 'GERENTE', 'COZINHA', 'EXPEDICAO']
     }
   },
   {

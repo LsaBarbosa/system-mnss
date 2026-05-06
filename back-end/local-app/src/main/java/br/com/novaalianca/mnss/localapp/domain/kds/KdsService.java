@@ -5,6 +5,8 @@ import br.com.novaalianca.mnss.localapp.domain.order.OrderEntity;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderItemEntity;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderRepository;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +18,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class KdsService {
+    private static final Logger log = LoggerFactory.getLogger(KdsService.class);
+
     private final KdsTicketRepository ticketRepository;
     private final KdsTicketItemRepository itemRepository;
     private final OrderRepository orderRepository;
@@ -39,12 +43,12 @@ public class KdsService {
                 .collect(Collectors.groupingBy(OrderItemEntity::getPreparationSector));
 
         itemsBySector.forEach((sector, sectorItems) -> {
-            KdsTicketEntity ticket = new KdsTicketEntity(order, sector, KdsTicketStatus.PENDING);
+            KdsTicketEntity ticket = new KdsTicketEntity(order, sector, KdsTicketStatus.WAITING);
             ticketRepository.save(ticket);
 
             List<KdsTicketItemEntity> ticketItems = sectorItems.stream()
                     .map(item -> {
-                        KdsTicketItemEntity ticketItem = new KdsTicketItemEntity(ticket, item, KdsTicketStatus.PENDING);
+                        KdsTicketItemEntity ticketItem = new KdsTicketItemEntity(ticket, item, KdsTicketStatus.WAITING);
                         return itemRepository.save(ticketItem);
                     })
                     .collect(Collectors.toList());
@@ -56,8 +60,8 @@ public class KdsService {
     @Transactional
     public KdsTicketResponse startTicket(UUID id) {
         KdsTicketEntity ticket = findTicket(id);
-        if (ticket.getStatus() != KdsTicketStatus.PENDING) {
-            throw new br.com.novaalianca.mnss.sharedinfra.web.error.BusinessException("INVALID_STATUS", "Only PENDING tickets can be started", org.springframework.http.HttpStatus.BAD_REQUEST);
+        if (ticket.getStatus() != KdsTicketStatus.WAITING) {
+            throw new br.com.novaalianca.mnss.sharedinfra.web.error.BusinessException("INVALID_STATUS", "Only WAITING tickets can be started", org.springframework.http.HttpStatus.BAD_REQUEST);
         }
         ticket.start();
         KdsTicketEntity saved = ticketRepository.save(ticket);
@@ -120,7 +124,7 @@ public class KdsService {
     private void checkAndUpdateOrderStatus(OrderEntity order) {
         List<KdsTicketEntity> orderTickets = ticketRepository.findByOrder(order);
         boolean allTicketsReady = orderTickets.stream()
-                .allMatch(t -> t.getStatus() == KdsTicketStatus.READY || t.getStatus() == KdsTicketStatus.DELIVERED || t.getStatus() == KdsTicketStatus.CANCELED);
+                .allMatch(t -> t.getStatus() == KdsTicketStatus.READY || t.getStatus() == KdsTicketStatus.FINISHED || t.getStatus() == KdsTicketStatus.CANCELED);
         
         if (allTicketsReady && !orderTickets.isEmpty()) {
             order.markAsReady();
@@ -132,7 +136,7 @@ public class KdsService {
         try {
             messagingTemplate.convertAndSend("/topic/orders/ready", order.getId());
         } catch (Exception e) {
-            // Fault tolerance
+            log.warn("Failed to send order ready notification via WebSocket for order {}: {}", order.getId(), e.getMessage(), e);
         }
     }
 
@@ -147,8 +151,7 @@ public class KdsService {
             messagingTemplate.convertAndSend("/topic/kds/tickets", response);
             messagingTemplate.convertAndSend("/topic/kds/tickets/" + ticket.getSector(), response);
         } catch (Exception e) {
-            // WebSocket errors should not break the transaction (S11-H03)
-            // Log could be added here
+            log.warn("Failed to send KDS ticket update via WebSocket for ticket {}: {}", ticket.getId(), e.getMessage(), e);
         }
     }
 

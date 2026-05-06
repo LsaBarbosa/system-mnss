@@ -111,6 +111,11 @@ public class OnlineOrderEntity extends BaseEntity {
         }
     }
 
+    public void updatePaymentStatus(PaymentStatus newPaymentStatus) {
+        if (newPaymentStatus == null) throw new IllegalArgumentException("PaymentStatus is required");
+        this.paymentStatus = newPaymentStatus;
+    }
+
     public void setDeliveryFee(BigDecimal deliveryFee) {
         this.deliveryFee = deliveryFee != null ? deliveryFee : BigDecimal.ZERO;
         calculateTotals();

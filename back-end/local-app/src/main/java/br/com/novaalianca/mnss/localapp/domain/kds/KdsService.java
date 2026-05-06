@@ -1,6 +1,8 @@
 package br.com.novaalianca.mnss.localapp.domain.kds;
 
 import br.com.novaalianca.mnss.core.catalog.PreparationSector;
+import br.com.novaalianca.mnss.localapp.domain.audit.AuditLogRequest;
+import br.com.novaalianca.mnss.localapp.domain.audit.AuditService;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderEntity;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderItemEntity;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderRepository;
@@ -10,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.LinkedHashMap;
 
 import java.util.List;
 import java.util.Map;
@@ -24,16 +27,19 @@ public class KdsService {
     private final KdsTicketItemRepository itemRepository;
     private final OrderRepository orderRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final AuditService auditService;
 
     public KdsService(
             KdsTicketRepository ticketRepository,
             KdsTicketItemRepository itemRepository,
             OrderRepository orderRepository,
-            SimpMessagingTemplate messagingTemplate) {
+            SimpMessagingTemplate messagingTemplate,
+            AuditService auditService) {
         this.ticketRepository = ticketRepository;
         this.itemRepository = itemRepository;
         this.orderRepository = orderRepository;
         this.messagingTemplate = messagingTemplate;
+        this.auditService = auditService;
     }
 
     @Transactional
@@ -58,19 +64,32 @@ public class KdsService {
     }
 
     @Transactional
-    public KdsTicketResponse startTicket(UUID id) {
+    public KdsTicketResponse startTicket(UUID id, UUID actorUserId) {
         KdsTicketEntity ticket = findTicket(id);
         if (ticket.getStatus() != KdsTicketStatus.WAITING) {
             throw new br.com.novaalianca.mnss.sharedinfra.web.error.BusinessException("INVALID_STATUS", "Only WAITING tickets can be started", org.springframework.http.HttpStatus.BAD_REQUEST);
         }
         ticket.start();
         KdsTicketEntity saved = ticketRepository.save(ticket);
+
+        auditService.record(new AuditLogRequest(
+                actorUserId,
+                "KDS_TICKET_STARTED",
+                "KdsTicket",
+                id,
+                new LinkedHashMap<>(Map.of(
+                        "ticketNumber", saved.getTicketNumber(),
+                        "sector", saved.getSector().name(),
+                        "status", saved.getStatus().name()
+                )),
+                null));
+
         notifyTicketUpdated(saved);
         return mapToResponse(saved);
     }
 
     @Transactional
-    public KdsTicketResponse readyTicket(UUID id) {
+    public KdsTicketResponse readyTicket(UUID id, UUID actorUserId) {
         KdsTicketEntity ticket = findTicket(id);
         ticket.ready();
         // Also mark all items as ready
@@ -81,25 +100,51 @@ public class KdsService {
             }
         });
         KdsTicketEntity saved = ticketRepository.save(ticket);
+
+        auditService.record(new AuditLogRequest(
+                actorUserId,
+                "KDS_TICKET_READY",
+                "KdsTicket",
+                id,
+                new LinkedHashMap<>(Map.of(
+                        "ticketNumber", saved.getTicketNumber(),
+                        "sector", saved.getSector().name(),
+                        "status", saved.getStatus().name()
+                )),
+                null));
+
         checkAndUpdateOrderStatus(saved.getOrder());
         notifyTicketUpdated(saved);
         return mapToResponse(saved);
     }
 
     @Transactional
-    public KdsTicketResponse finishTicket(UUID id) {
+    public KdsTicketResponse finishTicket(UUID id, UUID actorUserId) {
         KdsTicketEntity ticket = findTicket(id);
         ticket.finish();
         KdsTicketEntity saved = ticketRepository.save(ticket);
+
+        auditService.record(new AuditLogRequest(
+                actorUserId,
+                "KDS_TICKET_FINISHED",
+                "KdsTicket",
+                id,
+                new LinkedHashMap<>(Map.of(
+                        "ticketNumber", saved.getTicketNumber(),
+                        "sector", saved.getSector().name(),
+                        "status", saved.getStatus().name()
+                )),
+                null));
+
         notifyTicketUpdated(saved);
         return mapToResponse(saved);
     }
 
     @Transactional
-    public void readyItem(UUID itemId) {
+    public void readyItem(UUID itemId, UUID actorUserId) {
         KdsTicketItemEntity item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new br.com.novaalianca.mnss.sharedinfra.web.error.BusinessException("ITEM_NOT_FOUND", "Item not found", org.springframework.http.HttpStatus.NOT_FOUND));
-        
+
         if (item.getStatus() == KdsTicketStatus.CANCELED) {
             throw new br.com.novaalianca.mnss.sharedinfra.web.error.BusinessException("INVALID_STATUS", "Canceled items cannot be ready", org.springframework.http.HttpStatus.BAD_REQUEST);
         }
@@ -107,17 +152,27 @@ public class KdsService {
         item.ready();
         itemRepository.save(item);
 
+        auditService.record(new AuditLogRequest(
+                actorUserId,
+                "KDS_ITEM_READY",
+                "KdsTicketItem",
+                itemId,
+                new LinkedHashMap<>(Map.of(
+                        "status", item.getStatus().name()
+                )),
+                null));
+
         // Check if all items in the ticket are ready
         KdsTicketEntity ticket = item.getKdsTicket();
         boolean allReady = ticket.getItems().stream()
                 .allMatch(i -> i.getStatus() == KdsTicketStatus.READY || i.getStatus() == KdsTicketStatus.CANCELED);
-        
+
         if (allReady) {
             ticket.ready();
             ticketRepository.save(ticket);
             checkAndUpdateOrderStatus(ticket.getOrder());
         }
-        
+
         notifyTicketUpdated(ticket);
     }
 
@@ -156,16 +211,26 @@ public class KdsService {
     }
 
     @Transactional
-    public void finishOrder(UUID orderId) {
+    public void finishOrder(UUID orderId, UUID actorUserId) {
         OrderEntity order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new br.com.novaalianca.mnss.sharedinfra.web.error.BusinessException("ORDER_NOT_FOUND", "Order not found", org.springframework.http.HttpStatus.NOT_FOUND));
-        
+
         if (order.getStatus() != OrderStatus.READY) {
             throw new br.com.novaalianca.mnss.sharedinfra.web.error.BusinessException("INVALID_STATUS", "Only READY orders can be finished", org.springframework.http.HttpStatus.BAD_REQUEST);
         }
-        
+
         order.finish();
-        
+
+        auditService.record(new AuditLogRequest(
+                actorUserId,
+                "KDS_ORDER_FINISHED",
+                "Order",
+                orderId,
+                new LinkedHashMap<>(Map.of(
+                        "status", order.getStatus().name()
+                )),
+                null));
+
         List<KdsTicketEntity> tickets = ticketRepository.findByOrder(order);
         tickets.forEach(t -> {
             t.finish();

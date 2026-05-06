@@ -1,6 +1,8 @@
 package br.com.novaalianca.mnss.localapp.domain.kds;
 
 import br.com.novaalianca.mnss.core.catalog.PreparationSector;
+import br.com.novaalianca.mnss.localapp.security.auth.AuthenticatedUser;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,33 +33,38 @@ public class KdsController {
 
     @PatchMapping("/tickets/{id}/start")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COZINHA')")
-    public KdsTicketResponse start(@PathVariable UUID id) {
-        return kdsService.startTicket(id);
+    public KdsTicketResponse start(@PathVariable UUID id, HttpServletRequest request) {
+        return kdsService.startTicket(id, authenticatedUserId(request));
     }
 
     @PatchMapping("/tickets/{id}/ready")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COZINHA')")
-    public KdsTicketResponse ready(@PathVariable UUID id) {
-        return kdsService.readyTicket(id);
+    public KdsTicketResponse ready(@PathVariable UUID id, HttpServletRequest request) {
+        return kdsService.readyTicket(id, authenticatedUserId(request));
     }
 
     @PatchMapping("/tickets/{id}/finish")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COZINHA')")
-    public KdsTicketResponse finish(@PathVariable UUID id) {
-        return kdsService.finishTicket(id);
+    public KdsTicketResponse finish(@PathVariable UUID id, HttpServletRequest request) {
+        return kdsService.finishTicket(id, authenticatedUserId(request));
     }
 
     @PatchMapping("/items/{id}/ready")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COZINHA')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void readyItem(@PathVariable UUID id) {
-        kdsService.readyItem(id);
+    public void readyItem(@PathVariable UUID id, HttpServletRequest request) {
+        kdsService.readyItem(id, authenticatedUserId(request));
     }
 
     @PatchMapping("/orders/{id}/finish")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'EXPEDICAO', 'COZINHA')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void finishOrder(@PathVariable UUID id) {
-        kdsService.finishOrder(id);
+    public void finishOrder(@PathVariable UUID id, HttpServletRequest request) {
+        kdsService.finishOrder(id, authenticatedUserId(request));
+    }
+
+    private UUID authenticatedUserId(HttpServletRequest request) {
+        Object attribute = request.getAttribute(AuthenticatedUser.AUTHENTICATED_USER_ATTRIBUTE);
+        return attribute instanceof AuthenticatedUser user ? user.id() : null;
     }
 }

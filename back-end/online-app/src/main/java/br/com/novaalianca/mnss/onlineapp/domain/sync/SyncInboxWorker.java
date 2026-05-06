@@ -62,6 +62,9 @@ public class SyncInboxWorker {
                 // Just log or audit for now
                 log.debug("Stock moved event received for product {}", event.getAggregateId());
                 break;
+            case "SALE_FINISHED":
+                handleSaleFinished(event);
+                break;
             default:
                 log.warn("Unknown event type for inbox: {}", event.getEventType());
         }
@@ -77,5 +80,11 @@ public class SyncInboxWorker {
             productRepository.save(product);
             log.info("Product {} availability updated to {} via sync", productId, available);
         }, () -> log.warn("Product {} not found in online database for availability update", productId));
+    }
+
+    private void handleSaleFinished(SyncEventEntity event) {
+        Map<String, Object> payload = event.getPayload();
+        UUID orderId = UUID.fromString((String) payload.get("orderId"));
+        log.info("Sale finished event received from local store for order: {}", orderId);
     }
 }

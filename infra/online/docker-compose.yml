@@ -54,24 +54,13 @@ services:
       start_period: 40s
     restart: unless-stopped
 
-  nova-alianca-site:
+  nova-alianca-frontend:
     build:
       context: ../../front-end
       dockerfile: Dockerfile
       args:
         BUILD_CONFIGURATION: online
-    container_name: nova-alianca-site
-    depends_on:
-      - nova-alianca-online-api
-    restart: unless-stopped
-
-  nova-alianca-admin:
-    build:
-      context: ../../front-end
-      dockerfile: Dockerfile
-      args:
-        BUILD_CONFIGURATION: online
-    container_name: nova-alianca-admin
+    container_name: nova-alianca-frontend
     depends_on:
       - nova-alianca-online-api
     restart: unless-stopped
@@ -81,8 +70,7 @@ services:
     container_name: nginx
     depends_on:
       - nova-alianca-online-api
-      - nova-alianca-site
-      - nova-alianca-admin
+      - nova-alianca-frontend
     ports:
       - "80:80"
       - "443:443"

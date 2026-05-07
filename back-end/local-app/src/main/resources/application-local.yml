@@ -39,3 +39,4 @@ mnss:
     online-url: ${MNSS_ONLINE_URL}
     store-id: ${MNSS_STORE_ID}
     store-secret: ${MNSS_STORE_SECRET}
+    require-https: ${MNSS_SYNC_REQUIRE_HTTPS:false}

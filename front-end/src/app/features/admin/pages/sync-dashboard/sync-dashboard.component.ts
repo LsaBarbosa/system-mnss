@@ -40,9 +40,12 @@ export class SyncDashboardComponent implements OnInit {
       case 'SYNCED': return 'status-synced';
       case 'RECEIVED_BY_STORE': return 'status-received';
       case 'FAILED': return 'status-failed';
+      case 'RETRYING': return 'status-retrying';
+      case 'DEAD_LETTER': return 'status-dead-letter';
+      case 'PROCESSING': return 'status-processing';
       case 'PENDING': return 'status-pending';
       case 'IGNORED': return 'status-ignored';
-      default: return '';
+      default: return 'status-unknown';
     }
   }
 

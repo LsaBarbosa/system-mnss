@@ -137,6 +137,7 @@ public class OnlinePaymentService {
         Map<String, Object> payload = new java.util.LinkedHashMap<>();
         payload.put("orderId", order.getId().toString());
         payload.put("orderNumber", order.getOrderNumber());
+        payload.put("origin", order.getOrigin().name());
         payload.put("status", order.getStatus().name());
         payload.put("paymentStatus", order.getPaymentStatus().name());
         payload.put("deliveryType", order.getDeliveryType().name());

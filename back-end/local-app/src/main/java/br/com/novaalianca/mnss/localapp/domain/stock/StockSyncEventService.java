@@ -18,13 +18,17 @@ public class StockSyncEventService {
         this.syncEventService = syncEventService;
     }
 
-    void recordStockMovementEvent(StockMovementEntity movement, BigDecimal balanceAfter) {
+    void recordStockMovementEvent(StockMovementEntity movement, BigDecimal resultingQuantity) {
         syncEventService.ifPresent(service -> {
             Map<String, Object> payload = new LinkedHashMap<>();
+            payload.put("stockMovementId", movement.getId() != null ? movement.getId().toString() : null);
+            payload.put("idempotencyKey", movement.getId() != null ? "STOCK-" + movement.getId() : null);
             payload.put("productId", movement.getProduct().getId().toString());
             payload.put("type", movement.getType().name());
             payload.put("quantity", movement.getQuantity().toPlainString());
-            payload.put("balanceAfter", balanceAfter.toPlainString());
+            payload.put("previousQuantity", movement.getPreviousQuantity() != null
+                    ? movement.getPreviousQuantity().toPlainString() : null);
+            payload.put("resultingQuantity", resultingQuantity.toPlainString());
             payload.put("reason", movement.getReason());
             payload.put("orderId", movement.getOrder() == null ? null : movement.getOrder().getId().toString());
 

@@ -8,12 +8,11 @@ import br.com.novaalianca.mnss.localapp.domain.order.OrderEntity;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderRepository;
 import br.com.novaalianca.mnss.sharedinfra.web.error.BusinessException;
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -24,6 +23,7 @@ public class StockService {
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
     private final StockMovementRepository stockMovementRepository;
+    private final StockBalanceRepository stockBalanceRepository;
     private final StockSyncEventService syncEventService;
     private final AuditService auditService;
 
@@ -31,11 +31,13 @@ public class StockService {
             ProductRepository productRepository,
             OrderRepository orderRepository,
             StockMovementRepository stockMovementRepository,
+            StockBalanceRepository stockBalanceRepository,
             StockSyncEventService syncEventService,
             AuditService auditService) {
         this.productRepository = productRepository;
         this.orderRepository = orderRepository;
         this.stockMovementRepository = stockMovementRepository;
+        this.stockBalanceRepository = stockBalanceRepository;
         this.syncEventService = syncEventService;
         this.auditService = auditService;
     }
@@ -52,12 +54,15 @@ public class StockService {
     public List<StockBalanceResponse> listBalances() {
         List<ProductEntity> products = productRepository.findAllByOrderByNameAsc();
         List<UUID> productIds = products.stream().map(ProductEntity::getId).toList();
-        Map<UUID, BigDecimal> balances = aggregateBalances(stockMovementRepository.findByProductIdIn(productIds));
+        Map<UUID, StockBalanceEntity> balanceMap = stockBalanceRepository.findByProductIdIn(productIds).stream()
+                .collect(Collectors.toMap(b -> b.getProduct().getId(), Function.identity()));
         return products.stream()
-                .map(product -> new StockBalanceResponse(
-                        product.getId(),
-                        product.getName(),
-                        balances.getOrDefault(product.getId(), BigDecimal.ZERO)))
+                .map(product -> {
+                    StockBalanceEntity balance = balanceMap.get(product.getId());
+                    BigDecimal qty = balance != null ? balance.getQuantity() : BigDecimal.ZERO;
+                    BigDecimal reserved = balance != null ? balance.getReservedQuantity() : BigDecimal.ZERO;
+                    return new StockBalanceResponse(product.getId(), product.getName(), qty, reserved);
+                })
                 .toList();
     }
 
@@ -68,27 +73,34 @@ public class StockService {
         BigDecimal quantity = requirePositiveQuantity(request.quantity());
         requireAuthenticatedUser(actorUserId);
         validateReason(type, request.reason());
+        requireNotSaleType(type);
 
         ProductEntity product = productRepository.findById(productId)
                 .orElseThrow(() -> notFound("PRODUCT_NOT_FOUND", "Produto nao encontrado."));
         OrderEntity order = findOrder(request.orderId());
-        BigDecimal balanceBefore = calculateBalance(productId);
-        BigDecimal balanceAfter = balanceBefore.add(signedQuantity(type, quantity));
-        if (product.isStockControlled() && isOutbound(type) && balanceAfter.signum() < 0) {
+
+        BigDecimal delta = signedQuantity(type, quantity);
+
+        StockBalanceEntity balance = stockBalanceRepository.findByProductIdForUpdate(productId)
+                .orElseGet(() -> new StockBalanceEntity(product));
+        BigDecimal previousQuantity = balance.getQuantity();
+        BigDecimal resultingQuantity = previousQuantity.add(delta);
+
+        if (product.isStockControlled() && isOutbound(type) && resultingQuantity.signum() < 0) {
             throw new BusinessException("INSUFFICIENT_STOCK", "Estoque insuficiente para a movimentacao.", HttpStatus.BAD_REQUEST);
         }
 
-        StockMovementEntity movement = new StockMovementEntity(
-                product,
-                type,
-                quantity,
-                normalizeReason(request.reason()),
-                order,
-                actorUserId);
-        StockMovementEntity saved = stockMovementRepository.save(movement);
-        syncEventService.recordStockMovementEvent(saved, balanceAfter);
+        balance.adjust(delta);
+        stockBalanceRepository.save(balance);
 
-        if (product.isStockControlled() && product.isAvailable() && balanceAfter.signum() <= 0) {
+        StockMovementEntity movement = new StockMovementEntity(
+                product, type, quantity,
+                normalizeReason(request.reason()), order, actorUserId,
+                previousQuantity, resultingQuantity);
+        StockMovementEntity saved = stockMovementRepository.save(movement);
+        syncEventService.recordStockMovementEvent(saved, resultingQuantity);
+
+        if (product.isStockControlled() && product.isAvailable() && resultingQuantity.signum() <= 0) {
             product.changeAvailability(false);
             productRepository.save(product);
             syncEventService.recordProductAvailabilityEvent(product);
@@ -99,48 +111,88 @@ public class StockService {
                 "STOCK_MOVEMENT_CREATED",
                 "StockMovement",
                 productId,
-                movementDetails(saved, balanceBefore, balanceAfter),
+                movementDetails(saved, previousQuantity, resultingQuantity),
                 null));
         return StockMovementResponse.from(saved);
     }
 
     @Transactional
     public StockMovementResponse recordSaleMovement(UUID productId, BigDecimal quantity, UUID orderId, UUID actorUserId) {
-        return createMovement(new CreateStockMovementRequest(
-                productId,
-                StockMovementType.SALE,
-                quantity,
-                "Venda finalizada",
-                orderId), actorUserId);
+        UUID pid = requireProductId(productId);
+        BigDecimal qty = requirePositiveQuantity(quantity);
+
+        ProductEntity product = productRepository.findById(pid)
+                .orElseThrow(() -> notFound("PRODUCT_NOT_FOUND", "Produto nao encontrado."));
+        OrderEntity order = findOrder(orderId);
+        BigDecimal delta = qty.negate();
+
+        StockBalanceEntity balance = stockBalanceRepository.findByProductIdForUpdate(pid)
+                .orElseGet(() -> new StockBalanceEntity(product));
+        BigDecimal previousQuantity = balance.getQuantity();
+        BigDecimal resultingQuantity = previousQuantity.add(delta);
+
+        if (product.isStockControlled() && resultingQuantity.signum() < 0) {
+            throw new BusinessException("INSUFFICIENT_STOCK", "Estoque insuficiente para a movimentacao.", HttpStatus.BAD_REQUEST);
+        }
+
+        balance.adjust(delta);
+        stockBalanceRepository.save(balance);
+
+        StockMovementEntity movement = new StockMovementEntity(
+                product, StockMovementType.SALE, qty,
+                "Venda finalizada", order, actorUserId,
+                previousQuantity, resultingQuantity);
+        StockMovementEntity saved = stockMovementRepository.save(movement);
+        syncEventService.recordStockMovementEvent(saved, resultingQuantity);
+
+        if (product.isStockControlled() && product.isAvailable() && resultingQuantity.signum() <= 0) {
+            product.changeAvailability(false);
+            productRepository.save(product);
+            syncEventService.recordProductAvailabilityEvent(product);
+        }
+
+        auditService.record(new AuditLogRequest(
+                actorUserId, "STOCK_MOVEMENT_CREATED", "StockMovement",
+                pid, movementDetails(saved, previousQuantity, resultingQuantity), null));
+        return StockMovementResponse.from(saved);
     }
 
     @Transactional
     public StockMovementResponse recordReturnMovement(UUID productId, BigDecimal quantity, UUID orderId, UUID actorUserId) {
-        return createMovement(new CreateStockMovementRequest(
-                productId,
-                StockMovementType.RETURN,
-                quantity,
-                "Devolucao de venda",
-                orderId), actorUserId);
+        UUID pid = requireProductId(productId);
+        BigDecimal qty = requirePositiveQuantity(quantity);
+
+        ProductEntity product = productRepository.findById(pid)
+                .orElseThrow(() -> notFound("PRODUCT_NOT_FOUND", "Produto nao encontrado."));
+        OrderEntity order = findOrder(orderId);
+
+        StockBalanceEntity balance = stockBalanceRepository.findByProductIdForUpdate(pid)
+                .orElseGet(() -> new StockBalanceEntity(product));
+        BigDecimal previousQuantity = balance.getQuantity();
+        BigDecimal resultingQuantity = previousQuantity.add(qty);
+
+        balance.adjust(qty);
+        stockBalanceRepository.save(balance);
+
+        StockMovementEntity movement = new StockMovementEntity(
+                product, StockMovementType.RETURN, qty,
+                "Devolucao de venda", order, actorUserId,
+                previousQuantity, resultingQuantity);
+        StockMovementEntity saved = stockMovementRepository.save(movement);
+        syncEventService.recordStockMovementEvent(saved, resultingQuantity);
+
+        auditService.record(new AuditLogRequest(
+                actorUserId, "STOCK_MOVEMENT_CREATED", "StockMovement",
+                pid, movementDetails(saved, previousQuantity, resultingQuantity), null));
+        return StockMovementResponse.from(saved);
     }
 
     @Transactional(readOnly = true)
     public BigDecimal calculateBalance(UUID productId) {
         requireProductId(productId);
-        return stockMovementRepository.findByProductIdOrderByCreatedAtDesc(productId).stream()
-                .map(movement -> signedQuantity(movement.getType(), movement.getQuantity()))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-    private Map<UUID, BigDecimal> aggregateBalances(Collection<StockMovementEntity> movements) {
-        return movements.stream()
-                .collect(Collectors.groupingBy(
-                        movement -> movement.getProduct().getId(),
-                        LinkedHashMap::new,
-                        Collectors.reducing(
-                                BigDecimal.ZERO,
-                                movement -> signedQuantity(movement.getType(), movement.getQuantity()),
-                                BigDecimal::add)));
+        return stockBalanceRepository.findByProductId(productId)
+                .map(StockBalanceEntity::getQuantity)
+                .orElse(BigDecimal.ZERO);
     }
 
     private Map<String, Object> movementDetails(
@@ -164,18 +216,24 @@ public class StockService {
 
     private boolean isOutbound(StockMovementType type) {
         return switch (type) {
-            case OUT, SALE, LOSS -> true;
-            case IN, ADJUSTMENT, RETURN -> false;
+            case OUT, SALE, LOSS, ADJUSTMENT_NEGATIVE -> true;
+            case IN, ADJUSTMENT, ADJUSTMENT_POSITIVE, INVENTORY_COUNT, RETURN -> false;
         };
     }
 
     private void validateReason(StockMovementType type, String reason) {
         boolean reasonRequired = switch (type) {
-            case ADJUSTMENT, LOSS, OUT -> true;
+            case ADJUSTMENT, ADJUSTMENT_NEGATIVE, ADJUSTMENT_POSITIVE, INVENTORY_COUNT, LOSS, OUT -> true;
             case IN, SALE, RETURN -> false;
         };
         if (reasonRequired && (reason == null || reason.isBlank())) {
             throw new BusinessException("STOCK_REASON_REQUIRED", "Motivo obrigatorio para esta movimentacao.", HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    private void requireNotSaleType(StockMovementType type) {
+        if (type == StockMovementType.SALE) {
+            throw new BusinessException("SALE_TYPE_NOT_ALLOWED", "Tipo SALE nao pode ser criado manualmente.", HttpStatus.BAD_REQUEST);
         }
     }
 

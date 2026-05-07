@@ -81,7 +81,7 @@ class SyncOutboxWorkerTest {
 
         worker.processPendingEvents();
 
-        assertEquals(SyncEventStatus.FAILED, event.getStatus());
+        assertEquals(SyncEventStatus.RETRYING, event.getStatus());
         assertEquals(1, event.getRetryCount());
         verify(repository).save(event);
     }

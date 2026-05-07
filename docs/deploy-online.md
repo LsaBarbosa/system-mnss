@@ -84,14 +84,15 @@ Serviços previstos:
 
 ```text
 nova-alianca-online-api
-nova-alianca-site
-nova-alianca-admin
+nova-alianca-frontend
 postgres-online
 rabbitmq-online
 redis-online
 nginx
 certbot
 ```
+
+> **Nota sobre o frontend:** `nova-alianca-frontend` é um único container Angular que serve tanto o site público (`padarianovaalianca.com.br`) quanto o painel admin (`admin.padarianovaalianca.com.br`). O roteamento entre os dois domínios é feito pelo Nginx; o Angular Router trata as rotas internas de cada contexto.
 
 > **Nota sobre sincronização:** Não há serviço `sync-worker-online` separado. O worker de processamento (`SyncInboxWorker`) roda embutido dentro do container `nova-alianca-online-api` via agendamento `@Scheduled`. Nenhum container adicional é necessário para sincronização.
 
@@ -184,16 +185,9 @@ services:
       - "8080"
     restart: unless-stopped
 
-  nova-alianca-site:
-    image: nova-alianca/site:latest
-    container_name: nova-alianca-site
-    depends_on:
-      - nova-alianca-online-api
-    restart: unless-stopped
-
-  nova-alianca-admin:
-    image: nova-alianca/admin:latest
-    container_name: nova-alianca-admin
+  nova-alianca-frontend:
+    image: nova-alianca/frontend:latest
+    container_name: nova-alianca-frontend
     depends_on:
       - nova-alianca-online-api
     restart: unless-stopped
@@ -233,8 +227,7 @@ services:
     container_name: nginx
     depends_on:
       - nova-alianca-online-api
-      - nova-alianca-site
-      - nova-alianca-admin
+      - nova-alianca-frontend
     ports:
       - "80:80"
       - "443:443"

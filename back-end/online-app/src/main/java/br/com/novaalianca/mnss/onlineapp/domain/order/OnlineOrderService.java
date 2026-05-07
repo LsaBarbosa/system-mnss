@@ -61,8 +61,9 @@ public class OnlineOrderService {
             throw new IllegalArgumentException("Address is required for DELIVERY");
         }
 
+        OnlineCustomerAddressEntity deliveryAddress = null;
         if (request.deliveryType() == DeliveryType.DELIVERY) {
-            resolveAddress(request, customer);
+            deliveryAddress = resolveAddress(request, customer);
         }
 
         OnlineOrderEntity order = new OnlineOrderEntity(
@@ -72,6 +73,10 @@ public class OnlineOrderService {
                 request.paymentMethod(),
                 request.notes()
         );
+
+        if (deliveryAddress != null) {
+            order.setDeliveryAddress(deliveryAddress);
+        }
 
         for (OnlineOrderItemRequest itemRequest : request.items()) {
             OnlineProductEntity product = productRepository.findById(itemRequest.productId())
@@ -184,6 +189,18 @@ public class OnlineOrderService {
         payload.put("deliveryFee", order.getDeliveryFee());
         payload.put("totalAmount", order.getTotalAmount());
         payload.put("notes", order.getNotes());
+
+        if (order.getDeliveryAddress() != null) {
+            OnlineCustomerAddressEntity addr = order.getDeliveryAddress();
+            Map<String, Object> addrMap = new java.util.LinkedHashMap<>();
+            addrMap.put("street", addr.getStreet());
+            addrMap.put("number", addr.getNumber());
+            addrMap.put("neighborhood", addr.getNeighborhood());
+            addrMap.put("city", addr.getCity());
+            addrMap.put("state", addr.getState());
+            addrMap.put("zipCode", addr.getZipCode());
+            payload.put("deliveryAddress", addrMap);
+        }
 
         java.util.List<Map<String, Object>> items = order.getItems().stream()
                 .map(item -> {

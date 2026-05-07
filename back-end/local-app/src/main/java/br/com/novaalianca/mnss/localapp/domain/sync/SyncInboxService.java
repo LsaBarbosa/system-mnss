@@ -5,6 +5,8 @@ import br.com.novaalianca.mnss.core.payment.PaymentMethod;
 import br.com.novaalianca.mnss.core.payment.PaymentStatus;
 import br.com.novaalianca.mnss.localapp.domain.catalog.ProductEntity;
 import br.com.novaalianca.mnss.localapp.domain.catalog.ProductRepository;
+import br.com.novaalianca.mnss.localapp.domain.customer.CustomerAddressEntity;
+import br.com.novaalianca.mnss.localapp.domain.customer.CustomerAddressRepository;
 import br.com.novaalianca.mnss.localapp.domain.kds.KdsService;
 import br.com.novaalianca.mnss.localapp.domain.order.*;
 import br.com.novaalianca.mnss.localapp.domain.payment.PaymentEntity;
@@ -29,6 +31,7 @@ public class SyncInboxService {
     private final OrderItemRepository orderItemRepository;
     private final ProductRepository productRepository;
     private final PaymentRepository paymentRepository;
+    private final CustomerAddressRepository addressRepository;
     private final KdsService kdsService;
     private final SyncEventRepository syncEventRepository;
 
@@ -37,12 +40,14 @@ public class SyncInboxService {
         OrderItemRepository orderItemRepository,
         ProductRepository productRepository,
         PaymentRepository paymentRepository,
+        CustomerAddressRepository addressRepository,
         KdsService kdsService,
         SyncEventRepository syncEventRepository) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.productRepository = productRepository;
         this.paymentRepository = paymentRepository;
+        this.addressRepository = addressRepository;
         this.kdsService = kdsService;
         this.syncEventRepository = syncEventRepository;
     }
@@ -91,9 +96,7 @@ public class SyncInboxService {
             return;
         }
 
-        OrderOrigin origin = payload.containsKey("origin")
-            ? OrderOrigin.valueOf(payload.get("origin").toString())
-            : OrderOrigin.SITE;
+        OrderOrigin origin = parseOrderOrigin(payload.get("origin"));
 
         OrderStatus status = OrderStatus.valueOf((String) payload.get("status"));
         PaymentStatus paymentStatus = PaymentStatus.valueOf((String) payload.get("paymentStatus"));
@@ -107,6 +110,24 @@ public class SyncInboxService {
         }
 
         order = orderRepository.save(order);
+
+        if (payload.containsKey("deliveryAddress")) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> addrData = (Map<String, Object>) payload.get("deliveryAddress");
+            String street = stringOrNull(addrData.get("street"));
+            if (street != null) {
+                CustomerAddressEntity address = new CustomerAddressEntity(
+                    street,
+                    stringOrNull(addrData.get("number")),
+                    stringOrNull(addrData.get("neighborhood")),
+                    stringOrNull(addrData.get("city")),
+                    stringOrNull(addrData.get("state")),
+                    stringOrNull(addrData.get("zipCode"))
+                );
+                address = addressRepository.save(address);
+                order.setDeliveryAddress(address);
+            }
+        }
 
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> itemsData = payload.get("items") instanceof List<?> rawList
@@ -222,11 +243,7 @@ public class SyncInboxService {
             return;
         }
 
-        PaymentMethod method = PaymentMethod.ONLINE_PIX;
-        Object paymentMethodValue = payload.get("paymentMethod");
-        if (paymentMethodValue != null && !paymentMethodValue.toString().isBlank()) {
-            method = PaymentMethod.valueOf(paymentMethodValue.toString());
-        }
+        PaymentMethod method = parsePaymentMethod(payload.get("paymentMethod"));
 
         PaymentEntity payment = new PaymentEntity(
             order,
@@ -263,5 +280,32 @@ public class SyncInboxService {
 
     private String stringOrDefault(Object value, String defaultValue) {
         return value == null || value.toString().isBlank() ? defaultValue : value.toString();
+    }
+
+    private PaymentMethod parsePaymentMethod(Object value) {
+        if (value == null || value.toString().isBlank()) {
+            return PaymentMethod.ONLINE_PIX;
+        }
+        try {
+            return PaymentMethod.valueOf(value.toString());
+        } catch (IllegalArgumentException ex) {
+            log.warn("Unknown payment method received from sync: {}. Falling back to ONLINE_PIX.", value);
+            return PaymentMethod.ONLINE_PIX;
+        }
+    }
+
+    private OrderOrigin parseOrderOrigin(Object value) {
+        if (value == null || value.toString().isBlank()) {
+            return OrderOrigin.SITE;
+        }
+        return switch (value.toString()) {
+            case "ONLINE"      -> OrderOrigin.SITE;
+            case "WHATSAPP"    -> OrderOrigin.WHATSAPP;
+            case "PDV"         -> OrderOrigin.PDV;
+            case "ADMIN"       -> OrderOrigin.ADMIN;
+            case "MANUAL"      -> OrderOrigin.MANUAL;
+            case "INTEGRATION" -> OrderOrigin.INTEGRATION;
+            default            -> OrderOrigin.SITE;
+        };
     }
 }

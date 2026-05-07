@@ -45,7 +45,7 @@ class SyncInboxWorkerTest {
         String storeId = "store-001";
         SyncEventEntity event = saleFinishedEvent(storeId, orderId, "45.90", "PAID");
 
-        when(saleSummaryRepository.existsByStoreIdAndLocalOrderId(storeId, orderId)).thenReturn(false);
+        when(saleSummaryRepository.findByStoreIdAndLocalOrderId(storeId, orderId)).thenReturn(Optional.empty());
         when(syncEventRepository.findByStatusAndDirection(any(), any())).thenReturn(List.of(event));
         when(syncEventRepository.findByStatusInAndNextRetryAtBefore(any(), any())).thenReturn(List.of());
 
@@ -68,7 +68,8 @@ class SyncInboxWorkerTest {
         String storeId = "store-001";
         SyncEventEntity event = saleFinishedEvent(storeId, orderId, "20.00", "PAID");
 
-        when(saleSummaryRepository.existsByStoreIdAndLocalOrderId(storeId, orderId)).thenReturn(true);
+        when(saleSummaryRepository.findByStoreIdAndLocalOrderId(storeId, orderId))
+                .thenReturn(Optional.of(mock(OnlineLocalSaleSummaryEntity.class)));
         when(syncEventRepository.findByStatusAndDirection(any(), any())).thenReturn(List.of(event));
         when(syncEventRepository.findByStatusInAndNextRetryAtBefore(any(), any())).thenReturn(List.of());
 
@@ -83,7 +84,7 @@ class SyncInboxWorkerTest {
         String storeId = "store-002";
         SyncEventEntity event = saleFinishedEvent(storeId, orderId, "30.00", "PAID");
 
-        when(saleSummaryRepository.existsByStoreIdAndLocalOrderId(storeId, orderId)).thenReturn(false);
+        when(saleSummaryRepository.findByStoreIdAndLocalOrderId(storeId, orderId)).thenReturn(Optional.empty());
         when(syncEventRepository.findByStatusAndDirection(any(), any())).thenReturn(List.of());
         when(syncEventRepository.findByStatusInAndNextRetryAtBefore(any(), any())).thenReturn(List.of(event));
 
@@ -98,7 +99,7 @@ class SyncInboxWorkerTest {
         String storeId = "store-003";
         SyncEventEntity event = saleFinishedEvent(storeId, orderId, "15.00", "PENDING");
 
-        when(saleSummaryRepository.existsByStoreIdAndLocalOrderId(storeId, orderId)).thenReturn(false);
+        when(saleSummaryRepository.findByStoreIdAndLocalOrderId(storeId, orderId)).thenReturn(Optional.empty());
         when(syncEventRepository.findByStatusAndDirection(any(), any())).thenReturn(List.of());
         when(syncEventRepository.findByStatusInAndNextRetryAtBefore(any(), any())).thenReturn(List.of(event));
 
@@ -117,7 +118,7 @@ class SyncInboxWorkerTest {
 
         worker.processInbox();
 
-        verify(saleSummaryRepository, never()).existsByStoreIdAndLocalOrderId(any(), any());
+        verify(saleSummaryRepository, never()).findByStoreIdAndLocalOrderId(any(), any());
         verify(saleSummaryRepository, never()).save(any());
     }
 

@@ -2,7 +2,7 @@ spring:
   application:
     name: mnss-online-api
   datasource:
-    url: ${MNSS_ONLINE_DB_URL:jdbc:postgresql://localhost:5433/mnss_online}
+    url: ${MNSS_ONLINE_DB_URL:jdbc:postgresql://localhost:5433/nova_alianca_online}
     username: ${MNSS_ONLINE_DB_USER}
     password: ${MNSS_ONLINE_DB_PASSWORD}
   rabbitmq:

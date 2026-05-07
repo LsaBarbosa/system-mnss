@@ -23,7 +23,8 @@ INSERT INTO roles (id, name, description) VALUES
 ('b1000000-0000-0000-0000-000000000004', 'ATENDENTE', 'Atendimento e pedidos.'),
 ('b1000000-0000-0000-0000-000000000005', 'COZINHA', 'Operacao do KDS e preparo.'),
 ('b1000000-0000-0000-0000-000000000006', 'ENTREGADOR', 'Operacao de entregas.'),
-('b1000000-0000-0000-0000-000000000007', 'CONSULTA', 'Acesso somente leitura.');
+('b1000000-0000-0000-0000-000000000007', 'CONSULTA', 'Acesso somente leitura.'),
+('b1000000-0000-0000-0000-000000000008', 'EXPEDICAO', 'Operacao de expedicao e entrega.');
 
 -- Seed de Usuários (Mesmos hashes do local para consistência)
 INSERT INTO users (id, name, email, username, password_hash, active) VALUES
@@ -49,9 +50,12 @@ INSERT INTO products (id, category_id, name, description, price, unit_type, prep
 INSERT INTO customers (id, name, phone, email, document) VALUES
 ('f0000000-0000-0000-0000-000000000001', 'João Silva', '11988887777', 'joao@email.com', '12345678901');
 
+INSERT INTO customer_addresses (id, customer_id, street, number, neighborhood, city, state, zip_code, default_address) VALUES
+('f1000000-0000-0000-0000-000000000001', 'f0000000-0000-0000-0000-000000000001', 'Rua das Flores', '123', 'Centro', 'São Paulo', 'SP', '01001000', true);
+
 -- Seed de Pedidos Online
-INSERT INTO orders (id, customer_id, origin, status, payment_status, delivery_type, subtotal, delivery_fee, total_amount, payment_method) VALUES
-('e0000000-0000-0000-0000-000000000002', 'f0000000-0000-0000-0000-000000000001', 'ONLINE', 'PENDING', 'PENDING', 'DELIVERY', 5.50, 5.00, 10.50, 'CREDIT_CARD');
+INSERT INTO orders (id, customer_id, delivery_address_id, origin, status, payment_status, delivery_type, subtotal, delivery_fee, total_amount, payment_method) VALUES
+('e0000000-0000-0000-0000-000000000002', 'f0000000-0000-0000-0000-000000000001', 'f1000000-0000-0000-0000-000000000001', 'ONLINE', 'PENDING', 'PENDING', 'DELIVERY', 5.50, 5.00, 10.50, 'CREDIT_CARD');
 
 INSERT INTO order_items (id, order_id, product_id, product_name_snapshot, quantity, unit_price, total_price, status, preparation_sector) VALUES
 ('90000000-0000-0000-0000-000000000003', 'e0000000-0000-0000-0000-000000000002', 'd0000000-0000-0000-0000-000000000001', 'Pão Francês', 1, 0.50, 0.50, 'PENDING', 'PANIFICACAO'),

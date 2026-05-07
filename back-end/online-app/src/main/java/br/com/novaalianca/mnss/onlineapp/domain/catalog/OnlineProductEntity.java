@@ -33,6 +33,15 @@ public class OnlineProductEntity extends BaseEntity {
     @Column(precision = 12, scale = 2)
     private BigDecimal promotionalPrice;
 
+    @Column(precision = 12, scale = 2)
+    private BigDecimal costPrice;
+
+    @Column(length = 80)
+    private String sku;
+
+    @Column(length = 80)
+    private String barcode;
+
     @Column(columnDefinition = "text")
     private String imageUrl;
 
@@ -53,10 +62,16 @@ public class OnlineProductEntity extends BaseEntity {
     private boolean available;
 
     @Column(nullable = false)
+    private boolean sellOnPdv;
+
+    @Column(nullable = false)
     private boolean sellOnline;
 
     @Column(name = "sell_on_whatsapp", nullable = false)
     private boolean sellOnWhatsapp;
+
+    @Column(nullable = false)
+    private boolean stockControlled;
 
     protected OnlineProductEntity() {}
 
@@ -78,6 +93,18 @@ public class OnlineProductEntity extends BaseEntity {
 
     public BigDecimal getPromotionalPrice() {
         return promotionalPrice;
+    }
+
+    public BigDecimal getCostPrice() {
+        return costPrice;
+    }
+
+    public String getSku() {
+        return sku;
+    }
+
+    public String getBarcode() {
+        return barcode;
     }
 
     public String getImageUrl() {
@@ -104,12 +131,20 @@ public class OnlineProductEntity extends BaseEntity {
         return available;
     }
 
+    public boolean isSellOnPdv() {
+        return sellOnPdv;
+    }
+
     public boolean isSellOnline() {
         return sellOnline;
     }
 
     public boolean isSellOnWhatsapp() {
         return sellOnWhatsapp;
+    }
+
+    public boolean isStockControlled() {
+        return stockControlled;
     }
 
     public void updateAvailability(boolean available) {

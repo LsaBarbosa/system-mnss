@@ -37,6 +37,7 @@ export class AuthService {
   }
 
   logout(): void {
+    this.httpClient.post(`${this.apiBaseUrl}/auth/logout`, {}).subscribe();
     this.tokenStorage.clear();
     this.userSubject.next(null);
   }

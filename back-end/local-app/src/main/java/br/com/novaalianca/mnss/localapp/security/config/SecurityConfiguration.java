@@ -28,12 +28,12 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(AbstractHttpConfigurer::disable)
+            .csrf(AbstractHttpConfigurer::disable) // CSRF mitigado por SameSite=Strict no cookie de auth
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/login", "/api/health", "/api/ping", "/api/public/**", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
+                .requestMatchers("/api/auth/login", "/api/auth/logout", "/api/health", "/api/ping", "/api/public/**", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
                 .requestMatchers("/api/**").authenticated()
-                .anyRequest().permitAll()
+                .anyRequest().denyAll()
             )
             .addFilterBefore(new JwtAuthenticationFilter(authService), UsernamePasswordAuthenticationFilter.class);
 

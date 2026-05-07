@@ -167,7 +167,7 @@ public class SyncInboxWorker {
             return;
         }
 
-        if (saleSummaryRepository.existsByStoreIdAndLocalOrderId(storeId, orderId)) {
+        if (saleSummaryRepository.findByStoreIdAndLocalOrderId(storeId, orderId).isPresent()) {
             log.info("SALE_FINISHED for store={} order={} already recorded — skipping duplicate", storeId, orderId);
             return;
         }

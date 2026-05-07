@@ -2,6 +2,7 @@ package br.com.novaalianca.mnss.localapp.domain.customer;
 
 import br.com.novaalianca.mnss.sharedinfra.domain.BaseEntity;
 import br.com.novaalianca.mnss.localapp.domain.shared.DomainValidation;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
@@ -27,7 +28,7 @@ public class CustomerEntity extends BaseEntity {
 
     private LocalDate birthDate;
 
-    @OneToMany(mappedBy = "customer")
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<CustomerAddressEntity> addresses = new LinkedHashSet<>();
 
     protected CustomerEntity() {}

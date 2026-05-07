@@ -7,6 +7,7 @@ import br.com.novaalianca.mnss.onlineapp.domain.catalog.OnlineProductRepository;
 import br.com.novaalianca.mnss.onlineapp.domain.customer.OnlineCustomerAddressRepository;
 import br.com.novaalianca.mnss.onlineapp.domain.customer.OnlineCustomerEntity;
 import br.com.novaalianca.mnss.onlineapp.domain.customer.OnlineCustomerRepository;
+import br.com.novaalianca.mnss.onlineapp.domain.order.dto.AddressRequest;
 import br.com.novaalianca.mnss.onlineapp.domain.order.dto.CreateOnlineOrderRequest;
 import br.com.novaalianca.mnss.onlineapp.domain.order.dto.CustomerRequest;
 import br.com.novaalianca.mnss.onlineapp.domain.order.dto.OnlineOrderItemRequest;
@@ -16,6 +17,7 @@ import br.com.novaalianca.mnss.sync.SyncEventEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -102,6 +104,59 @@ class OnlineOrderServiceTest {
         verify(customerRepository).save(any(OnlineCustomerEntity.class));
         verify(orderRepository).save(any(OnlineOrderEntity.class));
         verify(syncEventRepository).save(any(SyncEventEntity.class));
+        verify(addressRepository, never()).save(any());
+    }
+
+    @Test
+    void shouldAssociateDeliveryAddressWhenOrderIsDelivery() {
+        UUID productId = UUID.randomUUID();
+        CustomerRequest customerReq = new CustomerRequest("Jane Doe", "987654321", "jane@example.com", null);
+        AddressRequest addressReq = new AddressRequest(
+                "Rua Central",
+                "123",
+                "Centro",
+                "Cidade",
+                "SP",
+                "00000-000",
+                "Casa",
+                "Portao azul");
+        OnlineOrderItemRequest itemReq = new OnlineOrderItemRequest(productId, BigDecimal.ONE, null);
+        CreateOnlineOrderRequest request = new CreateOnlineOrderRequest(
+                customerReq,
+                DeliveryType.DELIVERY,
+                addressReq,
+                List.of(itemReq),
+                null,
+                br.com.novaalianca.mnss.core.payment.PaymentMethod.ONLINE_PIX
+        );
+
+        OnlineProductEntity product = mock(OnlineProductEntity.class);
+        lenient().when(product.getId()).thenReturn(productId);
+        lenient().when(product.getName()).thenReturn("Burger");
+        lenient().when(product.getPrice()).thenReturn(new BigDecimal("20.00"));
+        lenient().when(product.isActive()).thenReturn(true);
+        lenient().when(product.isSellOnline()).thenReturn(true);
+        lenient().when(product.isAvailable()).thenReturn(true);
+
+        when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+        when(customerRepository.findByPhone(any())).thenReturn(Optional.empty());
+        when(customerRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
+        when(addressRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
+        when(orderRepository.save(any())).thenAnswer(i -> {
+            OnlineOrderEntity order = (OnlineOrderEntity) i.getArguments()[0];
+            order.assignId(UUID.randomUUID());
+            return order;
+        });
+
+        OnlineOrderResponse response = orderService.createOnlineOrder(request);
+
+        assertEquals(OrderStatus.PAYMENT_PENDING, response.status());
+        verify(addressRepository).save(any());
+
+        ArgumentCaptor<OnlineOrderEntity> orderCaptor = ArgumentCaptor.forClass(OnlineOrderEntity.class);
+        verify(orderRepository).save(orderCaptor.capture());
+        assertNotNull(orderCaptor.getValue().getDeliveryAddress());
+        assertEquals("Rua Central", orderCaptor.getValue().getDeliveryAddress().getStreet());
     }
 
     @Test

@@ -3,10 +3,11 @@ package br.com.novaalianca.mnss.localapp.security.auth;
 import br.com.novaalianca.mnss.sharedinfra.web.error.BusinessException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.http.HttpHeaders;
@@ -26,30 +27,43 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        String bearerHeader = resolveToken(request);
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+        if (bearerHeader != null) {
             try {
-                AuthenticatedUser user = authService.authenticate(authHeader);
-                
+                AuthenticatedUser user = authService.authenticate(bearerHeader);
+
                 List<SimpleGrantedAuthority> authorities = user.roles().stream()
                         .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
                         .collect(Collectors.toList());
 
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         user, null, authorities);
-                
+
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-                
-                // Keep compatibility with existing controllers using request attributes
                 request.setAttribute(AuthenticatedUser.AUTHENTICATED_USER_ATTRIBUTE, user);
-                
+
             } catch (BusinessException e) {
-                // Clear context if authentication fails
                 SecurityContextHolder.clearContext();
             }
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private String resolveToken(HttpServletRequest request) {
+        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader;
+        }
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            return Arrays.stream(cookies)
+                    .filter(c -> AuthController.COOKIE_NAME.equals(c.getName()))
+                    .findFirst()
+                    .map(c -> "Bearer " + c.getValue())
+                    .orElse(null);
+        }
+        return null;
     }
 }

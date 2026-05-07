@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -19,6 +20,8 @@ export class CheckoutPageComponent implements OnInit {
   cartItems$: Observable<CartItem[]>;
   subtotal$: Observable<number>;
   isSubmitting = false;
+
+  private readonly destroyRef = inject(DestroyRef);
 
   constructor(
     private fb: FormBuilder,
@@ -53,9 +56,11 @@ export class CheckoutPageComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.checkoutForm.get('deliveryType')?.valueChanges.subscribe(type => {
-      this.updateAddressValidators(type);
-    });
+    this.checkoutForm.get('deliveryType')?.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(type => {
+        this.updateAddressValidators(type);
+      });
   }
 
   private updateAddressValidators(type: string) {

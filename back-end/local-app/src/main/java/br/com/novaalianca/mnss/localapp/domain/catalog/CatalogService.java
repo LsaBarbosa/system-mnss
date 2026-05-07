@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,17 +27,17 @@ import static br.com.novaalianca.mnss.localapp.config.RedisCacheConfiguration.*;
 
 @Service
 public class CatalogService {
-    private final Optional<CategoryRepository> categoryRepository;
-    private final Optional<ProductRepository> productRepository;
-    private final Optional<ProductAvailabilityRepository> productAvailabilityRepository;
+    private final CategoryRepository categoryRepository;
+    private final ProductRepository productRepository;
+    private final ProductAvailabilityRepository productAvailabilityRepository;
     private final CatalogSyncEventService syncEventService;
     private final AuditService auditService;
     private final br.com.novaalianca.mnss.localapp.domain.store.StoreInfoProperties storeInfoProperties;
 
     public CatalogService(
-            Optional<CategoryRepository> categoryRepository,
-            Optional<ProductRepository> productRepository,
-            Optional<ProductAvailabilityRepository> productAvailabilityRepository,
+            CategoryRepository categoryRepository,
+            ProductRepository productRepository,
+            ProductAvailabilityRepository productAvailabilityRepository,
             CatalogSyncEventService syncEventService,
             AuditService auditService,
             br.com.novaalianca.mnss.localapp.domain.store.StoreInfoProperties storeInfoProperties) {
@@ -51,7 +52,7 @@ public class CatalogService {
     @Transactional(readOnly = true)
     @Cacheable(cacheNames = CACHE_CATEGORIES, key = "#channel")
     public List<CategoryResponse> listCategories(CatalogChannel channel) {
-        CategoryRepository repository = categoryRepository();
+        CategoryRepository repository = categoryRepository;
         List<CategoryEntity> categories = channel == CatalogChannel.PDV
                 ? repository.findByActiveTrueAndShowOnPdvTrueOrderByDisplayOrderAscNameAsc()
                 : repository.findAllByOrderByDisplayOrderAscNameAsc();
@@ -74,7 +75,7 @@ public class CatalogService {
                 request.showOnline(),
                 request.showOnPdv(),
                 request.showOnWhatsapp());
-        CategoryEntity saved = categoryRepository().save(category);
+        CategoryEntity saved = categoryRepository.save(category);
         syncEventService.recordCategoryEvent("CATEGORY_CREATED", saved);
         auditService.record(new AuditLogRequest(actorUserId, "CATEGORY_CREATED", "Category", saved.getId(), Map.of(), null));
         return CategoryResponse.from(saved);
@@ -87,7 +88,7 @@ public class CatalogService {
     })
     public CategoryResponse updateCategory(UUID id, PatchCategoryRequest request, UUID actorUserId) {
         validateOptionalText(request.name(), "Nome obrigatorio.");
-        CategoryEntity category = categoryRepository().findById(id)
+        CategoryEntity category = categoryRepository.findById(id)
                 .orElseThrow(() -> notFound("CATEGORY_NOT_FOUND", "Categoria nao encontrada."));
         UUID originalId = category.getId();
         category.update(
@@ -99,7 +100,7 @@ public class CatalogService {
                 request.showOnline(),
                 request.showOnPdv(),
                 request.showOnWhatsapp());
-        CategoryEntity saved = categoryRepository().save(category);
+        CategoryEntity saved = categoryRepository.save(category);
         syncEventService.recordCategoryEvent("CATEGORY_UPDATED", saved);
         auditService.record(new AuditLogRequest(actorUserId, "CATEGORY_UPDATED", "Category", saved.getId(), Map.of(), null));
         if (!originalId.equals(saved.getId())) {
@@ -112,16 +113,16 @@ public class CatalogService {
     @Cacheable(cacheNames = CACHE_PRODUCTS, key = "{'list', #name, #categoryId}")
     public List<ProductResponse> listProducts(String name, UUID categoryId) {
         List<ProductEntity> products;
-        ProductRepository repository = productRepository();
+        Pageable unpaged = Pageable.unpaged();
         boolean hasName = name != null && !name.isBlank();
         if (hasName && categoryId != null) {
-            products = repository.findByCategoryIdAndNameContainingIgnoreCaseOrderByNameAsc(categoryId, name);
+            products = productRepository.findByCategoryIdAndNameContainingIgnoreCaseOrderByNameAsc(categoryId, name, unpaged);
         } else if (hasName) {
-            products = repository.findByNameContainingIgnoreCaseOrderByNameAsc(name);
+            products = productRepository.findByNameContainingIgnoreCaseOrderByNameAsc(name, unpaged);
         } else if (categoryId != null) {
-            products = repository.findByCategoryIdOrderByNameAsc(categoryId);
+            products = productRepository.findByCategoryIdOrderByNameAsc(categoryId, unpaged);
         } else {
-            products = repository.findAllByOrderByNameAsc();
+            products = productRepository.findAllByOrderByNameAsc(unpaged);
         }
         return products.stream().map(ProductResponse::from).toList();
     }
@@ -129,7 +130,7 @@ public class CatalogService {
     @Transactional
     @CacheEvict(cacheNames = CACHE_PRODUCTS, allEntries = true)
     public ProductResponse createProduct(CreateProductRequest request, UUID actorUserId) {
-        CategoryEntity category = categoryRepository().findById(request.categoryId())
+        CategoryEntity category = categoryRepository.findById(request.categoryId())
                 .orElseThrow(() -> notFound("CATEGORY_NOT_FOUND", "Categoria nao encontrada."));
         ProductEntity product = new ProductEntity(
                 category,
@@ -156,7 +157,7 @@ public class CatalogService {
                 request.sellOnline(),
                 request.sellOnWhatsapp(),
                 request.stockControlled());
-        ProductEntity saved = productRepository().save(product);
+        ProductEntity saved = productRepository.save(product);
         syncEventService.recordProductEvent("PRODUCT_CREATED", saved);
         auditService.record(new AuditLogRequest(actorUserId, "PRODUCT_CREATED", "Product", saved.getId(), Map.of(), null));
         return ProductResponse.from(saved);
@@ -166,11 +167,11 @@ public class CatalogService {
     @CacheEvict(cacheNames = CACHE_PRODUCTS, allEntries = true)
     public ProductResponse updateProduct(UUID id, PatchProductRequest request, UUID actorUserId) {
         validateOptionalText(request.name(), "Nome obrigatorio.");
-        ProductEntity product = productRepository().findById(id)
+        ProductEntity product = productRepository.findById(id)
                 .orElseThrow(() -> notFound("PRODUCT_NOT_FOUND", "Produto nao encontrado."));
         CategoryEntity category = request.categoryId() == null
                 ? null
-                : categoryRepository().findById(request.categoryId())
+                : categoryRepository.findById(request.categoryId())
                         .orElseThrow(() -> notFound("CATEGORY_NOT_FOUND", "Categoria nao encontrada."));
         BigDecimal previousPrice = product.getPrice();
         product.update(
@@ -192,7 +193,7 @@ public class CatalogService {
                 request.sellOnline(),
                 request.sellOnWhatsapp(),
                 request.stockControlled());
-        ProductEntity saved = productRepository().save(product);
+        ProductEntity saved = productRepository.save(product);
         boolean priceChanged = request.price() != null && previousPrice.compareTo(request.price()) != 0;
         syncEventService.recordProductEvent(priceChanged ? "PRODUCT_PRICE_CHANGED" : "PRODUCT_UPDATED", saved);
         auditService.record(new AuditLogRequest(
@@ -207,7 +208,7 @@ public class CatalogService {
 
     @Transactional(readOnly = true)
     public ProductResponse findSellableProductByBarcode(String barcode) {
-        ProductEntity product = productRepository().findByBarcode(barcode)
+        ProductEntity product = productRepository.findByBarcode(barcode)
                 .orElseThrow(() -> notFound("PRODUCT_NOT_FOUND", "Produto nao encontrado."));
         if (!isSellableOnPdv(product)) {
             throw new BusinessException("PRODUCT_NOT_SELLABLE", "Produto nao disponivel para venda.", HttpStatus.NOT_FOUND);
@@ -221,7 +222,7 @@ public class CatalogService {
             UUID productId,
             PatchProductAvailabilityRequest request,
             UUID actorUserId) {
-        ProductEntity product = productRepository().findById(productId)
+        ProductEntity product = productRepository.findById(productId)
                 .orElseThrow(() -> notFound("PRODUCT_NOT_FOUND", "Produto nao encontrado."));
         SalesChannel channel = request.channel() == null ? SalesChannel.ALL : request.channel();
         validateAvailabilityReason(request.status(), request.reason());
@@ -233,11 +234,11 @@ public class CatalogService {
         ProductAvailabilityEntity availability = previousAvailability
                 .orElseGet(() -> new ProductAvailabilityEntity(product, request.status(), channel));
         availability.update(request.status(), request.availableQuantity(), normalizeReason(request.reason()), actorUserId);
-        ProductAvailabilityEntity saved = productAvailabilityRepository().save(availability);
+        ProductAvailabilityEntity saved = productAvailabilityRepository.save(availability);
 
         if (channel == SalesChannel.ALL) {
             product.changeAvailability(request.status() != AvailabilityStatus.UNAVAILABLE);
-            productRepository().save(product);
+            productRepository.save(product);
         }
 
         SyncEventStatus syncStatus = SyncEventStatus.PENDING;
@@ -294,11 +295,11 @@ public class CatalogService {
     }
 
     private List<CategoryProductsResponse> groupedProducts(CatalogChannel channel, String name, UUID categoryId) {
-        List<CategoryEntity> categories = categoryRepository().findAllByOrderByDisplayOrderAscNameAsc().stream()
+        List<CategoryEntity> categories = categoryRepository.findAllByOrderByDisplayOrderAscNameAsc().stream()
                 .filter(category -> isCategoryVisible(category, channel))
                 .filter(category -> categoryId == null || categoryId.equals(category.getId()))
                 .toList();
-        Map<UUID, List<ProductResponse>> productsByCategory = productRepository().findAllByOrderByNameAsc().stream()
+        Map<UUID, List<ProductResponse>> productsByCategory = productRepository.findAllByOrderByNameAsc(Pageable.unpaged()).stream()
                 .filter(product -> isProductVisible(product, channel))
                 .filter(product -> matchesProductFilters(product, name, categoryId))
                 .collect(Collectors.groupingBy(
@@ -369,7 +370,7 @@ public class CatalogService {
     }
 
     private Optional<ProductAvailabilityEntity> latestAvailability(UUID productId, SalesChannel channel) {
-        return productAvailabilityRepository()
+        return productAvailabilityRepository
                 .findFirstByProductIdAndChannelOrderByUpdatedAtDesc(productId, channel);
     }
 
@@ -399,16 +400,4 @@ public class CatalogService {
         return snapshot;
     }
 
-    private CategoryRepository categoryRepository() {
-        return categoryRepository.orElseThrow(() -> new IllegalStateException("Category repository is not available."));
-    }
-
-    private ProductRepository productRepository() {
-        return productRepository.orElseThrow(() -> new IllegalStateException("Product repository is not available."));
-    }
-
-    private ProductAvailabilityRepository productAvailabilityRepository() {
-        return productAvailabilityRepository
-                .orElseThrow(() -> new IllegalStateException("Product availability repository is not available."));
-    }
 }

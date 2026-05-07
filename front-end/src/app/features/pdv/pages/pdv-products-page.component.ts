@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import type { OnInit } from '@angular/core';
-import { Component, inject } from '@angular/core';
+import { Component, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ErrorBannerComponent } from '../../../shared/error-banner/error-banner.component';
@@ -31,6 +32,7 @@ export class PdvProductsPageComponent implements OnInit {
   private readonly hardwareService = inject(HardwareService);
   private readonly kdsService = inject(KdsService);
   private readonly authService = inject(AuthService);
+  private readonly destroyRef = inject(DestroyRef);
 
   groups: PdvProductGroup[] = [];
   currentCash: CurrentCashRegisterResponse = { open: false, cashRegister: null };
@@ -97,7 +99,7 @@ export class PdvProductsPageComponent implements OnInit {
   }
 
   private subscribeToKds(): void {
-    this.kdsService.readyOrders$.subscribe(orderId => {
+    this.kdsService.readyOrders$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(orderId => {
       this.saleSuccess = `Pedido pronto para entrega! ID: ${orderId.substring(0, 8)}`;
     });
   }

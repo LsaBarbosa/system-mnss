@@ -56,4 +56,5 @@ public class OnlineLocalSaleSummaryEntity extends BaseEntity {
     public BigDecimal getTotalAmount() { return totalAmount; }
     public String getPaymentStatus() { return paymentStatus; }
     public Instant getFinishedAt() { return finishedAt; }
+    public Map<String, Object> getRawPayload() { return rawPayload; }
 }

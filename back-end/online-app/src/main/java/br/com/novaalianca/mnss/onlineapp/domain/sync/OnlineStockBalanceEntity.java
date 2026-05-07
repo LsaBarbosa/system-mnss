@@ -16,17 +16,21 @@ import java.util.Objects;
 public class OnlineStockBalanceEntity extends BaseEntity {
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
+    @JoinColumn(name = "product_id", nullable = false, unique = true)
     private OnlineProductEntity product;
 
     @Column(nullable = false, precision = 12, scale = 3)
     private BigDecimal quantity;
+
+    @Column(nullable = false, precision = 12, scale = 3)
+    private BigDecimal reservedQuantity;
 
     protected OnlineStockBalanceEntity() {}
 
     public OnlineStockBalanceEntity(OnlineProductEntity product) {
         this.product = Objects.requireNonNull(product, "product must not be null");
         this.quantity = BigDecimal.ZERO;
+        this.reservedQuantity = BigDecimal.ZERO;
     }
 
     public void adjust(BigDecimal delta) {
@@ -40,5 +44,13 @@ public class OnlineStockBalanceEntity extends BaseEntity {
 
     public BigDecimal getQuantity() {
         return quantity;
+    }
+
+    public BigDecimal getReservedQuantity() {
+        return reservedQuantity;
+    }
+
+    public BigDecimal getAvailableQuantity() {
+        return quantity.subtract(reservedQuantity);
     }
 }

@@ -21,7 +21,6 @@ import java.math.RoundingMode;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -29,18 +28,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PaymentService {
-    private final Optional<OrderRepository> orderRepository;
-    private final Optional<OrderItemRepository> orderItemRepository;
-    private final Optional<PaymentRepository> paymentRepository;
-    private final Optional<CashRegisterRepository> cashRegisterRepository;
+    private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
+    private final PaymentRepository paymentRepository;
+    private final CashRegisterRepository cashRegisterRepository;
     private final CashRegisterService cashRegisterService;
     private final AuditService auditService;
 
     PaymentService(
-            Optional<OrderRepository> orderRepository,
-            Optional<OrderItemRepository> orderItemRepository,
-            Optional<PaymentRepository> paymentRepository,
-            Optional<CashRegisterRepository> cashRegisterRepository,
+            OrderRepository orderRepository,
+            OrderItemRepository orderItemRepository,
+            PaymentRepository paymentRepository,
+            CashRegisterRepository cashRegisterRepository,
             CashRegisterService cashRegisterService,
             AuditService auditService) {
         this.orderRepository = orderRepository;
@@ -57,11 +56,11 @@ public class PaymentService {
         PaymentMethod method = requireMethod(request.method());
         BigDecimal amount = money(requirePositiveAmount(request.amount()));
         OrderEntity order = editablePdvOrder(orderId);
-        List<OrderItemEntity> items = orderItemRepository().findByOrderIdOrderByCreatedAtAsc(order.getId());
+        List<OrderItemEntity> items = orderItemRepository.findByOrderIdOrderByCreatedAtAsc(order.getId());
         if (items.isEmpty()) {
             throw new BusinessException("EMPTY_SALE", "Venda sem itens nao pode ser finalizada.", HttpStatus.BAD_REQUEST);
         }
-        BigDecimal paidTotal = paymentRepository().findByOrderIdOrderByCreatedAtAsc(order.getId()).stream()
+        BigDecimal paidTotal = paymentRepository.findByOrderIdOrderByCreatedAtAsc(order.getId()).stream()
                 .filter(p -> p.getStatus() == PaymentStatus.PAID)
                 .map(PaymentEntity::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -87,7 +86,7 @@ public class PaymentService {
         CashRegisterEntity cashRegister = openCashRegister(actorUserId);
         PaymentEntity payment = new PaymentEntity(order, method, PaymentStatus.PAID, amountToRecord);
         payment.markPaid(request.transactionId(), request.gateway());
-        PaymentEntity saved = paymentRepository().save(payment);
+        PaymentEntity saved = paymentRepository.save(payment);
 
         cashRegisterService.recordSaleMovement(cashRegister.getId(), method, amountToRecord, order.getId(), actorUserId);
 
@@ -96,7 +95,7 @@ public class PaymentService {
 
         if (newRemainingAmount.signum() <= 0) {
             order.markPaid(nextPaidStatus(items));
-            savedOrder = orderRepository().save(order);
+            savedOrder = orderRepository.save(order);
         }
 
         auditService.record(new AuditLogRequest(
@@ -113,7 +112,7 @@ public class PaymentService {
         if (orderId == null) {
             throw new BusinessException("ORDER_REQUIRED", "Pedido obrigatorio.", HttpStatus.BAD_REQUEST);
         }
-        OrderEntity order = orderRepository()
+        OrderEntity order = orderRepository
                 .findById(orderId)
                 .orElseThrow(() -> new BusinessException("ORDER_NOT_FOUND", "Pedido nao encontrado.", HttpStatus.NOT_FOUND));
         if (order.getOrigin() != OrderOrigin.PDV || order.getStatus() != OrderStatus.CREATED) {
@@ -129,7 +128,7 @@ public class PaymentService {
     }
 
     private CashRegisterEntity openCashRegister(UUID actorUserId) {
-        return cashRegisterRepository()
+        return cashRegisterRepository
                 .findFirstByOperatorIdAndStatusOrderByOpenedAtDesc(actorUserId, CashRegisterStatus.OPEN)
                 .orElseThrow(() -> new BusinessException(
                         "OPEN_CASH_REGISTER_REQUIRED",
@@ -173,21 +172,4 @@ public class PaymentService {
         return details;
     }
 
-    private OrderRepository orderRepository() {
-        return orderRepository.orElseThrow(() -> new IllegalStateException("Order repository is not available."));
-    }
-
-    private OrderItemRepository orderItemRepository() {
-        return orderItemRepository
-                .orElseThrow(() -> new IllegalStateException("Order item repository is not available."));
-    }
-
-    private PaymentRepository paymentRepository() {
-        return paymentRepository.orElseThrow(() -> new IllegalStateException("Payment repository is not available."));
-    }
-
-    private CashRegisterRepository cashRegisterRepository() {
-        return cashRegisterRepository
-                .orElseThrow(() -> new IllegalStateException("Cash register repository is not available."));
-    }
 }

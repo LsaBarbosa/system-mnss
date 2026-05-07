@@ -2,6 +2,7 @@ package br.com.novaalianca.mnss.localapp.domain.cash;
 
 import br.com.novaalianca.mnss.sharedinfra.domain.BaseEntity;
 import br.com.novaalianca.mnss.localapp.domain.shared.DomainValidation;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -45,7 +46,7 @@ public class CashRegisterEntity extends BaseEntity {
     @Column(columnDefinition = "text")
     private String notes;
 
-    @OneToMany(mappedBy = "cashRegister")
+    @OneToMany(mappedBy = "cashRegister", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<CashMovementEntity> movements = new LinkedHashSet<>();
 
     protected CashRegisterEntity() {}

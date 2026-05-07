@@ -3,6 +3,7 @@ package br.com.novaalianca.mnss.localapp.domain.kds;
 import br.com.novaalianca.mnss.core.catalog.PreparationSector;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderEntity;
 import br.com.novaalianca.mnss.sharedinfra.domain.BaseEntity;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -41,7 +42,7 @@ public class KdsTicketEntity extends BaseEntity {
 
     private Instant finishedAt;
 
-    @OneToMany(mappedBy = "kdsTicket")
+    @OneToMany(mappedBy = "kdsTicket", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<KdsTicketItemEntity> items = new LinkedHashSet<>();
 
     protected KdsTicketEntity() {}

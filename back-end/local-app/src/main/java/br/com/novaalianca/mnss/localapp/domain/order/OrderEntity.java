@@ -5,6 +5,7 @@ import br.com.novaalianca.mnss.localapp.domain.customer.CustomerEntity;
 import br.com.novaalianca.mnss.core.payment.PaymentStatus;
 import br.com.novaalianca.mnss.sharedinfra.domain.BaseEntity;
 import br.com.novaalianca.mnss.localapp.domain.shared.DomainValidation;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -69,7 +70,7 @@ public class OrderEntity extends BaseEntity {
     @JoinColumn(name = "delivery_address_id")
     private CustomerAddressEntity deliveryAddress;
 
-    @OneToMany(mappedBy = "order")
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<OrderItemEntity> items = new LinkedHashSet<>();
 
     protected OrderEntity() {}

@@ -16,7 +16,7 @@ import java.util.Objects;
 public class StockBalanceEntity extends BaseEntity {
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
+    @JoinColumn(name = "product_id", nullable = false, unique = true)
     private ProductEntity product;
 
     @Column(nullable = false, precision = 12, scale = 3)

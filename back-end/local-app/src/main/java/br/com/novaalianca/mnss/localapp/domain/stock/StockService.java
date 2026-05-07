@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,15 +46,16 @@ public class StockService {
 
     @Transactional(readOnly = true)
     public List<StockMovementResponse> listMovements(UUID productId) {
+        PageRequest page = PageRequest.of(0, 500);
         List<StockMovementEntity> movements = productId == null
-                ? stockMovementRepository.findAllByOrderByCreatedAtDesc()
-                : stockMovementRepository.findByProductIdOrderByCreatedAtDesc(productId);
+                ? stockMovementRepository.findAllByOrderByCreatedAtDesc(page)
+                : stockMovementRepository.findByProductIdOrderByCreatedAtDesc(productId, page);
         return movements.stream().map(StockMovementResponse::from).toList();
     }
 
     @Transactional(readOnly = true)
     public List<StockBalanceResponse> listBalances() {
-        List<ProductEntity> products = productRepository.findAllByOrderByNameAsc();
+        List<ProductEntity> products = productRepository.findAllByOrderByNameAsc(Pageable.unpaged());
         List<UUID> productIds = products.stream().map(ProductEntity::getId).toList();
         Map<UUID, StockBalanceEntity> balanceMap = stockBalanceRepository.findByProductIdIn(productIds).stream()
                 .collect(Collectors.toMap(b -> b.getProduct().getId(), Function.identity()));

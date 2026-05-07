@@ -56,7 +56,7 @@ export const routes: Routes = [
     component: CatalogAdminPageComponent,
     canActivate: [authGuard, roleGuard],
     data: {
-      roles: ['GERENTE']
+      roles: ['ADMIN', 'GERENTE']
     }
   },
   {

@@ -220,6 +220,7 @@ public class KdsService {
         }
 
         order.finish();
+        orderRepository.save(order);
 
         auditService.record(new AuditLogRequest(
                 actorUserId,
@@ -233,6 +234,9 @@ public class KdsService {
 
         List<KdsTicketEntity> tickets = ticketRepository.findByOrder(order);
         tickets.forEach(t -> {
+            if (t.getStatus() == KdsTicketStatus.CANCELED || t.getStatus() == KdsTicketStatus.FINISHED) {
+                return;
+            }
             t.finish();
             ticketRepository.save(t);
             notifyTicketUpdated(t);

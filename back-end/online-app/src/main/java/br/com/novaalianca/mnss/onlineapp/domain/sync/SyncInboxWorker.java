@@ -27,7 +27,7 @@ public class SyncInboxWorker {
         this.productRepository = productRepository;
     }
 
-    @Scheduled(fixedDelay = 5000)
+    @Scheduled(fixedDelay = 30000)
     @Transactional
     public void processInbox() {
         List<SyncEventEntity> pendingEvents = syncEventRepository.findByStatusAndDirection(

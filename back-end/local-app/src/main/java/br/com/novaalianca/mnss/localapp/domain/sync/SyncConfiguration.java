@@ -11,8 +11,9 @@ public class SyncConfiguration {
 
     @Bean
     @ConditionalOnBean(SyncEventRepository.class)
-    public SyncEventService syncEventService(SyncEventRepository repository) {
-        return new SyncEventService(repository);
+    public SyncEventService syncEventService(SyncEventRepository repository,
+                                             SyncEventRabbitPublisher rabbitPublisher) {
+        return new SyncEventService(repository, rabbitPublisher);
     }
 
     @Bean

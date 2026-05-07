@@ -9,8 +9,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static br.com.novaalianca.mnss.onlineapp.config.RedisCacheConfiguration.*;
 
 @Service
 public class PublicMenuService {
@@ -31,6 +34,7 @@ public class PublicMenuService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = CACHE_PUBLIC_MENU, key = "#search ?: 'all'")
     public List<PublicMenuResponse> listMenu(String search) {
         List<OnlineCategoryEntity> categories = categoryRepository.findAllByOrderByDisplayOrderAscNameAsc().stream()
                 .filter(OnlineCategoryEntity::isActive)

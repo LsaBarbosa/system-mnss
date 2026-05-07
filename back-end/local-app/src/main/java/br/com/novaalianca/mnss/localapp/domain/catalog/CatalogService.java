@@ -15,9 +15,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static br.com.novaalianca.mnss.localapp.config.RedisCacheConfiguration.*;
 
 @Service
 public class CatalogService {
@@ -44,6 +49,7 @@ public class CatalogService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = CACHE_CATEGORIES, key = "#channel")
     public List<CategoryResponse> listCategories(CatalogChannel channel) {
         CategoryRepository repository = categoryRepository();
         List<CategoryEntity> categories = channel == CatalogChannel.PDV
@@ -53,6 +59,10 @@ public class CatalogService {
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(cacheNames = CACHE_CATEGORIES, allEntries = true),
+            @CacheEvict(cacheNames = CACHE_PRODUCTS, allEntries = true)
+    })
     public CategoryResponse createCategory(CreateCategoryRequest request, UUID actorUserId) {
         CategoryEntity category = new CategoryEntity(request.name());
         category.update(
@@ -71,6 +81,10 @@ public class CatalogService {
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(cacheNames = CACHE_CATEGORIES, allEntries = true),
+            @CacheEvict(cacheNames = CACHE_PRODUCTS, allEntries = true)
+    })
     public CategoryResponse updateCategory(UUID id, PatchCategoryRequest request, UUID actorUserId) {
         validateOptionalText(request.name(), "Nome obrigatorio.");
         CategoryEntity category = categoryRepository().findById(id)
@@ -95,6 +109,7 @@ public class CatalogService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = CACHE_PRODUCTS, key = "{'list', #name, #categoryId}")
     public List<ProductResponse> listProducts(String name, UUID categoryId) {
         List<ProductEntity> products;
         ProductRepository repository = productRepository();
@@ -112,6 +127,7 @@ public class CatalogService {
     }
 
     @Transactional
+    @CacheEvict(cacheNames = CACHE_PRODUCTS, allEntries = true)
     public ProductResponse createProduct(CreateProductRequest request, UUID actorUserId) {
         CategoryEntity category = categoryRepository().findById(request.categoryId())
                 .orElseThrow(() -> notFound("CATEGORY_NOT_FOUND", "Categoria nao encontrada."));
@@ -147,6 +163,7 @@ public class CatalogService {
     }
 
     @Transactional
+    @CacheEvict(cacheNames = CACHE_PRODUCTS, allEntries = true)
     public ProductResponse updateProduct(UUID id, PatchProductRequest request, UUID actorUserId) {
         validateOptionalText(request.name(), "Nome obrigatorio.");
         ProductEntity product = productRepository().findById(id)
@@ -199,6 +216,7 @@ public class CatalogService {
     }
 
     @Transactional
+    @CacheEvict(cacheNames = CACHE_PRODUCTS, allEntries = true)
     public ProductAvailabilityResponse updateProductAvailability(
             UUID productId,
             PatchProductAvailabilityRequest request,

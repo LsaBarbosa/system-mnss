@@ -1,7 +1,7 @@
 spring:
   config:
     activate:
-      on-profile: local
+      on-profile: production
   datasource:
     url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${POSTGRES_DB}
     username: ${POSTGRES_USER}
@@ -18,10 +18,13 @@ spring:
 
 server:
   port: ${LOCAL_API_PORT:8080}
+  ssl:
+    enabled: false
 
 mnss:
-  environment: local
+  environment: production
   sync:
-    online-url: ${MNSS_ONLINE_URL}
+    online-url: ${MNSS_ONLINE_URL:https://api.padarianovaalianca.com.br}
     store-id: ${MNSS_STORE_ID}
     store-secret: ${MNSS_STORE_SECRET}
+    require-https: true

@@ -30,7 +30,7 @@ public class OnlinePaymentController {
     public OnlinePaymentController(
             OnlinePaymentService paymentService,
             ObjectMapper objectMapper,
-            @Value("${mnss.payment.webhook-secret:change_me}") String webhookSecret) {
+            @Value("${mnss.payment.webhook-secret}") String webhookSecret) {
         this.paymentService = paymentService;
         this.objectMapper = objectMapper;
         this.webhookSecret = webhookSecret;

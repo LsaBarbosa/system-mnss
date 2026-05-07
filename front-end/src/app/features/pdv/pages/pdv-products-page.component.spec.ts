@@ -6,7 +6,7 @@ import { mockCashMovement, mockCashRegister, mockCategory, mockProduct } from '.
 import { CashRegisterService } from '../data-access/cash-register.service';
 import { PdvCatalogService } from '../data-access/pdv-catalog.service';
 import { PdvSaleService } from '../data-access/pdv-sale.service';
-import type { PdvSale } from '../data-access/pdv-sale.service';
+import type { PdvSale } from '../domain/pdv-sale.models';
 import { HardwareService } from '../data-access/hardware.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { KdsService } from '../../kds/data-access/kds.service';
@@ -78,6 +78,7 @@ describe('PdvProductsPageComponent', () => {
         orderId: '44444444-4444-4444-4444-444444444444',
         method: 'PIX',
         status: 'PAID',
+        amount: '1.20',
         recordedAmount: '1.20',
         remainingAmount: '0.00',
         changeAmount: '0.00',
@@ -220,10 +221,11 @@ describe('PdvProductsPageComponent', () => {
   it('updates quantity and visual total from returned payload', () => {
     const item = saleItem();
     fixture.componentInstance.currentSale = sale([item]);
+    const currentSaleId = fixture.componentInstance.currentSale.id;
 
     fixture.componentInstance.increaseItem(item);
 
-    expect(pdvSaleService.updateItem).toHaveBeenCalledWith(fixture.componentInstance.currentSale?.id, item.id, {
+    expect(pdvSaleService.updateItem).toHaveBeenCalledWith(currentSaleId, item.id, {
       quantity: '2.000'
     });
     expect(fixture.componentInstance.currentSale?.items[0].totalPrice).toBe('2.40');
@@ -232,10 +234,11 @@ describe('PdvProductsPageComponent', () => {
   it('removes item from cart', () => {
     const item = saleItem();
     fixture.componentInstance.currentSale = sale([item]);
+    const currentSaleId = fixture.componentInstance.currentSale.id;
 
     fixture.componentInstance.removeItem(item);
 
-    expect(pdvSaleService.removeItem).toHaveBeenCalledWith(fixture.componentInstance.currentSale?.id, item.id);
+    expect(pdvSaleService.removeItem).toHaveBeenCalledWith(currentSaleId, item.id);
     expect(fixture.componentInstance.currentSale?.items).toEqual([]);
   });
 
@@ -257,7 +260,7 @@ describe('PdvProductsPageComponent', () => {
   it('finishes sale and triggers hardware', () => {
     const s = sale([saleItem()]);
     s.remainingAmount = '0.00';
-    s.payments = [{ id: '1', method: 'CASH', amount: '1.20' }];
+    s.payments = [{ id: '1', method: 'CASH', amount: '1.20', createdAt: '2026-05-04T12:06:00Z' }];
     fixture.componentInstance.currentSale = s;
     pdvSaleService.finish.and.returnValue(of(s));
 
@@ -346,7 +349,9 @@ describe('PdvProductsPageComponent', () => {
   }
 
   function sale(items: PdvSale['items']): PdvSale {
-    const subtotal = items.reduce((total, item) => total + Number(item.totalPrice), 0).toFixed(2);
+    const subtotal = items
+      .reduce((total: number, item: PdvSale['items'][number]) => total + Number(item.totalPrice), 0)
+      .toFixed(2);
     return {
       id: '44444444-4444-4444-4444-444444444444',
       orderNumber: 12,

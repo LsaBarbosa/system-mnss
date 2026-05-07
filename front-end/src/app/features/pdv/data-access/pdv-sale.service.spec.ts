@@ -2,8 +2,8 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { mockOrder, mockProduct } from '../../../shared/models/domain.mocks';
+import type { PdvSale } from '../domain/pdv-sale.models';
 import { PdvSaleService } from './pdv-sale.service';
-import type { PdvSale } from './pdv-sale.service';
 
 describe('PdvSaleService', () => {
   let service: PdvSaleService;
@@ -70,6 +70,7 @@ describe('PdvSaleService', () => {
       orderId: mockOrder.id,
       method: 'PIX',
       status: 'PAID',
+      amount: '2.40',
       recordedAmount: '2.40',
       remainingAmount: '0.00',
       changeAmount: '0.00',

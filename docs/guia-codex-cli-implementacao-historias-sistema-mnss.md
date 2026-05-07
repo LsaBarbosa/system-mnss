@@ -5151,7 +5151,7 @@ Regras de execução:
 
 **Escopo funcional detalhado:**
 - Implementar exatamente a capacidade descrita na história, sem antecipar histórias futuras.
-- Back-end planejado no roadmap: Implementar assinatura com `STORE_ID` e `STORE_SECRET`.
+- Back-end planejado no roadmap: Implementar assinatura com `MNSS_STORE_ID` e `MNSS_STORE_SECRET`.
 - Front-end planejado no roadmap: Nenhuma tela.
 - A história deve deixar uma fatia funcional testável no ambiente correspondente.
 
@@ -5168,7 +5168,7 @@ Front-end:
 
 **Tarefas de implementação:**
 1. Ler a história, identificar se ela pertence ao ambiente local, online ou compartilhado e confirmar o módulo alvo antes de alterar arquivos.
-2. Implementar o back-end previsto: Implementar assinatura com `STORE_ID` e `STORE_SECRET`.
+2. Implementar o back-end previsto: Implementar assinatura com `MNSS_STORE_ID` e `MNSS_STORE_SECRET`.
 3. Implementar o front-end previsto: Nenhuma tela.
 4. Criar ou ajustar DTOs, mappers, services/use cases, controllers/endpoints e modelos TypeScript necessários.
 5. Atualizar OpenAPI/contratos, quando houver endpoint novo ou alteração de payload.
@@ -5204,7 +5204,7 @@ Contexto obrigatório:
 - Sprint: Sprint 13 — Sincronização base local → online
 - Domínio: Sincronização local → online
 - Documentos de referência: SYNC
-- Back-end esperado: Implementar assinatura com `STORE_ID` e `STORE_SECRET`.
+- Back-end esperado: Implementar assinatura com `MNSS_STORE_ID` e `MNSS_STORE_SECRET`.
 - Front-end esperado: Nenhuma tela.
 
 Regras de execução:

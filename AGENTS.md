@@ -192,6 +192,7 @@ Regras:
 - Entities representam persistência e estado de domínio.
 - Repositories ficam isolados por módulo.
 - DTOs não devem expor entidades diretamente.
+- Mapeamentos Entity↔DTO podem usar MapStruct (`@Mapper`) ou factories estáticas quando o mapeamento for simples e local ao domínio.
 - Criar testes unitários para regras de negócio.
 - Criar testes de integração quando houver persistência relevante.
 

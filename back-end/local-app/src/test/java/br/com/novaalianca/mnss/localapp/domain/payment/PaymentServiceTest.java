@@ -3,7 +3,6 @@ package br.com.novaalianca.mnss.localapp.domain.payment;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -26,7 +25,6 @@ import br.com.novaalianca.mnss.localapp.domain.order.OrderItemStatus;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderOrigin;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderRepository;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderStatus;
-import br.com.novaalianca.mnss.localapp.domain.stock.StockService;
 import br.com.novaalianca.mnss.sharedinfra.web.error.BusinessException;
 import br.com.novaalianca.mnss.core.payment.PaymentMethod;
 import br.com.novaalianca.mnss.core.payment.PaymentStatus;
@@ -60,13 +58,10 @@ class PaymentServiceTest {
     private CashRegisterService cashRegisterService;
 
     @Mock
-    private StockService stockService;
-
-    @Mock
     private AuditService auditService;
 
     @Test
-    void paymentFinalizesSaleAndRecordsCashAndStockMovements() {
+    void paymentFinalizesSaleAndRecordsCashMovement() {
         UUID actorId = UUID.randomUUID();
         UUID orderId = UUID.randomUUID();
         UUID cashRegisterId = UUID.randomUUID();
@@ -95,7 +90,6 @@ class PaymentServiceTest {
         assertThat(response.orderStatus()).isEqualTo(OrderStatus.PAID);
         assertThat(response.orderPaymentStatus()).isEqualTo(PaymentStatus.PAID);
         assertThat(response.transactionId()).isEqualTo("tx-123");
-        verify(stockService).recordSaleMovement(product.getId(), new BigDecimal("2.000"), orderId, actorId);
         verify(cashRegisterService).recordSaleMovement(cashRegisterId, PaymentMethod.PIX, new BigDecimal("2.40"), orderId, actorId);
     }
 
@@ -123,7 +117,7 @@ class PaymentServiceTest {
     }
 
     @Test
-    void paymentRejectsAmountMismatchAndDoesNotMoveStock() {
+    void paymentRejectsAmountMismatch() {
         UUID actorId = UUID.randomUUID();
         UUID orderId = UUID.randomUUID();
         OrderEntity order = sale(orderId, new BigDecimal("9.90"));
@@ -139,7 +133,6 @@ class PaymentServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .extracting("status")
                 .isEqualTo(HttpStatus.BAD_REQUEST);
-        verify(stockService, never()).recordSaleMovement(any(), any(), any(), any());
     }
 
     @Test
@@ -225,7 +218,6 @@ class PaymentServiceTest {
         assertThat(captor.getValue().getGateway()).isEqualTo("stone");
         assertThat(captor.getValue().getPaidAt()).isNotNull();
         verify(auditService).record(any(AuditLogRequest.class));
-        verify(stockService).recordSaleMovement(any(), eq(BigDecimal.ONE), eq(orderId), eq(actorId));
     }
 
     @Test
@@ -275,7 +267,6 @@ class PaymentServiceTest {
         assertThat(response.recordedAmount()).isEqualByComparingTo("20.00");
         assertThat(response.orderStatus()).isEqualTo(OrderStatus.CREATED);
         verify(orderRepository, never()).save(any());
-        verify(stockService, never()).recordSaleMovement(any(), any(), any(), any());
     }
 
     private PaymentService service() {
@@ -285,7 +276,6 @@ class PaymentServiceTest {
                 Optional.of(paymentRepository),
                 Optional.of(cashRegisterRepository),
                 cashRegisterService,
-                stockService,
                 auditService);
     }
 

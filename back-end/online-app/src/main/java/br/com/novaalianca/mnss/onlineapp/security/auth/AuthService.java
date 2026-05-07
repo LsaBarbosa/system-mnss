@@ -27,15 +27,15 @@ public class AuthService {
                 new UsernamePasswordAuthenticationToken(request.username(), request.password())
         );
 
-        String token = tokenProvider.generateToken(request.username());
-        Instant expiresAt = Instant.now().plus(8, ChronoUnit.HOURS);
         Set<String> roles = auth.getAuthorities().stream()
                 .map(granted -> granted.getAuthority())
                 .map(authority -> authority.startsWith("ROLE_") ? authority.substring(5) : authority)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
         if (roles.isEmpty()) {
-            roles = Set.of("ADMIN");
+            roles = Set.of("USER");
         }
+        String token = tokenProvider.generateToken(request.username(), roles);
+        Instant expiresAt = Instant.now().plus(8, ChronoUnit.HOURS);
 
         return new AuthResponse(
                 token,

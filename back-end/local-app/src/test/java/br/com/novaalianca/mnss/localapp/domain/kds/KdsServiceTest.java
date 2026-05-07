@@ -6,6 +6,7 @@ import br.com.novaalianca.mnss.localapp.domain.order.OrderItemEntity;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderItemStatus;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderRepository;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderStatus;
+import br.com.novaalianca.mnss.localapp.domain.audit.AuditService;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -32,6 +34,8 @@ class KdsServiceTest {
     private OrderRepository orderRepository;
     @Mock
     private SimpMessagingTemplate messagingTemplate;
+    @Mock
+    private AuditService auditService;
 
     @InjectMocks
     private KdsService kdsService;
@@ -60,12 +64,14 @@ class KdsServiceTest {
         UUID orderId = UUID.randomUUID();
         when(order.getId()).thenReturn(orderId);
         KdsTicketEntity ticket = new KdsTicketEntity(order, PreparationSector.CHAPA, KdsTicketStatus.IN_PREPARATION);
+        ReflectionTestUtils.setField(ticket, "ticketNumber", 1L);
+        ReflectionTestUtils.setField(ticket, "items", new java.util.LinkedHashSet<KdsTicketItemEntity>());
         
         when(ticketRepository.findById(any())).thenReturn(Optional.of(ticket));
         when(ticketRepository.save(any())).thenAnswer(i -> i.getArgument(0));
         when(ticketRepository.findByOrder(order)).thenReturn(List.of(ticket));
 
-        kdsService.readyTicket(UUID.randomUUID());
+        kdsService.readyTicket(UUID.randomUUID(), UUID.randomUUID());
 
         verify(ticketRepository).save(ticket);
         assert ticket.getStatus() == KdsTicketStatus.READY;

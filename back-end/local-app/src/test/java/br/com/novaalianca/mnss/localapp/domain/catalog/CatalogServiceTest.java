@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import br.com.novaalianca.mnss.core.catalog.PreparationSector;
 import br.com.novaalianca.mnss.core.catalog.SalesChannel;
 import br.com.novaalianca.mnss.core.catalog.UnitType;
+import br.com.novaalianca.mnss.sync.SyncEventStatus;
 import br.com.novaalianca.mnss.localapp.domain.audit.AuditLogRequest;
 import br.com.novaalianca.mnss.localapp.domain.audit.AuditService;
 import br.com.novaalianca.mnss.sharedinfra.web.error.BusinessException;
@@ -300,7 +301,7 @@ class CatalogServiceTest {
 
         assertThat(response.status()).isEqualTo(AvailabilityStatus.UNAVAILABLE);
         assertThat(response.updatedBy()).isEqualTo(actorUserId);
-        assertThat(response.syncStatus()).isEqualTo("PENDING");
+        assertThat(response.syncStatus()).isEqualTo(SyncEventStatus.PENDING);
         assertThat(product.isAvailable()).isFalse();
         verify(syncEventService).recordAvailabilityEvent("PRODUCT_UNAVAILABLE", oldAvailability);
     }
@@ -372,7 +373,7 @@ class CatalogServiceTest {
                 UUID.randomUUID());
 
         assertThat(response.status()).isEqualTo(AvailabilityStatus.UNAVAILABLE);
-        assertThat(response.syncStatus()).isEqualTo("FAILED");
+        assertThat(response.syncStatus()).isEqualTo(SyncEventStatus.FAILED);
         verify(productAvailabilityRepository).save(availability);
     }
 

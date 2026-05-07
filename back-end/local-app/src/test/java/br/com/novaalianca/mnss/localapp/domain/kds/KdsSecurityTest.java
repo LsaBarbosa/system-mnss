@@ -63,7 +63,7 @@ class KdsSecurityTest {
     @WithMockUser(roles = "EXPEDICAO")
     void finishOrder_AllowedForExpedicao() throws Exception {
         mockMvc.perform(patch("/api/kds/orders/" + id + "/finish"))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
     }
 
     @Test

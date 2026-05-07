@@ -521,10 +521,9 @@ RECEIVED_BY_STORE
 * Documentar headers:
 
 ```http
-X-Store-Id
+X-Store-ID
 X-Signature
-X-Event-Id
-X-Event-Timestamp
+X-Idempotency-Key
 ```
 
 * Documentar payload evoluído.

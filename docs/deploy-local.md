@@ -419,7 +419,7 @@ Endpoints:
 ```text
 GET /actuator/health
 GET /actuator/metrics
-GET /api/sync/status
+GET /api/sync/health
 ```
 
 Verificar:

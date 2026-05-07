@@ -3895,7 +3895,7 @@ Entregue a resposta neste formato:
 ### S13-H04 — Como sistema, quero assinar payload com HMAC.
 
 **Resumo do que deve ser feito:**
-- Back-end: Implementar assinatura com `STORE_ID` e `STORE_SECRET`.
+- Back-end: Implementar assinatura com `MNSS_STORE_ID` e `MNSS_STORE_SECRET`.
 - Front-end: Nenhuma tela.
 - Testes back-end: Assinatura válida passa; payload alterado falha; timestamp antigo pode falhar.
 - Testes front-end: N/A.
@@ -3922,7 +3922,7 @@ Contexto do projeto:
 - Regras importantes desta história: sync não pode bloquear a venda local; evento deve ser idempotente; payload deve ser assinado com HMAC; falha deve virar retry sem perder dados.
 
 O que gerar:
-1. Back-end: Implementar assinatura com `STORE_ID` e `STORE_SECRET`.
+1. Back-end: Implementar assinatura com `MNSS_STORE_ID` e `MNSS_STORE_SECRET`.
 2. Front-end: Nenhuma tela.
 3. Testes unitários back-end: Assinatura válida passa; payload alterado falha; timestamp antigo pode falhar.
 4. Testes unitários front-end: N/A.

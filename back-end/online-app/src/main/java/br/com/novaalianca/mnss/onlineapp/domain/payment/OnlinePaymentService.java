@@ -115,7 +115,7 @@ public class OnlinePaymentService {
             paymentRepository.save(payment);
             orderRepository.save(order);
 
-            createSyncEvent(order);
+            createSyncEvent(order, payment);
         } else if ("REFUSED".equalsIgnoreCase(status)) {
             payment.markAsRefused(transactionId, payload);
             OnlineOrderEntity order = payment.getOrder();
@@ -131,9 +131,9 @@ public class OnlinePaymentService {
         }
     }
 
-    private void createSyncEvent(OnlineOrderEntity order) {
+    private void createSyncEvent(OnlineOrderEntity order, OnlinePaymentEntity payment) {
         String idempotencyKey = UUID.randomUUID().toString();
-        
+
         Map<String, Object> payload = new java.util.LinkedHashMap<>();
         payload.put("orderId", order.getId().toString());
         payload.put("orderNumber", order.getOrderNumber());
@@ -142,13 +142,27 @@ public class OnlinePaymentService {
         payload.put("paymentStatus", order.getPaymentStatus().name());
         payload.put("deliveryType", order.getDeliveryType().name());
         payload.put("paymentMethod", order.getPaymentMethod().name());
+        payload.put("transactionId", payment.getTransactionId());
+        payload.put("gateway", payment.getGateway());
         payload.put("storeId", defaultStoreId);
         payload.put("subtotal", order.getSubtotal());
         payload.put("discountAmount", order.getDiscountAmount());
         payload.put("deliveryFee", order.getDeliveryFee());
         payload.put("totalAmount", order.getTotalAmount());
         payload.put("notes", order.getNotes());
-        
+
+        if (order.getDeliveryAddress() != null) {
+            br.com.novaalianca.mnss.onlineapp.domain.customer.OnlineCustomerAddressEntity addr = order.getDeliveryAddress();
+            Map<String, Object> addrMap = new java.util.LinkedHashMap<>();
+            addrMap.put("street", addr.getStreet());
+            addrMap.put("number", addr.getNumber());
+            addrMap.put("neighborhood", addr.getNeighborhood());
+            addrMap.put("city", addr.getCity());
+            addrMap.put("state", addr.getState());
+            addrMap.put("zipCode", addr.getZipCode());
+            payload.put("deliveryAddress", addrMap);
+        }
+
         java.util.List<Map<String, Object>> items = order.getItems().stream()
                 .map(item -> {
                     Map<String, Object> itemMap = new java.util.LinkedHashMap<>();

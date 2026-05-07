@@ -26,12 +26,12 @@ public class SyncConfiguration {
     public SyncInboxService syncInboxService(
             br.com.novaalianca.mnss.localapp.domain.order.OrderRepository orderRepository,
             br.com.novaalianca.mnss.localapp.domain.order.OrderItemRepository orderItemRepository,
-            br.com.novaalianca.mnss.localapp.domain.customer.CustomerRepository customerRepository,
             br.com.novaalianca.mnss.localapp.domain.catalog.ProductRepository productRepository,
+            br.com.novaalianca.mnss.localapp.domain.payment.PaymentRepository paymentRepository,
+            br.com.novaalianca.mnss.localapp.domain.customer.CustomerAddressRepository addressRepository,
             br.com.novaalianca.mnss.localapp.domain.kds.KdsService kdsService,
-            SyncEventRepository syncEventRepository,
-            ObjectMapper objectMapper) {
-        return new SyncInboxService(orderRepository, orderItemRepository, customerRepository, productRepository, kdsService, syncEventRepository, objectMapper);
+            SyncEventRepository syncEventRepository) {
+        return new SyncInboxService(orderRepository, orderItemRepository, productRepository, paymentRepository, addressRepository, kdsService, syncEventRepository);
     }
 
     @Bean

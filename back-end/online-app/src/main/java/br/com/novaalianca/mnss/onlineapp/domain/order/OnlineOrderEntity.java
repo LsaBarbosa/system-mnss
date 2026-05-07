@@ -1,5 +1,6 @@
 package br.com.novaalianca.mnss.onlineapp.domain.order;
 
+import br.com.novaalianca.mnss.onlineapp.domain.customer.OnlineCustomerAddressEntity;
 import br.com.novaalianca.mnss.onlineapp.domain.customer.OnlineCustomerEntity;
 import br.com.novaalianca.mnss.core.payment.PaymentStatus;
 import br.com.novaalianca.mnss.sharedinfra.domain.BaseEntity;
@@ -28,6 +29,10 @@ public class OnlineOrderEntity extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id")
     private OnlineCustomerEntity customer;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "delivery_address_id")
+    private OnlineCustomerAddressEntity deliveryAddress;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 40)
@@ -121,8 +126,13 @@ public class OnlineOrderEntity extends BaseEntity {
         calculateTotals();
     }
 
+    public void setDeliveryAddress(OnlineCustomerAddressEntity deliveryAddress) {
+        this.deliveryAddress = deliveryAddress;
+    }
+
     public Long getOrderNumber() { return orderNumber; }
     public OnlineCustomerEntity getCustomer() { return customer; }
+    public OnlineCustomerAddressEntity getDeliveryAddress() { return deliveryAddress; }
     public OrderOrigin getOrigin() { return origin; }
     public OrderStatus getStatus() { return status; }
     public PaymentStatus getPaymentStatus() { return paymentStatus; }

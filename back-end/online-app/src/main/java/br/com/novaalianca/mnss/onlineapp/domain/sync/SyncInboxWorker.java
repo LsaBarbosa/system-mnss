@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -22,10 +23,14 @@ public class SyncInboxWorker {
 
     private final SyncEventRepository syncEventRepository;
     private final OnlineProductRepository productRepository;
+    private final OnlineLocalSaleSummaryRepository saleSummaryRepository;
 
-    public SyncInboxWorker(SyncEventRepository syncEventRepository, OnlineProductRepository productRepository) {
+    public SyncInboxWorker(SyncEventRepository syncEventRepository,
+                           OnlineProductRepository productRepository,
+                           OnlineLocalSaleSummaryRepository saleSummaryRepository) {
         this.syncEventRepository = syncEventRepository;
         this.productRepository = productRepository;
+        this.saleSummaryRepository = saleSummaryRepository;
     }
 
     @Scheduled(fixedDelay = 30000)
@@ -36,7 +41,7 @@ public class SyncInboxWorker {
                 SyncDirection.LOCAL_TO_ONLINE
         );
         List<SyncEventEntity> retryingEvents = syncEventRepository.findByStatusInAndNextRetryAtBefore(
-                List.of(SyncEventStatus.RETRYING),
+                List.of(SyncEventStatus.FAILED, SyncEventStatus.RETRYING),
                 Instant.now()
         );
 
@@ -116,7 +121,30 @@ public class SyncInboxWorker {
 
     private void handleSaleFinished(SyncEventEntity event) {
         Map<String, Object> payload = event.getPayload();
+        String storeId = (String) payload.get("storeId");
         UUID orderId = UUID.fromString((String) payload.get("orderId"));
-        log.info("Sale finished event received from local store for order: {}", orderId);
+
+        if (storeId == null || storeId.isBlank()) {
+            log.warn("SALE_FINISHED event {} missing storeId — skipping", event.getId());
+            return;
+        }
+
+        if (saleSummaryRepository.existsByStoreIdAndLocalOrderId(storeId, orderId)) {
+            log.info("SALE_FINISHED for store={} order={} already recorded — skipping duplicate", storeId, orderId);
+            return;
+        }
+
+        Long orderNumber = payload.get("orderNumber") instanceof Number n ? n.longValue() : null;
+        BigDecimal totalAmount = payload.get("totalAmount") != null
+                ? new BigDecimal(payload.get("totalAmount").toString()) : BigDecimal.ZERO;
+        String paymentStatus = payload.get("paymentStatus") != null
+                ? payload.get("paymentStatus").toString() : "UNKNOWN";
+        Instant finishedAt = payload.get("finishedAt") != null
+                ? Instant.parse(payload.get("finishedAt").toString()) : null;
+
+        OnlineLocalSaleSummaryEntity summary = new OnlineLocalSaleSummaryEntity(
+                storeId, orderId, orderNumber, totalAmount, paymentStatus, finishedAt, payload);
+        saleSummaryRepository.save(summary);
+        log.info("SALE_FINISHED recorded: store={} order={} total={}", storeId, orderId, totalAmount);
     }
 }

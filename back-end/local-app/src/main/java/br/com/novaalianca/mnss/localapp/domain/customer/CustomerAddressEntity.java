@@ -15,7 +15,7 @@ import java.util.Objects;
 @Table(name = "customer_addresses")
 public class CustomerAddressEntity extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", nullable = false)
+    @JoinColumn(name = "customer_id")
     private CustomerEntity customer;
 
     @Column(length = 80)
@@ -59,6 +59,16 @@ public class CustomerAddressEntity extends BaseEntity {
     public CustomerAddressEntity(CustomerEntity customer, String street) {
         this.customer = Objects.requireNonNull(customer, "customer must not be null");
         this.street = DomainValidation.requireText(street, "street");
+    }
+
+    public CustomerAddressEntity(String street, String number, String neighborhood,
+                                  String city, String state, String zipCode) {
+        this.street = DomainValidation.requireText(street, "street");
+        this.number = number;
+        this.neighborhood = neighborhood;
+        this.city = city;
+        this.state = state;
+        this.zipCode = zipCode;
     }
 
     public CustomerEntity getCustomer() {

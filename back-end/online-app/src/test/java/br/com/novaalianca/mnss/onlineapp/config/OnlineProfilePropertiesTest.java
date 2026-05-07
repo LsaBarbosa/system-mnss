@@ -54,6 +54,7 @@ class OnlineProfilePropertiesTest {
             "mnss.online.site-url=https://padarianovaalianca.com.br",
             "mnss.online.api-url=https://api.padarianovaalianca.com.br",
             "mnss.online.admin-url=https://admin.padarianovaalianca.com.br",
+            "mnss.sync.stores.store-001=secret123",
             override
         };
     }

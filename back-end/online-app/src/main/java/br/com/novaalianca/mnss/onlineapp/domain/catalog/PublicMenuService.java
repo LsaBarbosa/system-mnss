@@ -65,6 +65,7 @@ public class PublicMenuService {
                 .toList();
     }
 
+    @Cacheable(cacheNames = CACHE_STORE_INFO)
     public StoreInfoResponse getStoreInfo() {
         return new StoreInfoResponse(
                 storeInfoProperties.getName(),

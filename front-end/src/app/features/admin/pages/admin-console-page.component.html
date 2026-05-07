@@ -9,9 +9,17 @@
     </div>
 
     <nav>
-      <a class="nav-button" *ngFor="let item of navigation" [routerLink]="item.route">
+      <ng-container *ngFor="let item of navigation">
+        <a class="nav-button"
+           *mnssHasRole="item.roles"
+           [routerLink]="item.route">
+          <span aria-hidden="true"></span>
+          {{ item.label }}
+        </a>
+      </ng-container>
+      <a class="nav-button" routerLink="/cardapio">
         <span aria-hidden="true"></span>
-        {{ item.label }}
+        Site Público
       </a>
     </nav>
   </aside>

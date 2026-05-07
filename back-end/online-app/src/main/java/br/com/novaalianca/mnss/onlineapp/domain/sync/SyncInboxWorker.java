@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -34,20 +35,28 @@ public class SyncInboxWorker {
                 SyncEventStatus.PENDING,
                 SyncDirection.LOCAL_TO_ONLINE
         );
+        List<SyncEventEntity> retryingEvents = syncEventRepository.findByStatusInAndNextRetryAtBefore(
+                List.of(SyncEventStatus.RETRYING),
+                Instant.now()
+        );
 
-        if (pendingEvents.isEmpty()) {
+        List<SyncEventEntity> toProcess = new java.util.ArrayList<>(pendingEvents);
+        toProcess.addAll(retryingEvents);
+
+        if (toProcess.isEmpty()) {
             return;
         }
 
-        log.info("Processing {} pending inbox events", pendingEvents.size());
+        log.info("Processing {} inbox events ({} pending, {} retrying)",
+                toProcess.size(), pendingEvents.size(), retryingEvents.size());
 
-        for (SyncEventEntity event : pendingEvents) {
+        for (SyncEventEntity event : toProcess) {
             try {
                 processEvent(event);
                 event.markAsSynced();
             } catch (Exception e) {
                 log.error("Error processing inbox event {}: {}", event.getId(), e.getMessage());
-                event.markAsFailed(e.getMessage(), java.time.Instant.now().plusSeconds(300));
+                event.markAsFailed(e.getMessage(), Instant.now().plusSeconds(300));
             }
             syncEventRepository.save(event);
         }
@@ -55,11 +64,16 @@ public class SyncInboxWorker {
 
     private void processEvent(SyncEventEntity event) {
         switch (event.getEventType()) {
+            case "PRODUCT_UNAVAILABLE":
+                handleProductAvailabilityByType(event, false);
+                break;
+            case "PRODUCT_AVAILABLE":
+                handleProductAvailabilityByType(event, true);
+                break;
             case "PRODUCT_AVAILABILITY_CHANGED":
                 handleProductAvailability(event);
                 break;
             case "STOCK_MOVED":
-                // Just log or audit for now
                 log.debug("Stock moved event received for product {}", event.getAggregateId());
                 break;
             case "SALE_FINISHED":
@@ -68,6 +82,24 @@ public class SyncInboxWorker {
             default:
                 log.warn("Unknown event type for inbox: {}", event.getEventType());
         }
+    }
+
+    private void handleProductAvailabilityByType(SyncEventEntity event, boolean available) {
+        UUID productId = event.getAggregateId();
+        if (productId == null) {
+            Object payloadProductId = event.getPayload().get("productId");
+            if (payloadProductId == null) {
+                log.warn("Cannot update product availability: no productId in event {}", event.getId());
+                return;
+            }
+            productId = UUID.fromString(payloadProductId.toString());
+        }
+        final UUID resolvedId = productId;
+        productRepository.findById(resolvedId).ifPresentOrElse(product -> {
+            product.updateAvailability(available);
+            productRepository.save(product);
+            log.info("Product {} availability set to {} via {} event", resolvedId, available, event.getEventType());
+        }, () -> log.warn("Product {} not found for availability update via {}", resolvedId, event.getEventType()));
     }
 
     private void handleProductAvailability(SyncEventEntity event) {

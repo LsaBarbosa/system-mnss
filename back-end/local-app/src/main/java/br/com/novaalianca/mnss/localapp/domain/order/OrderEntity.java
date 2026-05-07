@@ -1,5 +1,6 @@
 package br.com.novaalianca.mnss.localapp.domain.order;
 
+import br.com.novaalianca.mnss.localapp.domain.customer.CustomerAddressEntity;
 import br.com.novaalianca.mnss.localapp.domain.customer.CustomerEntity;
 import br.com.novaalianca.mnss.core.payment.PaymentStatus;
 import br.com.novaalianca.mnss.sharedinfra.domain.BaseEntity;
@@ -63,6 +64,10 @@ public class OrderEntity extends BaseEntity {
     private Instant finishedAt;
 
     private Instant canceledAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "delivery_address_id")
+    private CustomerAddressEntity deliveryAddress;
 
     @OneToMany(mappedBy = "order")
     private Set<OrderItemEntity> items = new LinkedHashSet<>();
@@ -149,6 +154,15 @@ public class OrderEntity extends BaseEntity {
 
     public String getNotes() {
         return notes;
+    }
+
+    public CustomerAddressEntity getDeliveryAddress() {
+        return deliveryAddress;
+    }
+
+    public void setDeliveryAddress(CustomerAddressEntity deliveryAddress) {
+        this.deliveryAddress = deliveryAddress;
+        touch();
     }
 
     public Instant getFinishedAt() {

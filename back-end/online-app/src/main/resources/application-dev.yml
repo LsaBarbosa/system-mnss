@@ -3,15 +3,15 @@ spring:
     activate:
       on-profile: dev
   datasource:
-    username: mnss
-    password: mnss
+    username: ${MNSS_ONLINE_DB_USER:change_me}
+    password: ${MNSS_ONLINE_DB_PASSWORD:change_me}
   rabbitmq:
-    username: mnss
-    password: mnss
+    username: ${MNSS_ONLINE_RABBITMQ_USER:change_me}
+    password: ${MNSS_ONLINE_RABBITMQ_PASSWORD:change_me}
 
 mnss:
   sync:
     stores:
-      store-001: local-dev-sync-secret-change-me
+      store-001: ${MNSS_STORE_001_SECRET:change_me}
   whatsapp:
     verify-token: change_me

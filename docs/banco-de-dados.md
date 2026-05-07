@@ -114,11 +114,23 @@ cash_movements
 kds_tickets
 kds_ticket_items
 stock_movements
+stock_balances
 sync_events
 audit_logs
+online_local_sale_summaries
+whatsapp_conversations
+whatsapp_messages
 ```
 
-## 6. Schema inicial sugerido
+## 6. Schema consolidado
+
+Os blocos abaixo representam o schema final após as migrations Flyway atuais.
+
+Entidades JPA que estendem `BaseEntity` devem possuir:
+
+```sql
+version BIGINT NOT NULL DEFAULT 0
+```
 
 ## 6.1 Roles
 
@@ -128,7 +140,8 @@ CREATE TABLE roles (
     name VARCHAR(50) NOT NULL UNIQUE,
     description VARCHAR(255),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    version BIGINT NOT NULL DEFAULT 0
 );
 ```
 
@@ -143,7 +156,8 @@ CREATE TABLE users (
     password_hash VARCHAR(255) NOT NULL,
     active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    version BIGINT NOT NULL DEFAULT 0
 );
 ```
 
@@ -171,7 +185,8 @@ CREATE TABLE categories (
     show_on_pdv BOOLEAN NOT NULL DEFAULT TRUE,
     show_on_whatsapp BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    version BIGINT NOT NULL DEFAULT 0
 );
 ```
 
@@ -199,7 +214,8 @@ CREATE TABLE products (
     sell_on_whatsapp BOOLEAN NOT NULL DEFAULT TRUE,
     stock_controlled BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    version BIGINT NOT NULL DEFAULT 0
 );
 ```
 
@@ -222,7 +238,9 @@ CREATE TABLE product_availability (
     channel VARCHAR(40) NOT NULL,
     reason TEXT,
     updated_by UUID REFERENCES users(id),
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    version BIGINT NOT NULL DEFAULT 0
 );
 ```
 
@@ -237,7 +255,8 @@ CREATE TABLE customers (
     document VARCHAR(30),
     birth_date DATE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    version BIGINT NOT NULL DEFAULT 0
 );
 ```
 
@@ -253,7 +272,7 @@ CREATE INDEX idx_customers_email ON customers(email);
 ```sql
 CREATE TABLE customer_addresses (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    customer_id UUID NOT NULL REFERENCES customers(id),
+    customer_id UUID REFERENCES customers(id),
     label VARCHAR(80),
     street VARCHAR(150) NOT NULL,
     number VARCHAR(30),
@@ -267,9 +286,14 @@ CREATE TABLE customer_addresses (
     longitude NUMERIC(10,7),
     default_address BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    version BIGINT NOT NULL DEFAULT 0
 );
 ```
+
+No banco local, `customer_id` é opcional a partir de `V8__make_customer_address_customer_nullable.sql`
+para permitir endereços recebidos por sincronização sem cliente local. No banco online, o vínculo com
+cliente continua obrigatório na criação de endereço online.
 
 ## 6.9 Orders
 
@@ -291,6 +315,7 @@ CREATE TABLE orders (
     notes TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    version BIGINT NOT NULL DEFAULT 0,
     finished_at TIMESTAMP,
     canceled_at TIMESTAMP
 );
@@ -322,7 +347,8 @@ CREATE TABLE order_items (
     status VARCHAR(50) NOT NULL,
     preparation_sector VARCHAR(60) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    version BIGINT NOT NULL DEFAULT 0
 );
 ```
 
@@ -345,10 +371,12 @@ CREATE TABLE payments (
     amount NUMERIC(12,2) NOT NULL,
     transaction_id VARCHAR(150),
     gateway VARCHAR(80),
+    webhook_payload TEXT,
     paid_at TIMESTAMP,
     canceled_at TIMESTAMP,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    version BIGINT NOT NULL DEFAULT 0
 );
 ```
 
@@ -375,7 +403,8 @@ CREATE TABLE cash_registers (
     status VARCHAR(40) NOT NULL,
     notes TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    version BIGINT NOT NULL DEFAULT 0
 );
 ```
 
@@ -392,7 +421,8 @@ CREATE TABLE cash_movements (
     order_id UUID REFERENCES orders(id),
     created_by UUID REFERENCES users(id),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    version BIGINT NOT NULL DEFAULT 0
 );
 ```
 
@@ -407,6 +437,7 @@ CREATE TABLE kds_tickets (
     status VARCHAR(50) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    version BIGINT NOT NULL DEFAULT 0,
     started_at TIMESTAMP,
     ready_at TIMESTAMP,
     finished_at TIMESTAMP
@@ -422,7 +453,8 @@ CREATE TABLE kds_ticket_items (
     order_item_id UUID NOT NULL REFERENCES order_items(id),
     status VARCHAR(50) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    version BIGINT NOT NULL DEFAULT 0
 );
 ```
 
@@ -434,15 +466,54 @@ CREATE TABLE stock_movements (
     product_id UUID NOT NULL REFERENCES products(id),
     type VARCHAR(50) NOT NULL,
     quantity NUMERIC(12,3) NOT NULL,
+    previous_quantity NUMERIC(12,3),
+    resulting_quantity NUMERIC(12,3),
     reason TEXT,
     order_id UUID REFERENCES orders(id),
     created_by UUID REFERENCES users(id),
+    source VARCHAR(50),
+    reference_type VARCHAR(50),
+    reference_id UUID,
+    idempotency_key VARCHAR(255),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    version BIGINT NOT NULL DEFAULT 0
 );
 ```
 
-## 6.17 Sync Events
+### Índices recomendados
+
+```sql
+CREATE INDEX idx_stock_movements_product_id ON stock_movements(product_id);
+CREATE INDEX idx_stock_movements_order_id ON stock_movements(order_id);
+CREATE UNIQUE INDEX idx_stock_movements_idempotency_key
+    ON stock_movements(idempotency_key) WHERE idempotency_key IS NOT NULL;
+```
+
+## 6.17 Stock Balances
+
+```sql
+CREATE TABLE stock_balances (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    product_id UUID NOT NULL UNIQUE REFERENCES products(id),
+    quantity NUMERIC(12,3) NOT NULL DEFAULT 0,
+    reserved_quantity NUMERIC(12,3) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    version BIGINT NOT NULL DEFAULT 0
+);
+```
+
+### Índices recomendados
+
+```sql
+CREATE INDEX idx_stock_balances_product_id ON stock_balances(product_id);
+```
+
+No banco online, `stock_balances` não possui `reserved_quantity` atualmente. O local mantém a reserva
+para proteger a operação presencial e o online mantém apenas o saldo consolidado recebido por sync.
+
+## 6.18 Sync Events
 
 ```sql
 CREATE TABLE sync_events (
@@ -475,7 +546,7 @@ CREATE INDEX idx_sync_events_aggregate ON sync_events(aggregate_type, aggregate_
 CREATE INDEX idx_sync_events_status_direction ON sync_events(status, direction);
 ```
 
-## 6.18 Audit Logs
+## 6.19 Audit Logs
 
 ```sql
 CREATE TABLE audit_logs (
@@ -490,6 +561,85 @@ CREATE TABLE audit_logs (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     version BIGINT NOT NULL DEFAULT 0
 );
+```
+
+## 6.20 Online Local Sale Summaries
+
+Tabela online usada para consolidar eventos `SALE_FINISHED` recebidos do ambiente local.
+
+```sql
+CREATE TABLE online_local_sale_summaries (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    store_id VARCHAR(80) NOT NULL,
+    local_order_id UUID NOT NULL,
+    order_number BIGINT,
+    total_amount NUMERIC(12,2) NOT NULL,
+    payment_status VARCHAR(50) NOT NULL,
+    finished_at TIMESTAMP,
+    raw_payload JSONB NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    version BIGINT NOT NULL DEFAULT 0,
+    CONSTRAINT uk_local_sale_summary_store_order UNIQUE (store_id, local_order_id)
+);
+```
+
+### Índices recomendados
+
+```sql
+CREATE INDEX idx_local_sale_summary_store_id ON online_local_sale_summaries(store_id);
+CREATE INDEX idx_local_sale_summary_finished_at ON online_local_sale_summaries(finished_at);
+```
+
+## 6.21 WhatsApp Conversations
+
+Tabelas online usadas pelo fluxo de atendimento e pedidos via WhatsApp.
+
+```sql
+CREATE TABLE whatsapp_conversations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    customer_phone VARCHAR(30) NOT NULL,
+    customer_name VARCHAR(150),
+    status VARCHAR(30) NOT NULL DEFAULT 'OPEN',
+    assigned_to UUID REFERENCES users(id),
+    order_id UUID REFERENCES orders(id),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    version BIGINT NOT NULL DEFAULT 0
+);
+```
+
+### Índices recomendados
+
+```sql
+CREATE INDEX idx_whatsapp_conversations_phone ON whatsapp_conversations(customer_phone);
+CREATE INDEX idx_whatsapp_conversations_status ON whatsapp_conversations(status);
+```
+
+## 6.22 WhatsApp Messages
+
+```sql
+CREATE TABLE whatsapp_messages (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    conversation_id UUID NOT NULL REFERENCES whatsapp_conversations(id),
+    external_message_id VARCHAR(120) UNIQUE,
+    direction VARCHAR(20) NOT NULL,
+    sender_phone VARCHAR(30),
+    sender_name VARCHAR(150),
+    content TEXT,
+    message_type VARCHAR(30) NOT NULL DEFAULT 'TEXT',
+    status VARCHAR(30) NOT NULL DEFAULT 'RECEIVED',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    version BIGINT NOT NULL DEFAULT 0
+);
+```
+
+### Índices recomendados
+
+```sql
+CREATE INDEX idx_whatsapp_messages_conversation ON whatsapp_messages(conversation_id);
+CREATE INDEX idx_whatsapp_messages_external_id ON whatsapp_messages(external_message_id);
 ```
 
 ## 7. Flyway
@@ -539,6 +689,7 @@ back-end/online-app/src/main/resources/db/migration/
 - kds_tickets
 - kds_ticket_items
 - stock_movements
+- stock_balances
 - sync_events
 - audit_logs
 
@@ -554,6 +705,9 @@ back-end/online-app/src/main/resources/db/migration/
 - sync_events
 - audit_logs
 - online_local_sale_summaries
+- stock_balances
+- whatsapp_conversations
+- whatsapp_messages
 
 > As tabelas `cash_registers`, `cash_movements`, `kds_tickets`, `kds_ticket_items` e `stock_movements`
 > também existem no banco online por compartilhamento inicial de schema. Elas não são a fonte primária
@@ -571,6 +725,7 @@ back-end/online-app/src/main/resources/db/migration/
 - order_items
 - payments
 - sync_events
+- stock_balances
 
 ## 9. Cuidados importantes
 

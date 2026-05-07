@@ -121,8 +121,42 @@ class CoreRepositoryTest {
                         "kds_tickets",
                         "kds_ticket_items",
                         "stock_movements",
+                        "stock_balances",
                         "sync_events",
                         "audit_logs");
+    }
+
+    @Test
+    void localStockSchemaIncludesBalancesExpandedMovementFieldsAndIndexes() {
+        List<String> stockBalanceColumns = jdbcTemplate.queryForList(
+                "select column_name from information_schema.columns where table_name = 'stock_balances'",
+                String.class);
+        List<String> stockMovementColumns = jdbcTemplate.queryForList(
+                "select column_name from information_schema.columns where table_name = 'stock_movements'",
+                String.class);
+        List<String> stockIndexes = jdbcTemplate.queryForList(
+                "select indexname from pg_indexes where schemaname = 'public' "
+                        + "and tablename in ('stock_balances', 'stock_movements')",
+                String.class);
+        String customerAddressCustomerNullable = jdbcTemplate.queryForObject(
+                "select is_nullable from information_schema.columns "
+                        + "where table_name = 'customer_addresses' and column_name = 'customer_id'",
+                String.class);
+
+        assertThat(stockBalanceColumns)
+                .contains("product_id", "quantity", "reserved_quantity", "version", "created_at", "updated_at");
+        assertThat(stockMovementColumns)
+                .contains(
+                        "previous_quantity",
+                        "resulting_quantity",
+                        "source",
+                        "reference_type",
+                        "reference_id",
+                        "idempotency_key",
+                        "version");
+        assertThat(stockIndexes)
+                .contains("idx_stock_balances_product_id", "idx_stock_movements_idempotency_key");
+        assertThat(customerAddressCustomerNullable).isEqualTo("YES");
     }
 
     @Test

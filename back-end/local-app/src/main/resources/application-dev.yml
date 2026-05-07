@@ -3,17 +3,17 @@ spring:
     activate:
       on-profile: dev
   datasource:
-    username: mnss
-    password: mnss
+    username: ${MNSS_LOCAL_DB_USER:change_me}
+    password: ${MNSS_LOCAL_DB_PASSWORD:change_me}
   rabbitmq:
-    username: mnss
-    password: mnss
+    username: ${MNSS_LOCAL_RABBITMQ_USER:change_me}
+    password: ${MNSS_LOCAL_RABBITMQ_PASSWORD:change_me}
 
 mnss:
   security:
     token:
-      secret: local-dev-auth-secret-change-me
+      secret: ${AUTH_TOKEN_SECRET:change_me}
     initial-admin:
-      password: admin123
+      password: ${MNSS_INITIAL_ADMIN_PASSWORD:change_me}
   sync:
-    store-secret: local-dev-sync-secret-change-me
+    store-secret: ${MNSS_STORE_SECRET:change_me}

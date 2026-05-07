@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -174,21 +175,27 @@ public class SyncController {
     }
 
     @GetMapping("/events")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
     public ResponseEntity<java.util.List<SyncEventDto>> listEvents() {
         return ResponseEntity.ok(
                 syncEventMapper.toDtoList(repository.findAllByOrderByCreatedAtDesc()));
     }
 
     @GetMapping("/status")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
     public ResponseEntity<Map<String, Long>> getSyncStatus() {
-        // Simplified status counts for dashboard
-        java.util.List<SyncEventEntity> all = repository.findAll();
-        Map<String, Long> counts = all.stream()
-                .collect(java.util.stream.Collectors.groupingBy(e -> e.getStatus().name(), java.util.stream.Collectors.counting()));
+        Map<String, Long> counts = new java.util.LinkedHashMap<>();
+        for (SyncEventStatus status : SyncEventStatus.values()) {
+            long count = repository.countByStatus(status);
+            if (count > 0) {
+                counts.put(status.name(), count);
+            }
+        }
         return ResponseEntity.ok(counts);
     }
 
     @PostMapping("/events/{id}/reprocess")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
     public ResponseEntity<Void> reprocessEvent(@PathVariable UUID id) {
         return repository.findById(id).map(event -> {
             event.resetStatus();
@@ -198,6 +205,7 @@ public class SyncController {
     }
 
     @PostMapping("/events/{id}/ignore")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
     public ResponseEntity<Void> ignoreEvent(@PathVariable UUID id, @RequestBody Map<String, String> body) {
         String reason = body.getOrDefault("reason", "No reason provided");
         return repository.findById(id).map(event -> {

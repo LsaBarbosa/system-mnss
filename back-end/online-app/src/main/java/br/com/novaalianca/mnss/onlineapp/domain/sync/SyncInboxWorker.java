@@ -55,11 +55,16 @@ public class SyncInboxWorker {
 
     private void processEvent(SyncEventEntity event) {
         switch (event.getEventType()) {
+            case "PRODUCT_UNAVAILABLE":
+                handleProductAvailabilityByType(event, false);
+                break;
+            case "PRODUCT_AVAILABLE":
+                handleProductAvailabilityByType(event, true);
+                break;
             case "PRODUCT_AVAILABILITY_CHANGED":
                 handleProductAvailability(event);
                 break;
             case "STOCK_MOVED":
-                // Just log or audit for now
                 log.debug("Stock moved event received for product {}", event.getAggregateId());
                 break;
             case "SALE_FINISHED":
@@ -68,6 +73,24 @@ public class SyncInboxWorker {
             default:
                 log.warn("Unknown event type for inbox: {}", event.getEventType());
         }
+    }
+
+    private void handleProductAvailabilityByType(SyncEventEntity event, boolean available) {
+        UUID productId = event.getAggregateId();
+        if (productId == null) {
+            Object payloadProductId = event.getPayload().get("productId");
+            if (payloadProductId == null) {
+                log.warn("Cannot update product availability: no productId in event {}", event.getId());
+                return;
+            }
+            productId = UUID.fromString(payloadProductId.toString());
+        }
+        final UUID resolvedId = productId;
+        productRepository.findById(resolvedId).ifPresentOrElse(product -> {
+            product.updateAvailability(available);
+            productRepository.save(product);
+            log.info("Product {} availability set to {} via {} event", resolvedId, available, event.getEventType());
+        }, () -> log.warn("Product {} not found for availability update via {}", resolvedId, event.getEventType()));
     }
 
     private void handleProductAvailability(SyncEventEntity event) {

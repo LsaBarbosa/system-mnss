@@ -91,10 +91,10 @@ public class SyncEventEntity extends BaseEntity {
     }
 
     public void markAsFailed(String error, Instant nextRetry) {
-        this.status = SyncEventStatus.FAILED;
-        this.lastError = error;
         this.retryCount++;
+        this.lastError = error;
         this.nextRetryAt = nextRetry;
+        this.status = nextRetry != null ? SyncEventStatus.RETRYING : SyncEventStatus.FAILED;
         touch();
     }
 

@@ -76,10 +76,16 @@ public class SyncInboxService {
         syncEventRepository.save(inboxEvent);
 
         // Process business logic
-        if ("ORDER".equals(dto.aggregateType()) && "ORDER_CREATED".equals(dto.eventType())) {
-            processOrderCreated(dto.payload());
+        if ("ORDER".equals(dto.aggregateType())) {
+            switch (dto.eventType()) {
+                case "ORDER_CREATED" -> processOrderCreated(dto.payload());
+                case "ORDER_UPDATED" -> processOrderUpdated(dto.payload());
+                case "ORDER_PAID"    -> processOrderPaid(dto.payload());
+                case "ORDER_CANCELED" -> processOrderCanceled(dto.payload());
+                default -> log.warn("Unhandled ORDER event type: {}", dto.eventType());
+            }
         } else {
-            log.warn("Unknown event type for inbox: {} - {}", dto.aggregateType(), dto.eventType());
+            log.warn("Unknown event for inbox: {} - {}", dto.aggregateType(), dto.eventType());
         }
     }
 
@@ -108,7 +114,10 @@ public class SyncInboxService {
 
         order = orderRepository.save(order);
 
-        List<Map<String, Object>> itemsData = (List<Map<String, Object>>) payload.get("items");
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> itemsData = payload.get("items") instanceof List<?> rawList
+                ? (List<Map<String, Object>>) rawList
+                : List.of();
         List<OrderItemEntity> items = new ArrayList<>();
 
         for (Map<String, Object> itemData : itemsData) {
@@ -145,7 +154,40 @@ public class SyncInboxService {
 
         // KDS Integration
         kdsService.createTicketsForOrder(order, items);
-        
+
         log.info("Online order processed locally: {} (Number: {})", order.getId(), payload.get("orderNumber"));
+    }
+
+    private void processOrderUpdated(Map<String, Object> payload) {
+        UUID orderId = UUID.fromString((String) payload.get("orderId"));
+        orderRepository.findById(orderId).ifPresentOrElse(order -> {
+            if (payload.containsKey("status")) {
+                OrderStatus newStatus = OrderStatus.valueOf((String) payload.get("status"));
+                order.changeStatus(newStatus);
+            }
+            if (payload.containsKey("notes")) {
+                order.setNotes((String) payload.get("notes"));
+            }
+            orderRepository.save(order);
+            log.info("Online order {} updated locally", orderId);
+        }, () -> log.warn("ORDER_UPDATED: order {} not found locally — skipping", orderId));
+    }
+
+    private void processOrderPaid(Map<String, Object> payload) {
+        UUID orderId = UUID.fromString((String) payload.get("orderId"));
+        orderRepository.findById(orderId).ifPresentOrElse(order -> {
+            order.markPaid(OrderStatus.PAID);
+            orderRepository.save(order);
+            log.info("Online order {} marked as PAID locally", orderId);
+        }, () -> log.warn("ORDER_PAID: order {} not found locally — skipping", orderId));
+    }
+
+    private void processOrderCanceled(Map<String, Object> payload) {
+        UUID orderId = UUID.fromString((String) payload.get("orderId"));
+        orderRepository.findById(orderId).ifPresentOrElse(order -> {
+            order.changeStatus(OrderStatus.CANCELED);
+            orderRepository.save(order);
+            log.info("Online order {} canceled locally", orderId);
+        }, () -> log.warn("ORDER_CANCELED: order {} not found locally — skipping", orderId));
     }
 }

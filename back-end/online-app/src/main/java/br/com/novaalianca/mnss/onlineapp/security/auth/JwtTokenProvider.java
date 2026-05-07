@@ -17,7 +17,7 @@ import java.util.Set;
 @Component
 public class JwtTokenProvider {
 
-    @Value("${mnss.online.jwt-secret:change_me_secret}")
+    @Value("${mnss.online.jwt-secret}")
     private String tokenSecret;
 
     private final ObjectMapper objectMapper;

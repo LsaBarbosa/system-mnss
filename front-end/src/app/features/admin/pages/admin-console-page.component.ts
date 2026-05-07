@@ -16,6 +16,12 @@ interface OperationTile {
   tone: 'ready' | 'pending' | 'warning';
 }
 
+interface NavItem {
+  label: string;
+  route: string;
+  roles: ReadonlyArray<import('../../../core/auth/auth.models').RoleName>;
+}
+
 @Component({
   selector: 'mnss-admin-console-page',
   standalone: true,
@@ -27,23 +33,21 @@ export class AdminConsolePageComponent implements OnInit {
   apiState: ApiState = 'checking';
   healthStatus?: HealthStatus;
 
-  readonly navigation = [
-    { label: 'PDV', route: '/pdv' },
-    { label: 'Caixa', route: '/' },
-    { label: 'KDS', route: '/kds' },
-    { label: 'Catalogo', route: '/catalog' },
-    { label: 'Estoque', route: '/stock' },
-    { label: 'Usuarios', route: '/users' },
-    { label: 'Sync', route: '/admin/sync' },
-    { label: 'WhatsApp', route: '/admin/whatsapp' },
-    { label: 'Site Público', route: '/cardapio' }
+  readonly navigation: NavItem[] = [
+    { label: 'PDV',      route: '/pdv',            roles: ['GERENTE', 'CAIXA', 'ATENDENTE'] },
+    { label: 'KDS',      route: '/kds',            roles: ['ADMIN', 'GERENTE', 'COZINHA', 'EXPEDICAO'] },
+    { label: 'Catalogo', route: '/catalog',        roles: ['ADMIN', 'GERENTE'] },
+    { label: 'Estoque',  route: '/stock',          roles: ['ADMIN', 'GERENTE'] },
+    { label: 'Usuarios', route: '/users',          roles: ['ADMIN'] },
+    { label: 'Sync',     route: '/admin/sync',     roles: ['ADMIN', 'GERENTE'] },
+    { label: 'WhatsApp', route: '/admin/whatsapp', roles: ['ADMIN', 'GERENTE', 'ATENDENTE'] }
   ];
 
   readonly operationTiles: OperationTile[] = [
-    { label: 'PDV local', status: 'Base criada', tone: 'ready' },
+    { label: 'PDV local',     status: 'Ativo',        tone: 'ready' },
     { label: 'Infra tecnica', status: 'Health ativo', tone: 'ready' },
-    { label: 'KDS', status: 'Contrato pendente', tone: 'pending' },
-    { label: 'Sincronizacao', status: 'Outbox previsto', tone: 'warning' }
+    { label: 'KDS',           status: 'Ativo',        tone: 'ready' },
+    { label: 'Sincronizacao', status: 'Ativo',        tone: 'ready' }
   ];
 
   constructor(

@@ -27,6 +27,12 @@ public class OnlineCategoryEntity extends BaseEntity {
     @Column(nullable = false)
     private boolean showOnline;
 
+    @Column(nullable = false)
+    private boolean showOnPdv;
+
+    @Column(nullable = false)
+    private boolean showOnWhatsapp;
+
     protected OnlineCategoryEntity() {}
 
     public String getName() {
@@ -51,5 +57,13 @@ public class OnlineCategoryEntity extends BaseEntity {
 
     public boolean isShowOnline() {
         return showOnline;
+    }
+
+    public boolean isShowOnPdv() {
+        return showOnPdv;
+    }
+
+    public boolean isShowOnWhatsapp() {
+        return showOnWhatsapp;
     }
 }

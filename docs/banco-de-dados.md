@@ -197,6 +197,7 @@ CREATE TABLE products (
     sell_on_pdv BOOLEAN NOT NULL DEFAULT TRUE,
     sell_online BOOLEAN NOT NULL DEFAULT TRUE,
     sell_on_whatsapp BOOLEAN NOT NULL DEFAULT TRUE,
+    stock_controlled BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -277,10 +278,12 @@ CREATE TABLE orders (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     order_number BIGSERIAL UNIQUE,
     customer_id UUID REFERENCES customers(id),
+    delivery_address_id UUID REFERENCES customer_addresses(id),
     origin VARCHAR(40) NOT NULL,
     status VARCHAR(50) NOT NULL,
     payment_status VARCHAR(50) NOT NULL,
     delivery_type VARCHAR(50) NOT NULL,
+    payment_method VARCHAR(50) NOT NULL,
     subtotal NUMERIC(12,2) NOT NULL DEFAULT 0,
     discount_amount NUMERIC(12,2) NOT NULL DEFAULT 0,
     delivery_fee NUMERIC(12,2) NOT NULL DEFAULT 0,
@@ -297,9 +300,11 @@ CREATE TABLE orders (
 
 ```sql
 CREATE INDEX idx_orders_customer_id ON orders(customer_id);
+CREATE INDEX idx_orders_delivery_address_id ON orders(delivery_address_id);
 CREATE INDEX idx_orders_status ON orders(status);
 CREATE INDEX idx_orders_origin ON orders(origin);
 CREATE INDEX idx_orders_created_at ON orders(created_at);
+CREATE INDEX idx_orders_payment_method ON orders(payment_method);
 ```
 
 ## 6.10 Order Items
@@ -497,7 +502,12 @@ back-end/local-app/src/main/resources/db/migration/
 ├── V2__core_business_schema.sql
 ├── V3__seed_initial_roles.sql
 ├── V4__sync_outbox_schema.sql
-└── V5__add_stock_controlled_to_products.sql
+├── V5__add_stock_controlled_to_products.sql
+├── V6__add_delivery_address_to_orders.sql
+├── V7__add_index_orders_delivery_address_id.sql
+├── V8__make_customer_address_customer_nullable.sql
+├── V9__create_stock_balances.sql
+└── V10__expand_stock_movements.sql
 
 back-end/online-app/src/main/resources/db/migration/
 ├── V1__baseline_schema.sql
@@ -508,7 +518,13 @@ back-end/online-app/src/main/resources/db/migration/
 ├── V6__add_version_to_categories.sql
 ├── V7__add_version_to_online_tables.sql
 ├── V8__add_payment_method_to_orders.sql
-└── V9__add_webhook_payload_to_payments.sql
+├── V9__add_webhook_payload_to_payments.sql
+├── V10__create_online_local_sale_summaries.sql
+├── V11__add_delivery_address_to_orders.sql
+├── V12__create_stock_balances.sql
+├── V13__enforce_payment_method_on_orders.sql
+├── V14__add_version_to_online_operational_tables.sql
+└── V15__add_fk_whatsapp_conversations_assigned_to.sql
 ```
 
 ## 8. Separação local e online
@@ -537,6 +553,12 @@ back-end/online-app/src/main/resources/db/migration/
 - payments
 - sync_events
 - audit_logs
+- online_local_sale_summaries
+
+> As tabelas `cash_registers`, `cash_movements`, `kds_tickets`, `kds_ticket_items` e `stock_movements`
+> também existem no banco online por compartilhamento inicial de schema. Elas não são a fonte primária
+> da operação local, mas recebem `version` para manter compatibilidade com entidades baseadas em `BaseEntity`
+> caso sejam mapeadas futuramente.
 
 ### 8.3 Tabelas compartilhadas
 
@@ -561,7 +583,15 @@ back-end/online-app/src/main/resources/db/migration/
 - Criar backup antes de migrations em produção.
 - Evitar exclusão física de registros críticos.
 
-## 10. Próximos passos
+## 10. Política de data/hora
+
+A aplicação deve gravar datas em UTC.
+
+As colunas `TIMESTAMP` devem ser interpretadas como UTC pela aplicação.
+
+Não usar horário local de máquina para regra de negócio.
+
+## 11. Próximos passos
 
 1. Criar migrations Flyway.
 2. Criar entidades JPA.

@@ -36,8 +36,6 @@ management:
 
 mnss:
   environment: online
-  online:
-    jwt-secret: ${MNSS_ONLINE_JWT_SECRET}
   sync:
     default-store-id: ${MNSS_DEFAULT_STORE_ID:store-001}
     stores:

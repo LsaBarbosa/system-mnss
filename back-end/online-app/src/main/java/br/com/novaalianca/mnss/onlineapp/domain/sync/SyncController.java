@@ -1,11 +1,11 @@
 package br.com.novaalianca.mnss.onlineapp.domain.sync;
 
+import br.com.novaalianca.mnss.onlineapp.config.SyncStoresProperties;
 import br.com.novaalianca.mnss.sharedinfra.security.HmacUtils;
 import br.com.novaalianca.mnss.sync.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,14 +23,14 @@ public class SyncController {
     private final SyncEventRepository repository;
     private final ObjectMapper objectMapper;
     private final SyncEventMapper syncEventMapper;
+    private final SyncStoresProperties storesProperties;
 
-    @Value("#{${mnss.sync.stores}}")
-    private Map<String, String> storeSecrets;
-
-    public SyncController(SyncEventRepository repository, ObjectMapper objectMapper, SyncEventMapper syncEventMapper) {
+    public SyncController(SyncEventRepository repository, ObjectMapper objectMapper,
+                          SyncEventMapper syncEventMapper, SyncStoresProperties storesProperties) {
         this.repository = repository;
         this.objectMapper = objectMapper;
         this.syncEventMapper = syncEventMapper;
+        this.storesProperties = storesProperties;
     }
 
     @PostMapping("/events")
@@ -43,7 +43,7 @@ public class SyncController {
         log.info("Received sync event from store {}: {}", storeId, idempotencyKey);
 
         // 1. Validate Store
-        String secret = storeSecrets.get(storeId);
+        String secret = storesProperties.secretFor(storeId);
         if (secret == null) {
             log.warn("Unknown store ID: {}", storeId);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -115,7 +115,7 @@ public class SyncController {
             @RequestParam(value = "storeId", required = false) String requestedStoreId) {
 
         // Validate Store
-        String secret = storeSecrets.get(storeId);
+        String secret = storesProperties.secretFor(storeId);
         if (secret == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -150,7 +150,7 @@ public class SyncController {
             @RequestHeader("X-Signature") String signature) {
 
         // Validate Store
-        String secret = storeSecrets.get(storeId);
+        String secret = storesProperties.secretFor(storeId);
         if (secret == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }

@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
@@ -53,6 +54,7 @@ public class SyncOutboxWorker {
     }
 
     @Scheduled(fixedDelayString = "${mnss.sync.fixed-delay:30000}")
+    @Transactional(readOnly = true)
     public void processPendingEvents() {
         List<SyncEventEntity> pending = repository.findByStatusAndDirection(SyncEventStatus.PENDING, SyncDirection.LOCAL_TO_ONLINE);
         pending.forEach(this::sendEvent);

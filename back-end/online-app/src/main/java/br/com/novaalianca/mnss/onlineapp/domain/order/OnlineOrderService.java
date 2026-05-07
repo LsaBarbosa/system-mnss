@@ -87,9 +87,7 @@ public class OnlineOrderService {
 
         // Determine status and sync based on payment method
         br.com.novaalianca.mnss.core.payment.PaymentMethod method = request.paymentMethod();
-        boolean isOnlinePayment = method == br.com.novaalianca.mnss.core.payment.PaymentMethod.ONLINE_PIX 
-                || method == br.com.novaalianca.mnss.core.payment.PaymentMethod.ONLINE_CREDIT_CARD 
-                || method == br.com.novaalianca.mnss.core.payment.PaymentMethod.ONLINE_DEBIT_CARD;
+        boolean isOnlinePayment = method.isOnline();
 
         if (isOnlinePayment) {
             order.updateStatus(OrderStatus.PAYMENT_PENDING);

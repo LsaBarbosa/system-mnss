@@ -2,14 +2,11 @@ package br.com.novaalianca.mnss.localapp.domain.sync;
 
 import br.com.novaalianca.mnss.core.catalog.PreparationSector;
 import br.com.novaalianca.mnss.core.payment.PaymentStatus;
-import br.com.novaalianca.mnss.localapp.domain.customer.CustomerEntity;
-import br.com.novaalianca.mnss.localapp.domain.customer.CustomerRepository;
 import br.com.novaalianca.mnss.localapp.domain.kds.KdsService;
 import br.com.novaalianca.mnss.localapp.domain.catalog.ProductEntity;
 import br.com.novaalianca.mnss.localapp.domain.catalog.ProductRepository;
 import br.com.novaalianca.mnss.localapp.domain.order.*;
 import br.com.novaalianca.mnss.sync.*;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -19,7 +16,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -28,27 +24,21 @@ public class SyncInboxService {
 
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
-    private final CustomerRepository customerRepository;
     private final ProductRepository productRepository;
     private final KdsService kdsService;
     private final SyncEventRepository syncEventRepository;
-    private final ObjectMapper objectMapper;
 
     public SyncInboxService(
             OrderRepository orderRepository,
             OrderItemRepository orderItemRepository,
-            CustomerRepository customerRepository,
             ProductRepository productRepository,
             KdsService kdsService,
-            SyncEventRepository syncEventRepository,
-            ObjectMapper objectMapper) {
+            SyncEventRepository syncEventRepository) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
-        this.customerRepository = customerRepository;
         this.productRepository = productRepository;
         this.kdsService = kdsService;
         this.syncEventRepository = syncEventRepository;
-        this.objectMapper = objectMapper;
     }
 
     @Transactional

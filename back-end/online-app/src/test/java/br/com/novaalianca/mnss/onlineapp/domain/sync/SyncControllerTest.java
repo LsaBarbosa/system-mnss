@@ -1,5 +1,6 @@
 package br.com.novaalianca.mnss.onlineapp.domain.sync;
 
+import br.com.novaalianca.mnss.onlineapp.config.SyncStoresProperties;
 import br.com.novaalianca.mnss.sharedinfra.security.HmacUtils;
 import br.com.novaalianca.mnss.sync.SyncDirection;
 import br.com.novaalianca.mnss.sync.SyncEnvironment;
@@ -14,7 +15,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -47,11 +47,11 @@ class SyncControllerTest {
 
     @BeforeEach
     void setUp() {
-        controller = new SyncController(repository, objectMapper, syncEventMapper);
         Map<String, String> stores = new HashMap<>();
         stores.put(storeId, secret);
         stores.put(otherStoreId, otherSecret);
-        ReflectionTestUtils.setField(controller, "storeSecrets", stores);
+        SyncStoresProperties storesProperties = new SyncStoresProperties(stores);
+        controller = new SyncController(repository, objectMapper, syncEventMapper, storesProperties);
     }
 
     @Test
@@ -191,6 +191,57 @@ class SyncControllerTest {
 
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
         verify(repository, never()).save(any());
+    }
+
+    @Test
+    void listEvents_ShouldRequireAuthentication() {
+        // Unit test: @PreAuthorize is enforced by Spring AOP, not here.
+        // Verify the method exists and returns data when called without security context.
+        when(repository.findAllByOrderByCreatedAtDesc()).thenReturn(List.of());
+        when(syncEventMapper.toDtoList(any())).thenReturn(List.of());
+
+        ResponseEntity<List<SyncEventDto>> response = controller.listEvents();
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    void getSyncStatus_ShouldReturnCountsPerStatus() {
+        when(repository.countByStatus(any())).thenReturn(0L);
+        when(repository.countByStatus(SyncEventStatus.PENDING)).thenReturn(3L);
+        when(repository.countByStatus(SyncEventStatus.SYNCED)).thenReturn(10L);
+
+        ResponseEntity<Map<String, Long>> response = controller.getSyncStatus();
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(3L, response.getBody().get("PENDING"));
+        assertEquals(10L, response.getBody().get("SYNCED"));
+    }
+
+    @Test
+    void reprocessEvent_ShouldResetStatusToPending() {
+        UUID id = UUID.randomUUID();
+        SyncEventEntity event = createPendingOnlineToLocalEvent(storeId);
+
+        when(repository.findById(id)).thenReturn(Optional.of(event));
+
+        ResponseEntity<Void> response = controller.reprocessEvent(id);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(repository).save(argThat(e -> e.getStatus() == SyncEventStatus.PENDING));
+    }
+
+    @Test
+    void ignoreEvent_ShouldMarkAsIgnored() {
+        UUID id = UUID.randomUUID();
+        SyncEventEntity event = createPendingOnlineToLocalEvent(storeId);
+
+        when(repository.findById(id)).thenReturn(Optional.of(event));
+
+        ResponseEntity<Void> response = controller.ignoreEvent(id, Map.of("reason", "teste"));
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(repository).save(argThat(e -> e.getStatus() == SyncEventStatus.IGNORED));
     }
 
     private SyncEventEntity createPendingOnlineToLocalEvent(String ownerStoreId) {

@@ -9,5 +9,9 @@ public enum PaymentMethod {
     ONLINE_CREDIT_CARD,
     ONLINE_DEBIT_CARD,
     MEAL_VOUCHER,
-    MIXED
+    MIXED;
+
+    public boolean isOnline() {
+        return this == ONLINE_PIX || this == ONLINE_CREDIT_CARD || this == ONLINE_DEBIT_CARD;
+    }
 }

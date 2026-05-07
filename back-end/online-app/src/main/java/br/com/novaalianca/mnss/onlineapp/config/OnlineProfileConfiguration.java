@@ -6,6 +6,6 @@ import org.springframework.context.annotation.Profile;
 
 @Configuration(proxyBeanMethods = false)
 @Profile("online")
-@EnableConfigurationProperties(OnlineProfileProperties.class)
+@EnableConfigurationProperties({OnlineProfileProperties.class, SyncStoresProperties.class})
 public class OnlineProfileConfiguration {
 }

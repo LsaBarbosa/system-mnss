@@ -2,37 +2,10 @@ spring:
   config:
     activate:
       on-profile: online
-  datasource:
-    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${POSTGRES_DB}
-    username: ${POSTGRES_USER}
-    password: ${POSTGRES_PASSWORD}
-  rabbitmq:
-    host: ${RABBITMQ_HOST}
-    port: ${RABBITMQ_PORT:5672}
-    username: ${RABBITMQ_DEFAULT_USER}
-    password: ${RABBITMQ_DEFAULT_PASS}
-  data:
-    redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT:6379}
-
-server:
-  port: ${ONLINE_API_PORT:8080}
 
 mnss:
-  environment: online
   online:
-    database-host: ${DB_HOST}
-    database-port: ${DB_PORT}
-    database-name: ${POSTGRES_DB}
-    database-user: ${POSTGRES_USER}
-    database-password: ${POSTGRES_PASSWORD}
-    rabbitmq-host: ${RABBITMQ_HOST}
-    rabbitmq-user: ${RABBITMQ_DEFAULT_USER}
-    rabbitmq-password: ${RABBITMQ_DEFAULT_PASS}
-    redis-host: ${REDIS_HOST}
-    redis-port: ${REDIS_PORT}
-    jwt-secret: ${JWT_SECRET}
+    jwt-secret: ${MNSS_ONLINE_JWT_SECRET}
     sync-master-secret: ${SYNC_MASTER_SECRET}
     site-url: ${SITE_URL}
     api-url: ${API_URL}

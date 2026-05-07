@@ -60,7 +60,7 @@
             <div class="button-group">
               <button class="btn-icon" (click)="viewPayload(event)" title="Ver Payload">👁️</button>
               <button class="btn-icon btn-reprocess" *ngIf="event.status === 'FAILED'" (click)="reprocess(event)" title="Reprocessar">🔄</button>
-              <button class="btn-icon btn-ignore" *ngIf="event.status === 'FAILED'" (click)="ignore(event)" title="Ignorar">🚫</button>
+              <button class="btn-icon btn-ignore" *ngIf="event.status === 'FAILED'" (click)="openIgnoreModal(event)" title="Ignorar">🚫</button>
             </div>
           </td>
         </tr>
@@ -69,5 +69,43 @@
         </tr>
       </tbody>
     </table>
+  </div>
+</div>
+
+<!-- Payload Modal -->
+<div class="modal-backdrop" *ngIf="showPayloadModal" (click)="closePayloadModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Payload do Evento</h3>
+      <button class="modal-close" (click)="closePayloadModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <pre class="payload-pre">{{ selectedPayload }}</pre>
+    </div>
+  </div>
+</div>
+
+<!-- Ignore Modal -->
+<div class="modal-backdrop" *ngIf="showIgnoreModal" (click)="closeIgnoreModal()">
+  <div class="modal modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Ignorar Evento</h3>
+      <button class="modal-close" (click)="closeIgnoreModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <label class="modal-label">Motivo para ignorar:</label>
+      <input
+        class="modal-input"
+        type="text"
+        [(ngModel)]="ignoreReason"
+        placeholder="Descreva o motivo..."
+        (keydown.enter)="confirmIgnore()"
+        autofocus
+      />
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeIgnoreModal()">Cancelar</button>
+      <button class="btn btn-danger" (click)="confirmIgnore()" [disabled]="!ignoreReason.trim()">Confirmar</button>
+    </div>
   </div>
 </div>

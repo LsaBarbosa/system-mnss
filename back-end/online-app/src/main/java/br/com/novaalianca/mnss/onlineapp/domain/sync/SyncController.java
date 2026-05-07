@@ -11,8 +11,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/sync")
@@ -76,11 +79,16 @@ public class SyncController {
         // 4. Save Event
         try {
             Object payload = body.get("payload");
-            @SuppressWarnings("unchecked")
             Map<String, Object> rawPayload = payload == null
                     ? Map.of()
-                    : (Map<String, Object>) payload;
-            Map<String, Object> eventPayload = new java.util.LinkedHashMap<>(rawPayload);
+                    : ((Map<?, ?>) payload).entrySet().stream()
+                        .collect(Collectors.toMap(
+                            entry -> String.valueOf(entry.getKey()),
+                            Map.Entry::getValue,
+                            (left, right) -> right,
+                            LinkedHashMap::new
+                        ));
+            Map<String, Object> eventPayload = new LinkedHashMap<>(rawPayload);
             eventPayload.putIfAbsent(STORE_ID_FIELD, storeId);
 
             SyncEventEntity event = new SyncEventEntity(
@@ -109,7 +117,7 @@ public class SyncController {
     }
 
     @GetMapping("/pending")
-    public ResponseEntity<java.util.List<SyncEventDto>> getPendingEvents(
+    public ResponseEntity<List<SyncEventDto>> getPendingEvents(
             @RequestHeader("X-Store-ID") String storeId,
             @RequestHeader("X-Signature") String signature,
             @RequestParam(value = "storeId", required = false) String requestedStoreId) {
@@ -134,7 +142,7 @@ public class SyncController {
         }
 
         String targetStoreId = effectiveStoreId;
-        java.util.List<SyncEventDto> filtered = repository.findByStatusAndDirection(
+        List<SyncEventDto> filtered = repository.findByStatusAndDirection(
                         SyncEventStatus.PENDING,
                         SyncDirection.ONLINE_TO_LOCAL).stream()
                 .filter(event -> belongsToStore(event, targetStoreId))
@@ -176,7 +184,7 @@ public class SyncController {
 
     @GetMapping("/events")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
-    public ResponseEntity<java.util.List<SyncEventDto>> listEvents() {
+    public ResponseEntity<List<SyncEventDto>> listEvents() {
         return ResponseEntity.ok(
                 syncEventMapper.toDtoList(repository.findAllByOrderByCreatedAtDesc()));
     }
@@ -184,7 +192,7 @@ public class SyncController {
     @GetMapping("/status")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
     public ResponseEntity<Map<String, Long>> getSyncStatus() {
-        Map<String, Long> counts = new java.util.LinkedHashMap<>();
+        Map<String, Long> counts = new LinkedHashMap<>();
         for (SyncEventStatus status : SyncEventStatus.values()) {
             long count = repository.countByStatus(status);
             if (count > 0) {

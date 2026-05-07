@@ -56,6 +56,7 @@ public class SyncOutboxWorker {
     @Scheduled(fixedDelayString = "${mnss.sync.fixed-delay:30000}")
     @Transactional
     public void processPendingEvents() {
+        validateSyncUrl();
         List<SyncEventEntity> pending = repository.findByStatusAndDirection(SyncEventStatus.PENDING, SyncDirection.LOCAL_TO_ONLINE);
         pending.forEach(this::sendEvent);
 
@@ -68,7 +69,6 @@ public class SyncOutboxWorker {
 
     private void sendEvent(SyncEventEntity event) {
         try {
-            validateSyncUrl();
             log.info("Sending sync event: {} ({})", event.getEventType(), event.getIdempotencyKey());
 
             String payloadJson = objectMapper.writeValueAsString(event.getPayload());

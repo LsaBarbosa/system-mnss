@@ -2,6 +2,20 @@
 
 Este diretório contém a documentação inicial do projeto **Sistema Nova Aliança**, sistema híbrido **local + online** para a Padaria e Lanchonete Nova Aliança.
 
+## Status dos endpoints OpenAPI (x-mnss-status)
+
+Os contratos OpenAPI em `contracts/` usam a extensão `x-mnss-status` em cada path para indicar o nível de maturidade:
+
+| Status | Significado |
+|---|---|
+| `mvp` | Obrigatório para operação mínima — loja não funciona sem ele |
+| `implemented` | Implementado, homologado e estável além do MVP |
+| `experimental` | Implementado mas ainda não totalmente homologado em produção |
+| `future` | Planejado para sprints futuras, ainda não implementado |
+| `deprecated` | Será removido em versão futura — não usar em integrações novas |
+
+Use esse metadado para priorizar testes, integração e contrato com parceiros.
+
 ## Objetivo do projeto
 
 Criar uma plataforma integrada para:

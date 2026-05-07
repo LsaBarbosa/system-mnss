@@ -4,15 +4,28 @@ info:
   version: 0.0.1
   description: |
     API para operação local da Padaria Nova Aliança.
-    
+
+    ### Status dos endpoints (x-mnss-status)
+
+    Cada endpoint pode ter a extensão `x-mnss-status` indicando:
+
+    | Status | Significado |
+    |---|---|
+    | `mvp` | Obrigatório para operação presencial da loja |
+    | `implemented` | Implementado e homologado além do MVP |
+    | `experimental` | Implementado mas ainda não totalmente homologado |
+    | `future` | Planejado, ainda não implementado |
+    | `deprecated` | Será removido em versão futura |
+
     ### WebSocket Events
     O sistema publica eventos em tempo real para sincronização de telas:
-    
+
     - `/topic/kds/tickets`: Enviado quando um ticket é criado ou atualizado. Payload: `KdsTicketResponse`.
     - `/topic/kds/tickets/{sector}`: Mesmo evento acima, mas filtrado por setor (ex: `COZINHA`, `FORNO`).
     - `/topic/orders/ready`: Enviado quando um pedido completo está pronto para entrega. Payload: `UUID` (ID do pedido).
 paths:
   /api/version:
+    x-mnss-status: implemented
     get:
       summary: Retorna a versao da aplicacao local.
       operationId: getLocalApiVersion
@@ -27,6 +40,7 @@ paths:
                   version:
                     type: string
   /api/sync/health:
+    x-mnss-status: implemented
     get:
       summary: Retorna o estado operacional da sincronizacao local.
       operationId: getLocalSyncHealth
@@ -40,6 +54,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SyncHealthResponse'
   /api/hardware/drawer:
+    x-mnss-status: experimental
     post:
       summary: Solicita abertura da gaveta de dinheiro.
       operationId: openCashDrawer
@@ -51,6 +66,7 @@ paths:
         '403':
           $ref: '#/components/responses/BusinessError'
   /api/public/info:
+    x-mnss-status: mvp
     get:
       summary: Retorna informacoes da loja para o menu publico local.
       operationId: getLocalStoreInfo
@@ -62,6 +78,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/StoreInfoResponse'
   /api/auth/login:
+    x-mnss-status: mvp
     post:
       summary: Autentica usuario interno.
       operationId: loginInternalUser
@@ -83,6 +100,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/auth/me:
+    x-mnss-status: implemented
     get:
       summary: Retorna usuario autenticado.
       operationId: getAuthenticatedUser
@@ -100,6 +118,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/users:
+    x-mnss-status: implemented
     get:
       summary: Lista usuarios internos.
       operationId: listInternalUsers
@@ -145,6 +164,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/roles:
+    x-mnss-status: implemented
     get:
       summary: Lista perfis disponiveis.
       operationId: listRoles
@@ -164,6 +184,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/admin/critical-actions/authorize:
+    x-mnss-status: experimental
     post:
       summary: Valida acesso a uma acao critica.
       operationId: authorizeCriticalAction
@@ -177,6 +198,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/categories:
+    x-mnss-status: implemented
     get:
       summary: Lista categorias do catalogo.
       operationId: listCategories
@@ -225,6 +247,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/categories/{id}:
+    x-mnss-status: implemented
     patch:
       summary: Atualiza categoria do catalogo.
       operationId: updateCategory
@@ -255,6 +278,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/products:
+    x-mnss-status: implemented
     get:
       summary: Lista produtos do catalogo.
       operationId: listProducts
@@ -308,6 +332,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/products/{id}:
+    x-mnss-status: implemented
     patch:
       summary: Atualiza produto do catalogo.
       operationId: updateProduct
@@ -338,6 +363,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/products/{id}/availability:
+    x-mnss-status: implemented
     patch:
       summary: Atualiza disponibilidade real de um produto.
       operationId: updateProductAvailability
@@ -370,6 +396,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/products/barcode/{barcode}:
+    x-mnss-status: implemented
     get:
       summary: Busca produto vendavel por codigo de barras.
       operationId: findProductByBarcode
@@ -393,6 +420,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/pdv/products:
+    x-mnss-status: implemented
     get:
       summary: Lista produtos vendaveis para o PDV.
       operationId: listPdvProducts
@@ -422,6 +450,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/pdv/products/barcode/{barcode}:
+    x-mnss-status: implemented
     get:
       summary: Busca produto vendavel para o PDV por codigo de barras.
       operationId: findPdvProductByBarcode
@@ -445,6 +474,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/pdv/sales:
+    x-mnss-status: mvp
     get:
       summary: Lista vendas presenciais do PDV.
       operationId: listPdvSales
@@ -482,6 +512,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/pdv/sales/{saleId}:
+    x-mnss-status: mvp
     get:
       summary: Retorna venda presencial do PDV.
       operationId: getPdvSale
@@ -506,6 +537,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/pdv/sales/{saleId}/items:
+    x-mnss-status: mvp
     post:
       summary: Adiciona produto ao carrinho da venda PDV.
       operationId: addPdvSaleItem
@@ -540,6 +572,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/pdv/sales/{saleId}/items/{itemId}:
+    x-mnss-status: mvp
     patch:
       summary: Altera quantidade de um item da venda PDV.
       operationId: updatePdvSaleItem
@@ -611,6 +644,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/pdv/sales/{saleId}/payment:
+    x-mnss-status: mvp
     post:
       summary: Registra pagamento parcial ou total de uma venda PDV.
       operationId: payPdvSale
@@ -645,6 +679,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/pdv/sales/{saleId}/finish:
+    x-mnss-status: mvp
     post:
       summary: Finaliza a venda PDV após pagamentos completos.
       operationId: finishPdvSale
@@ -673,6 +708,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/pdv/sales/{saleId}/discount:
+    x-mnss-status: mvp
     post:
       summary: Aplica desconto ao total da venda PDV.
       operationId: applyPdvSaleDiscount
@@ -707,6 +743,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/pdv/sales/{saleId}/cancel:
+    x-mnss-status: mvp
     post:
       summary: Cancela uma venda PDV em aberto.
       operationId: cancelPdvSale
@@ -739,6 +776,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/pdv/sales/{saleId}/print:
+    x-mnss-status: mvp
     post:
       summary: Solicita a reimpressão do comprovante de venda.
       operationId: reprintPdvSaleReceipt
@@ -761,6 +799,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/kds/tickets:
+    x-mnss-status: mvp
     get:
       summary: Lista tickets de preparo ativos no KDS.
       operationId: getKdsTickets
@@ -784,6 +823,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/kds/tickets/{id}/start:
+    x-mnss-status: mvp
     patch:
       summary: Marca início do preparo de um ticket.
       operationId: startKdsTicket
@@ -808,6 +848,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/kds/tickets/{id}/ready:
+    x-mnss-status: mvp
     patch:
       summary: Marca ticket como pronto para entrega/expedição.
       operationId: readyKdsTicket
@@ -832,6 +873,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/kds/tickets/{id}/finish:
+    x-mnss-status: mvp
     patch:
       summary: Marca ticket como finalizado/entregue ao cliente.
       operationId: finishKdsTicket
@@ -856,6 +898,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/kds/items/{id}/ready:
+    x-mnss-status: implemented
     patch:
       summary: Marca um item específico de um ticket como pronto.
       operationId: readyKdsItem
@@ -876,6 +919,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/kds/orders/{id}/finish:
+    x-mnss-status: implemented
     patch:
       summary: Finaliza todos os tickets vinculados a um pedido.
       operationId: finishKdsOrder
@@ -896,6 +940,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/orders/{orderId}/payments:
+    x-mnss-status: implemented
     post:
       summary: Registra pagamento e finaliza venda local.
       operationId: createOrderPayment
@@ -932,6 +977,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/public/menu:
+    x-mnss-status: mvp
     get:
       summary: Lista cardapio publico filtrado por disponibilidade online.
       operationId: listPublicMenu
@@ -947,6 +993,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/cash-register/open:
+    x-mnss-status: mvp
     post:
       summary: Abre caixa do operador autenticado.
       operationId: openCashRegister
@@ -974,6 +1021,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/cash-register/current:
+    x-mnss-status: mvp
     get:
       summary: Retorna caixa aberto do operador autenticado.
       operationId: getCurrentCashRegister
@@ -991,6 +1039,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/cash-register/{id}/movement:
+    x-mnss-status: implemented
     post:
       summary: Registra sangria ou suprimento no caixa.
       operationId: createCashMovement
@@ -1025,6 +1074,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/cash-register/{id}/close:
+    x-mnss-status: mvp
     post:
       summary: Fecha caixa e retorna resumo.
       operationId: closeCashRegister
@@ -1059,6 +1109,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/cash-register/{id}/summary:
+    x-mnss-status: implemented
     get:
       summary: Retorna resumo do caixa.
       operationId: getCashRegisterSummary
@@ -1085,6 +1136,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/stock-movements:
+    x-mnss-status: implemented
     get:
       summary: Lista movimentacoes de estoque.
       operationId: listStockMovements
@@ -1169,6 +1221,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/health:
+    x-mnss-status: mvp
     get:
       summary: Verifica a saude tecnica da API local e dependencias internas.
       operationId: localApiTechnicalHealth

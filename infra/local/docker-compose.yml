@@ -5,31 +5,40 @@ services:
       dockerfile: local-app/Dockerfile
     container_name: nova-alianca-local-api
     depends_on:
-      - postgres-local
-      - rabbitmq-local
-      - redis-local
+      postgres-local:
+        condition: service_healthy
+      rabbitmq-local:
+        condition: service_healthy
+      redis-local:
+        condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-local}
-      DB_HOST: postgres-local
-      DB_PORT: 5432
-      POSTGRES_DB: ${POSTGRES_DB:-nova_alianca_local}
-      POSTGRES_USER: ${POSTGRES_USER:-nova_alianca}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me}
-      RABBITMQ_HOST: rabbitmq-local
-      RABBITMQ_PORT: 5672
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-nova_alianca}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-change_me}
-      REDIS_HOST: redis-local
-      REDIS_PORT: ${REDIS_PORT:-6379}
-      LOCAL_API_PORT: ${LOCAL_API_PORT:-8080}
+
+      MNSS_LOCAL_DB_URL: jdbc:postgresql://postgres-local:5432/${POSTGRES_DB:-nova_alianca_local}
+      MNSS_LOCAL_DB_USER: ${POSTGRES_USER:-nova_alianca}
+      MNSS_LOCAL_DB_PASSWORD: ${POSTGRES_PASSWORD:-change_me}
+
+      MNSS_LOCAL_RABBITMQ_HOST: rabbitmq-local
+      MNSS_LOCAL_RABBITMQ_PORT: 5672
+      MNSS_LOCAL_RABBITMQ_USER: ${RABBITMQ_DEFAULT_USER:-nova_alianca}
+      MNSS_LOCAL_RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS:-change_me}
+
+      MNSS_LOCAL_REDIS_HOST: redis-local
+      MNSS_LOCAL_REDIS_PORT: ${REDIS_PORT:-6379}
+
+      MNSS_LOCAL_API_PORT: 8080
+
       AUTH_TOKEN_SECRET: ${AUTH_TOKEN_SECRET:-change_me_auth_token_secret}
       AUTH_TOKEN_TTL: ${AUTH_TOKEN_TTL:-PT8H}
+
       MNSS_INITIAL_ADMIN_USERNAME: ${MNSS_INITIAL_ADMIN_USERNAME:-admin}
       MNSS_INITIAL_ADMIN_PASSWORD: ${MNSS_INITIAL_ADMIN_PASSWORD:-change_me_admin_password}
       MNSS_INITIAL_ADMIN_EMAIL: ${MNSS_INITIAL_ADMIN_EMAIL:-admin@novaalianca.local}
+
       MNSS_ONLINE_URL: ${MNSS_ONLINE_URL:-https://api.padarianovaalianca.com.br}
       MNSS_STORE_ID: ${MNSS_STORE_ID:-nova-alianca-001}
       MNSS_STORE_SECRET: ${MNSS_STORE_SECRET:-change_me}
+      MNSS_SYNC_REQUIRE_HTTPS: ${MNSS_SYNC_REQUIRE_HTTPS:-true}
     ports:
       - "127.0.0.1:${LOCAL_API_PORT:-8080}:8080"
     healthcheck:
@@ -37,7 +46,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      start_period: 60s
     restart: unless-stopped
 
   nova-alianca-local-front:
@@ -48,15 +57,18 @@ services:
         BUILD_CONFIGURATION: local
     container_name: nova-alianca-local-front
     depends_on:
-      - nova-alianca-local-api
+      nova-alianca-local-api:
+        condition: service_healthy
     restart: unless-stopped
 
   nginx-local:
     image: nginx:stable
     container_name: nginx-local
     depends_on:
-      - nova-alianca-local-api
-      - nova-alianca-local-front
+      nova-alianca-local-api:
+        condition: service_healthy
+      nova-alianca-local-front:
+        condition: service_started
     ports:
       - "${NGINX_HTTP_PORT:-80}:80"
     volumes:

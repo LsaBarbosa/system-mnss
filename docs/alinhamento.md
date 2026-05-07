@@ -41,7 +41,7 @@ Transformar as decisões atuais em documentação oficial para evitar que o proj
 
 ### S01-H01 — Atualizar stack oficial para Java 21
 
-**Problema atual:** `AGENTS.md` cita Java 25, mas o build usa Java 21 no Gradle. O `build.gradle` já configura `JavaLanguageVersion.of(21)` .
+**Problema resolvido:** `AGENTS.md` foi atualizado para Java 21, alinhado com o Gradle que já configura `JavaLanguageVersion.of(21)`.
 
 **Tarefas:**
 
@@ -50,12 +50,12 @@ Transformar as decisões atuais em documentação oficial para evitar que o proj
 * Alterar `docs/roadmap-sprints-sistema-mnss.md`.
 * Alterar `docs/guia-codex-cli-implementacao-historias-sistema-mnss.md`.
 * Alterar `docs/prompts-chatgpt-ui-codigo-copia-cola-sistema-mnss.md`.
-* Garantir que toda referência a Java 25 vire Java 21.
+* Garantir que toda referência a Java 25 seja Java 21.
 * Garantir que exemplos de build usem Gradle e Java 21.
 
 **Critérios de aceite:**
 
-* Nenhum documento orientador cita Java 25.
+* Nenhum documento orientador cita Java 25 (resolvido).
 * Documentação e `build.gradle` estão coerentes.
 * A decisão oficial fica explícita:
 
@@ -956,7 +956,7 @@ Atualizar `docs/homologacao-mvp.md` com:
 
 **Critérios de aceite:**
 
-* Nenhum documento exige Java 25.
+* Nenhum documento exige Java 25 (resolvido — todos usam Java 21).
 * Nenhum documento exige hexagonal.
 * Nenhum documento usa modelo antigo de sync.
 * Nenhum documento usa caminho errado.

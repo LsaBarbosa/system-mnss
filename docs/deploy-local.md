@@ -104,32 +104,32 @@ Sugestão:
 
 ## 6. Variáveis de ambiente
 
-Arquivo `.env` local:
+Copie o exemplo e edite os segredos **antes** de subir os containers:
 
-```env
-SPRING_PROFILES_ACTIVE=local
-
-POSTGRES_DB=nova_alianca_local
-POSTGRES_USER=nova_alianca
-POSTGRES_PASSWORD=change_me
-
-RABBITMQ_DEFAULT_USER=nova_alianca
-RABBITMQ_DEFAULT_PASS=change_me
-
-REDIS_HOST=redis-local
-REDIS_PORT=6379
-
-LOCAL_API_PORT=8080
-AUTH_TOKEN_SECRET=change_me_auth_token_secret
-AUTH_TOKEN_TTL=PT8H
-MNSS_INITIAL_ADMIN_USERNAME=admin
-MNSS_INITIAL_ADMIN_PASSWORD=change_me_admin_password
-MNSS_INITIAL_ADMIN_EMAIL=admin@novaalianca.local
-
-MNSS_ONLINE_URL=https://api.padarianovaalianca.com.br
-MNSS_STORE_ID=nova-alianca-001
-MNSS_STORE_SECRET=change_me
+```bash
+cd infra/local
+cp .env.example .env
+# edite .env e substitua todos os valores "change_me"
+docker compose config   # valida sintaxe e variáveis
 ```
+
+Variáveis obrigatórias (o Docker Compose injeta as corretas no container da API):
+
+| Variável | Descrição |
+|---|---|
+| `POSTGRES_DB` | Nome do banco PostgreSQL |
+| `POSTGRES_USER` | Usuário do banco |
+| `POSTGRES_PASSWORD` | Senha do banco (mín. 16 chars) |
+| `RABBITMQ_DEFAULT_USER` | Usuário do RabbitMQ |
+| `RABBITMQ_DEFAULT_PASS` | Senha do RabbitMQ (mín. 16 chars) |
+| `AUTH_TOKEN_SECRET` | Segredo JWT (mín. 32 chars) |
+| `MNSS_INITIAL_ADMIN_PASSWORD` | Senha do admin inicial |
+| `MNSS_STORE_SECRET` | Segredo HMAC da loja (mín. 32 chars) |
+| `MNSS_SYNC_REQUIRE_HTTPS` | `true` em produção, `false` só em dev HTTP |
+
+> **Importante:** O Compose local já monta as variáveis nos nomes que o Spring lê
+> (`MNSS_LOCAL_DB_URL`, `MNSS_LOCAL_RABBITMQ_HOST`, etc.). Não altere os nomes
+> das variáveis no `docker-compose.yml`.
 
 ## 7. Docker Compose local
 
@@ -362,22 +362,31 @@ Arquivo:
 
 ## 14. Processo de deploy local inicial
 
-Passos:
+```bash
+# 1. Clonar ou copiar o repositório para o servidor
+cd infra/local
 
-```text
-1. Instalar Ubuntu Server.
-2. Configurar IP fixo.
-3. Instalar Docker.
-4. Instalar Docker Compose.
-5. Criar diretório /opt/nova-alianca.
-6. Criar .env.
-7. Criar docker-compose.yml.
-8. Criar configuração Nginx.
-9. Subir containers.
-10. Verificar health check.
-11. Configurar backup.
-12. Configurar máquinas PDV/KDS para acessar o servidor.
+# 2. Configurar variáveis de ambiente
+cp .env.example .env
+# editar segredos no .env
+
+# 3. Validar sintaxe do Compose
+docker compose config
+
+# 4. Subir ambiente (a API aguarda banco/RabbitMQ/Redis ficarem healthy)
+docker compose up -d --build
+
+# 5. Acompanhar inicialização
+docker compose ps
+docker logs -f nova-alianca-local-api
+
+# 6. Executar smoke test
+./scripts/smoke-local.sh
 ```
+
+> A API só inicia após PostgreSQL, RabbitMQ e Redis estarem healthy
+> (`condition: service_healthy`). Em caso de falha, verifique
+> `docker compose ps` para ver qual serviço não ficou healthy.
 
 ## 15. Comandos principais
 

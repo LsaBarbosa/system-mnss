@@ -118,35 +118,28 @@ certbot
 
 ## 7. Variáveis de ambiente
 
-Arquivo `.env` online:
+Copie o exemplo e edite **todos** os segredos antes de subir os containers:
 
-```env
-SPRING_PROFILES_ACTIVE=online
-
-POSTGRES_DB=nova_alianca_online
-POSTGRES_USER=nova_alianca
-POSTGRES_PASSWORD=change_me
-
-RABBITMQ_DEFAULT_USER=nova_alianca
-RABBITMQ_DEFAULT_PASS=change_me
-
-REDIS_HOST=redis-online
-REDIS_PORT=6379
-
-JWT_SECRET=change_me
-SYNC_MASTER_SECRET=change_me
-MNSS_DEFAULT_STORE_ID=store-001
-MNSS_STORE_001_SECRET=change_me
-MNSS_PAYMENT_WEBHOOK_SECRET=change_me
-WHATSAPP_VERIFY_TOKEN=change_me
-WHATSAPP_PROVIDER=mock
-SPRING_SECURITY_USER_NAME=online_admin
-SPRING_SECURITY_USER_PASSWORD=change_me
-
-SITE_URL=https://padarianovaalianca.com.br
-API_URL=https://api.padarianovaalianca.com.br
-ADMIN_URL=https://admin.padarianovaalianca.com.br
+```bash
+cd infra/online
+cp .env.example .env
+# edite .env e substitua todos os valores "change_me"
+docker compose config   # valida sintaxe
 ```
+
+> **Atenção:** Não versione o arquivo `.env` real. O `.env.example` já contém
+> todas as variáveis necessárias com valores fictícios seguros.
+
+Segredos obrigatórios (mínimo 32 caracteres):
+
+| Variável | Descrição |
+|---|---|
+| `POSTGRES_PASSWORD` | Senha do banco PostgreSQL |
+| `MNSS_ONLINE_JWT_SECRET` | Segredo JWT para sessões web |
+| `SYNC_MASTER_SECRET` | Segredo mestre de sincronização |
+| `MNSS_STORE_001_SECRET` | Segredo HMAC da loja física |
+| `MNSS_PAYMENT_WEBHOOK_SECRET` | Segredo do webhook de pagamento |
+| `WHATSAPP_VERIFY_TOKEN` | Token de verificação do WhatsApp Business |
 
 ## 8. Docker Compose online
 
@@ -422,14 +415,22 @@ docker compose pull
 docker compose up -d
 ```
 
-## 16. Health checks
+## 16. Health checks e smoke test
 
-Endpoints:
+Após o deploy, execute o smoke test para validar os endpoints básicos:
+
+```bash
+BASE_URL=https://api.padarianovaalianca.com.br ./scripts/smoke-online.sh
+```
+
+Endpoints verificados:
 
 ```text
+GET /api/health
+GET /api/version
+GET /api/public/info
+GET /api/public/menu
 GET /actuator/health
-GET /actuator/metrics
-GET /api/sync/status
 ```
 
 Monitorar:

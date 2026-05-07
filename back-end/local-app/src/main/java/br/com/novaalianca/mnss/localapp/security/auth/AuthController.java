@@ -4,6 +4,7 @@ import br.com.novaalianca.mnss.localapp.security.user.UserResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.time.Duration;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -23,9 +24,13 @@ class AuthController {
     static final String COOKIE_NAME = "mnss_auth";
 
     private final AuthService authService;
+    private final boolean cookieSecure;
 
-    AuthController(AuthService authService) {
+    AuthController(
+            AuthService authService,
+            @Value("${mnss.security.cookie.secure:false}") boolean cookieSecure) {
         this.authService = authService;
+        this.cookieSecure = cookieSecure;
     }
 
     @PostMapping("/login")
@@ -49,6 +54,7 @@ class AuthController {
     private ResponseCookie authCookie(String value, Duration maxAge) {
         return ResponseCookie.from(COOKIE_NAME, value)
                 .httpOnly(true)
+                .secure(cookieSecure)
                 .sameSite("Strict")
                 .path("/")
                 .maxAge(maxAge)

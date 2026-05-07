@@ -271,10 +271,10 @@ class PaymentServiceTest {
 
     private PaymentService service() {
         return new PaymentService(
-                Optional.of(orderRepository),
-                Optional.of(orderItemRepository),
-                Optional.of(paymentRepository),
-                Optional.of(cashRegisterRepository),
+                orderRepository,
+                orderItemRepository,
+                paymentRepository,
+                cashRegisterRepository,
                 cashRegisterService,
                 auditService);
     }

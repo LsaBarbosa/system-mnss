@@ -13,3 +13,9 @@ coverage/
 *.log
 *.tmp
 .DS_Store
+
+# IDE — IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr

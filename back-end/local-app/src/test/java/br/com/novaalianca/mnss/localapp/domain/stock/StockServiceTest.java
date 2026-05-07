@@ -157,7 +157,7 @@ class StockServiceTest {
         StockBalanceEntity balance = new StockBalanceEntity(product);
         balance.adjust(new BigDecimal("7.000"));
 
-        when(productRepository.findAllByOrderByNameAsc()).thenReturn(List.of(product, emptyProduct));
+        when(productRepository.findAllByOrderByNameAsc(any())).thenReturn(List.of(product, emptyProduct));
         when(stockBalanceRepository.findByProductIdIn(List.of(productId, emptyProductId)))
                 .thenReturn(List.of(balance));
 

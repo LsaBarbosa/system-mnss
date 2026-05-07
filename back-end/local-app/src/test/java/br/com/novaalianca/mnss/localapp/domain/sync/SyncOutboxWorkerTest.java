@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -66,6 +67,34 @@ class SyncOutboxWorkerTest {
 
         assertEquals(SyncEventStatus.SYNCED, event.getStatus());
         verify(repository).save(event);
+    }
+
+    // S05-H03: HTTPS validation
+    @Test
+    void processPendingEvents_WithHttpUrlAndRequireHttps_ShouldThrowIllegalState() {
+        ReflectionTestUtils.setField(worker, "requireHttps", true);
+
+        assertThatThrownBy(() -> worker.processPendingEvents())
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("HTTPS");
+    }
+
+    @Test
+    void processPendingEvents_WithHttpsUrlAndRequireHttps_ShouldSucceed() {
+        ReflectionTestUtils.setField(worker, "requireHttps", true);
+        ReflectionTestUtils.setField(worker, "onlineUrl", "https://api.example.com");
+        SyncEventEntity event = createTestEvent();
+
+        when(repository.findByStatusAndDirection(SyncEventStatus.PENDING, SyncDirection.LOCAL_TO_ONLINE))
+                .thenReturn(List.of(event));
+        when(repository.findByStatusInAndNextRetryAtBefore(anyList(), any(Instant.class)))
+                .thenReturn(List.of());
+        when(restTemplate.postForEntity(anyString(), any(), any()))
+                .thenReturn(ResponseEntity.ok().build());
+
+        worker.processPendingEvents();
+
+        assertEquals(SyncEventStatus.SYNCED, event.getStatus());
     }
 
     @Test

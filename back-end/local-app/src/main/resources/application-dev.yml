@@ -17,3 +17,4 @@ mnss:
       password: ${MNSS_INITIAL_ADMIN_PASSWORD:change_me}
   sync:
     store-secret: ${MNSS_STORE_SECRET:change_me}
+    require-https: ${MNSS_SYNC_REQUIRE_HTTPS:false}

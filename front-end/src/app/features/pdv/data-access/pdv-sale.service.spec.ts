@@ -106,6 +106,22 @@ describe('PdvSaleService', () => {
     cancelRequest.flush({ ...sale(), status: 'CANCELED' });
   });
 
+  it('reprintReceipt uses local /api/pdv path', () => {
+    service.reprintReceipt(mockOrder.id).subscribe();
+    const req = httpTestingController.expectOne(`/api/pdv/sales/${mockOrder.id}/print`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.url).not.toContain('localhost');
+    expect(req.request.url).not.toContain('/api/api');
+    req.flush(null);
+  });
+
+  it('getSale uses local /api/pdv path', () => {
+    service.getSale(mockOrder.id).subscribe();
+    const req = httpTestingController.expectOne(`/api/pdv/sales/${mockOrder.id}`);
+    expect(req.request.method).toBe('GET');
+    req.flush(sale());
+  });
+
   function sale(): PdvSale {
     return {
       id: mockOrder.id,

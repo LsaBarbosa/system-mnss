@@ -38,6 +38,8 @@ mnss:
   environment: local
   security:
     enabled: ${MNSS_SECURITY_ENABLED:true}
+    cookie:
+      secure: ${MNSS_AUTH_COOKIE_SECURE:false}
     token:
       secret: ${AUTH_TOKEN_SECRET}
       ttl: ${AUTH_TOKEN_TTL:PT8H}
@@ -52,6 +54,7 @@ mnss:
     store-id: ${MNSS_STORE_ID:store-001}
     store-secret: ${MNSS_STORE_SECRET:change_me}
     retry-intervals: 1m,5m,15m,1h
+    require-https: ${MNSS_SYNC_REQUIRE_HTTPS:true}
   store:
     name: "Padaria e Lanchonete Nova Aliança"
     address: "Rua Exemplo, 123 - Centro"

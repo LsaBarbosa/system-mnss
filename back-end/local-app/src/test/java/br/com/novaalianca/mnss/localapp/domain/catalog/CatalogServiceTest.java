@@ -388,7 +388,7 @@ class CatalogServiceTest {
                 AvailabilityStatus.UNAVAILABLE,
                 SalesChannel.ALL);
         when(categoryRepository.findAllByOrderByDisplayOrderAscNameAsc()).thenReturn(List.of(category));
-        when(productRepository.findAllByOrderByNameAsc()).thenReturn(List.of(product));
+        when(productRepository.findAllByOrderByNameAsc(any())).thenReturn(List.of(product));
         when(productAvailabilityRepository.findFirstByProductIdAndChannelOrderByUpdatedAtDesc(productId, SalesChannel.ALL))
                 .thenReturn(Optional.of(unavailable));
 
@@ -410,7 +410,7 @@ class CatalogServiceTest {
         ProductEntity withoutPdv = product(category, UUID.randomUUID());
         withoutPdv.update(null, null, null, null, null, null, null, null, null, null, null, null, null, null, false, null, null, null);
         when(categoryRepository.findAllByOrderByDisplayOrderAscNameAsc()).thenReturn(List.of(category));
-        when(productRepository.findAllByOrderByNameAsc()).thenReturn(List.of(sellable, inactive, withoutPdv));
+        when(productRepository.findAllByOrderByNameAsc(any())).thenReturn(List.of(sellable, inactive, withoutPdv));
 
         List<CategoryProductsResponse> response = service().listPdvProducts();
 
@@ -431,7 +431,7 @@ class CatalogServiceTest {
         ProductEntity otherCategory = product(drinks, UUID.randomUUID());
         otherCategory.update(null, "Pao liquido", null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
         when(categoryRepository.findAllByOrderByDisplayOrderAscNameAsc()).thenReturn(List.of(bakery, drinks));
-        when(productRepository.findAllByOrderByNameAsc()).thenReturn(List.of(filtered, otherName, otherCategory));
+        when(productRepository.findAllByOrderByNameAsc(any())).thenReturn(List.of(filtered, otherName, otherCategory));
 
         List<CategoryProductsResponse> response = service().listPdvProducts("integral", bakeryId);
 
@@ -476,9 +476,9 @@ class CatalogServiceTest {
 
     private CatalogService service() {
         return new CatalogService(
-                Optional.of(categoryRepository),
-                Optional.of(productRepository),
-                Optional.of(productAvailabilityRepository),
+                categoryRepository,
+                productRepository,
+                productAvailabilityRepository,
                 syncEventService,
                 auditService,
                 storeInfoProperties);

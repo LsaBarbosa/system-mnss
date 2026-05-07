@@ -244,6 +244,95 @@ class SyncControllerTest {
         verify(repository).save(argThat(e -> e.getStatus() == SyncEventStatus.IGNORED));
     }
 
+    // S05-H01: payload type validation
+    @Test
+    void receiveEventWithStringPayloadReturns400() throws Exception {
+        String idempotencyKey = "key-string";
+        Map<String, Object> body = new HashMap<>();
+        body.put("aggregateType", "Order");
+        body.put("eventType", "SALE_FINISHED");
+        body.put("payload", "invalid-string-payload");
+
+        ResponseEntity<Void> response = controller.receiveEvent(storeId, "any-sig", idempotencyKey, body);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void receiveEventWithArrayPayloadReturns400() throws Exception {
+        String idempotencyKey = "key-array";
+        Map<String, Object> body = new HashMap<>();
+        body.put("aggregateType", "Order");
+        body.put("payload", java.util.List.of("a", "b", "c"));
+
+        ResponseEntity<Void> response = controller.receiveEvent(storeId, "any-sig", idempotencyKey, body);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        verify(repository, never()).save(any());
+    }
+
+    // S05-H02: HMAC security coverage
+    @Test
+    void receiveEvent_UnknownStore_ShouldReturnUnauthorized() throws Exception {
+        Map<String, Object> body = new HashMap<>();
+        body.put("payload", Map.of("data", "val"));
+
+        ResponseEntity<Void> response = controller.receiveEvent("unknown-store", "any-sig", "key-x", body);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void getPendingEvents_UnknownStore_ShouldReturnUnauthorized() {
+        ResponseEntity<List<SyncEventDto>> response =
+                controller.getPendingEvents("unknown-store", "any-sig", null);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        verify(repository, never()).findByStatusAndDirection(any(), any());
+    }
+
+    @Test
+    void getPendingEvents_InvalidSignature_ShouldReturnUnauthorized() {
+        ResponseEntity<List<SyncEventDto>> response =
+                controller.getPendingEvents(storeId, "invalid-sig", null);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        verify(repository, never()).findByStatusAndDirection(any(), any());
+    }
+
+    @Test
+    void acknowledgeEvent_UnknownStore_ShouldReturnUnauthorized() {
+        UUID eventId = UUID.randomUUID();
+        ResponseEntity<Void> response = controller.acknowledgeEvent(eventId, "unknown-store", "any-sig");
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        verify(repository, never()).findById(any());
+    }
+
+    @Test
+    void acknowledgeEvent_InvalidSignature_ShouldReturnUnauthorized() {
+        UUID eventId = UUID.randomUUID();
+        ResponseEntity<Void> response = controller.acknowledgeEvent(eventId, storeId, "invalid-sig");
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void acknowledgeEvent_EventNotFound_ShouldReturnNotFound() {
+        UUID eventId = UUID.randomUUID();
+        String signature = HmacUtils.calculateHmac(eventId + ":ack", secret);
+
+        when(repository.findById(eventId)).thenReturn(Optional.empty());
+
+        ResponseEntity<Void> response = controller.acknowledgeEvent(eventId, storeId, signature);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        verify(repository, never()).save(any());
+    }
+
     private SyncEventEntity createPendingOnlineToLocalEvent(String ownerStoreId) {
         Map<String, Object> payload = new HashMap<>();
         payload.put("storeId", ownerStoreId);

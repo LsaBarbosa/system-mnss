@@ -2,8 +2,15 @@ openapi: 3.0.3
 info:
   title: Sistema MNSS Online API
   version: 0.0.2
+  x-mnss-status-legend:
+    mvp: Obrigatório para operação mínima do sistema online
+    implemented: Implementado e homologado além do MVP
+    experimental: Implementado mas ainda não totalmente homologado
+    future: Planejado, ainda não implementado
+    deprecated: Será removido em versão futura
 paths:
   /api/health:
+    x-mnss-status: mvp
     get:
       summary: Verifica a disponibilidade basica da API online.
       operationId: onlineApiHealthStatus
@@ -17,6 +24,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/version:
+    x-mnss-status: implemented
     get:
       summary: Retorna a versao da API online.
       operationId: onlineApiVersion
@@ -28,6 +36,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/VersionResponse'
   /api/auth/login:
+    x-mnss-status: mvp
     post:
       summary: Autentica usuario interno do painel online e retorna token JWT.
       operationId: onlineAuthLogin
@@ -49,6 +58,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/auth/me:
+    x-mnss-status: implemented
     get:
       summary: Retorna dados do usuario autenticado no painel online.
       operationId: onlineAuthMe
@@ -74,6 +84,7 @@ paths:
         '200':
           description: Estado tecnico da aplicacao.
   /api/public/menu:
+    x-mnss-status: mvp
     get:
       summary: Lista o cardapio publico disponivel para canais online.
       operationId: listPublicMenu
@@ -95,6 +106,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/public/info:
+    x-mnss-status: mvp
     get:
       summary: Retorna informacoes da loja para o site/cardapio.
       operationId: getStoreInfo
@@ -108,6 +120,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/public/orders:
+    x-mnss-status: implemented
     post:
       summary: Cria pedido online.
       operationId: createOnlineOrder
@@ -129,6 +142,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/public/orders/{id}:
+    x-mnss-status: implemented
     get:
       summary: Busca pedido online por ID.
       operationId: getOnlineOrderById
@@ -151,6 +165,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/public/payments/online:
+    x-mnss-status: implemented
     post:
       summary: Cria tentativa de pagamento online para pedido pendente.
       operationId: createOnlinePayment
@@ -172,6 +187,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/public/payments/webhook:
+    x-mnss-status: implemented
     post:
       summary: Recebe webhook do gateway e valida assinatura HMAC.
       operationId: processPaymentWebhook
@@ -197,6 +213,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/whatsapp/catalog:
+    x-mnss-status: experimental
     get:
       summary: Lista produtos ativos para atendimento via WhatsApp.
       operationId: listWhatsAppCatalog
@@ -215,6 +232,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/whatsapp/conversations:
+    x-mnss-status: experimental
     get:
       summary: Lista conversas de atendimento WhatsApp.
       operationId: listWhatsAppConversations
@@ -233,6 +251,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/whatsapp/conversations/{id}/messages:
+    x-mnss-status: experimental
     get:
       summary: Lista mensagens de uma conversa.
       operationId: getWhatsAppConversationMessages
@@ -288,6 +307,7 @@ paths:
         '404':
           description: Conversa nao encontrada.
   /api/whatsapp/conversations/{id}/assign:
+    x-mnss-status: experimental
     post:
       summary: Atribui conversa para um usuario operador.
       operationId: assignWhatsAppConversation
@@ -317,6 +337,7 @@ paths:
         '404':
           description: Conversa nao encontrada.
   /api/whatsapp/orders:
+    x-mnss-status: experimental
     post:
       summary: Cria pedido assistido a partir de uma conversa WhatsApp.
       operationId: createWhatsAppAssistedOrder
@@ -341,6 +362,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/whatsapp/webhook:
+    x-mnss-status: experimental
     get:
       summary: Endpoint de verificacao do webhook do provedor WhatsApp.
       operationId: verifyWhatsAppWebhook
@@ -390,6 +412,7 @@ paths:
         '401':
           description: Assinatura invalida.
   /api/sync/events:
+    x-mnss-status: mvp
     post:
       summary: Recebe um evento de sincronizacao vindo da loja.
       operationId: receiveSyncEvent
@@ -442,6 +465,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
   /api/sync/pending:
+    x-mnss-status: mvp
     get:
       summary: Retorna eventos pendentes para uma loja por pull.
       operationId: getPendingSyncEvents
@@ -476,6 +500,7 @@ paths:
         '403':
           description: Consulta para loja diferente do cabecalho.
   /api/sync/events/{id}/ack:
+    x-mnss-status: mvp
     post:
       summary: Confirma o recebimento de um evento pela loja dona do evento.
       operationId: acknowledgeSyncEvent
@@ -506,6 +531,7 @@ paths:
         '404':
           description: Evento nao encontrado.
   /api/sync/events/{id}/reprocess:
+    x-mnss-status: implemented
     post:
       summary: Reenvia evento para processamento manual.
       operationId: reprocessSyncEvent
@@ -525,6 +551,7 @@ paths:
         '404':
           description: Evento nao encontrado.
   /api/sync/events/{id}/ignore:
+    x-mnss-status: implemented
     post:
       summary: Ignora um evento com motivo operacional.
       operationId: ignoreSyncEvent
@@ -550,6 +577,7 @@ paths:
         '404':
           description: Evento nao encontrado.
   /api/sync/status:
+    x-mnss-status: implemented
     get:
       summary: Retorna estatisticas de sincronizacao para o dashboard.
       operationId: getSyncStatus
@@ -566,6 +594,7 @@ paths:
                 additionalProperties:
                   type: integer
   /api/sync/health:
+    x-mnss-status: implemented
     get:
       summary: Retorna o estado operacional da sincronizacao.
       operationId: getSyncHealth

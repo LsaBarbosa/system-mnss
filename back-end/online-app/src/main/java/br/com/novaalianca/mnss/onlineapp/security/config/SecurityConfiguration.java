@@ -49,7 +49,7 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.GET, "/api/sync/pending").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/sync/events/*/ack").permitAll()
                         .requestMatchers("/api/**").authenticated()
-                        .anyRequest().permitAll())
+                        .anyRequest().denyAll())
                 .httpBasic(Customizer.withDefaults())
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
                 .formLogin(AbstractHttpConfigurer::disable);

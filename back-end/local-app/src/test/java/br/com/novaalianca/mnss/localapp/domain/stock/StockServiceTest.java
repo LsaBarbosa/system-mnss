@@ -30,52 +30,41 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class StockServiceTest {
-    @Mock
-    private ProductRepository productRepository;
-
-    @Mock
-    private OrderRepository orderRepository;
-
-    @Mock
-    private StockMovementRepository stockMovementRepository;
-
-    @Mock
-    private StockSyncEventService syncEventService;
-
-    @Mock
-    private AuditService auditService;
+    @Mock private ProductRepository productRepository;
+    @Mock private OrderRepository orderRepository;
+    @Mock private StockMovementRepository stockMovementRepository;
+    @Mock private StockBalanceRepository stockBalanceRepository;
+    @Mock private StockSyncEventService syncEventService;
+    @Mock private AuditService auditService;
 
     @Test
     void entryRequiresPositiveQuantityProductAndUser() {
         assertThatThrownBy(() -> service().createMovement(new CreateStockMovementRequest(
-                        UUID.randomUUID(),
-                        StockMovementType.IN,
-                        BigDecimal.ZERO,
-                        null,
-                        null), UUID.randomUUID()))
+                        UUID.randomUUID(), StockMovementType.IN, BigDecimal.ZERO, null, null),
+                UUID.randomUUID()))
                 .isInstanceOf(BusinessException.class)
-                .extracting("status")
-                .isEqualTo(HttpStatus.BAD_REQUEST);
+                .extracting("status").isEqualTo(HttpStatus.BAD_REQUEST);
 
         assertThatThrownBy(() -> service().createMovement(new CreateStockMovementRequest(
-                        null,
-                        StockMovementType.IN,
-                        new BigDecimal("1.000"),
-                        null,
-                        null), UUID.randomUUID()))
+                        null, StockMovementType.IN, new BigDecimal("1.000"), null, null),
+                UUID.randomUUID()))
                 .isInstanceOf(BusinessException.class)
-                .extracting("status")
-                .isEqualTo(HttpStatus.BAD_REQUEST);
+                .extracting("status").isEqualTo(HttpStatus.BAD_REQUEST);
 
         assertThatThrownBy(() -> service().createMovement(new CreateStockMovementRequest(
-                        UUID.randomUUID(),
-                        StockMovementType.IN,
-                        new BigDecimal("1.000"),
-                        null,
-                        null), null))
+                        UUID.randomUUID(), StockMovementType.IN, new BigDecimal("1.000"), null, null),
+                null))
                 .isInstanceOf(BusinessException.class)
-                .extracting("status")
-                .isEqualTo(HttpStatus.BAD_REQUEST);
+                .extracting("status").isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void saleTypeIsBlockedInManualEntry() {
+        assertThatThrownBy(() -> service().createMovement(new CreateStockMovementRequest(
+                        UUID.randomUUID(), StockMovementType.SALE, new BigDecimal("1.000"), null, null),
+                UUID.randomUUID()))
+                .isInstanceOf(BusinessException.class)
+                .extracting("status").isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     @Test
@@ -84,16 +73,13 @@ class StockServiceTest {
         UUID actorUserId = UUID.randomUUID();
         ProductEntity product = product(productId);
         when(productRepository.findById(productId)).thenReturn(Optional.of(product));
-        when(stockMovementRepository.findByProductIdOrderByCreatedAtDesc(productId)).thenReturn(List.of());
-        when(stockMovementRepository.save(any(StockMovementEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(stockBalanceRepository.findByProductIdForUpdate(productId)).thenReturn(Optional.empty());
+        when(stockBalanceRepository.save(any(StockBalanceEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(stockMovementRepository.save(any(StockMovementEntity.class))).thenAnswer(inv -> inv.getArgument(0));
         when(auditService.record(any(AuditLogRequest.class))).thenReturn(null);
 
         StockMovementResponse response = service().createMovement(new CreateStockMovementRequest(
-                productId,
-                StockMovementType.IN,
-                new BigDecimal("10.000"),
-                null,
-                null), actorUserId);
+                productId, StockMovementType.IN, new BigDecimal("10.000"), null, null), actorUserId);
 
         ArgumentCaptor<StockMovementEntity> movementCaptor = ArgumentCaptor.forClass(StockMovementEntity.class);
         ArgumentCaptor<StockMovementEntity> syncMovementCaptor = ArgumentCaptor.forClass(StockMovementEntity.class);
@@ -117,28 +103,22 @@ class StockServiceTest {
         ProductEntity product = product(productId);
 
         assertThatThrownBy(() -> service().createMovement(new CreateStockMovementRequest(
-                        productId,
-                        StockMovementType.LOSS,
-                        new BigDecimal("1.000"),
-                        " ",
-                        null), UUID.randomUUID()))
+                        productId, StockMovementType.LOSS, new BigDecimal("1.000"), " ", null),
+                UUID.randomUUID()))
                 .isInstanceOf(BusinessException.class)
-                .extracting("status")
-                .isEqualTo(HttpStatus.BAD_REQUEST);
+                .extracting("status").isEqualTo(HttpStatus.BAD_REQUEST);
 
+        ReflectionTestUtils.setField(product, "stockControlled", true);
+        StockBalanceEntity balance = new StockBalanceEntity(product);
+        balance.adjust(new BigDecimal("2.000"));
         when(productRepository.findById(productId)).thenReturn(Optional.of(product));
-        when(stockMovementRepository.findByProductIdOrderByCreatedAtDesc(productId))
-                .thenReturn(List.of(new StockMovementEntity(product, StockMovementType.IN, new BigDecimal("2.000"))));
+        when(stockBalanceRepository.findByProductIdForUpdate(productId)).thenReturn(Optional.of(balance));
 
         assertThatThrownBy(() -> service().createMovement(new CreateStockMovementRequest(
-                        productId,
-                        StockMovementType.LOSS,
-                        new BigDecimal("3.000"),
-                        "Quebra",
-                        null), UUID.randomUUID()))
+                        productId, StockMovementType.LOSS, new BigDecimal("3.000"), "Quebra", null),
+                UUID.randomUUID()))
                 .isInstanceOf(BusinessException.class)
-                .extracting("status")
-                .isEqualTo(HttpStatus.BAD_REQUEST);
+                .extracting("status").isEqualTo(HttpStatus.BAD_REQUEST);
         verify(stockMovementRepository, never()).save(any(StockMovementEntity.class));
     }
 
@@ -147,17 +127,16 @@ class StockServiceTest {
         UUID productId = UUID.randomUUID();
         UUID actorUserId = UUID.randomUUID();
         ProductEntity product = product(productId);
+        StockBalanceEntity balance = new StockBalanceEntity(product);
+        balance.adjust(new BigDecimal("5.000"));
         when(productRepository.findById(productId)).thenReturn(Optional.of(product));
-        when(stockMovementRepository.findByProductIdOrderByCreatedAtDesc(productId))
-                .thenReturn(List.of(new StockMovementEntity(product, StockMovementType.IN, new BigDecimal("5.000"))));
-        when(stockMovementRepository.save(any(StockMovementEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(stockBalanceRepository.findByProductIdForUpdate(productId)).thenReturn(Optional.of(balance));
+        when(stockBalanceRepository.save(any(StockBalanceEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(stockMovementRepository.save(any(StockMovementEntity.class))).thenAnswer(inv -> inv.getArgument(0));
         when(auditService.record(any(AuditLogRequest.class))).thenReturn(null);
 
         StockMovementResponse response = service().recordSaleMovement(
-                productId,
-                new BigDecimal("2.000"),
-                null,
-                actorUserId);
+                productId, new BigDecimal("2.000"), null, actorUserId);
 
         ArgumentCaptor<BigDecimal> balanceCaptor = ArgumentCaptor.forClass(BigDecimal.class);
         ArgumentCaptor<StockMovementEntity> movementCaptor = ArgumentCaptor.forClass(StockMovementEntity.class);
@@ -168,16 +147,19 @@ class StockServiceTest {
     }
 
     @Test
-    void balancesAreCalculatedFromMovementsByProduct() {
+    void balancesAreReadFromPersistedStockBalances() {
         UUID productId = UUID.randomUUID();
         UUID emptyProductId = UUID.randomUUID();
         ProductEntity product = product(productId);
         ProductEntity emptyProduct = product(emptyProductId);
         ReflectionTestUtils.setField(emptyProduct, "name", "Cafe");
+
+        StockBalanceEntity balance = new StockBalanceEntity(product);
+        balance.adjust(new BigDecimal("7.000"));
+
         when(productRepository.findAllByOrderByNameAsc()).thenReturn(List.of(product, emptyProduct));
-        when(stockMovementRepository.findByProductIdIn(List.of(productId, emptyProductId))).thenReturn(List.of(
-                new StockMovementEntity(product, StockMovementType.IN, new BigDecimal("10.000")),
-                new StockMovementEntity(product, StockMovementType.LOSS, new BigDecimal("3.000"))));
+        when(stockBalanceRepository.findByProductIdIn(List.of(productId, emptyProductId)))
+                .thenReturn(List.of(balance));
 
         List<StockBalanceResponse> balances = service().listBalances();
 
@@ -186,11 +168,26 @@ class StockServiceTest {
         assertThat(balances.get(1).quantity()).isEqualByComparingTo(BigDecimal.ZERO);
     }
 
+    @Test
+    void calculateBalanceUsesPersistedBalance() {
+        UUID productId = UUID.randomUUID();
+        ProductEntity product = product(productId);
+        StockBalanceEntity balance = new StockBalanceEntity(product);
+        balance.adjust(new BigDecimal("15.000"));
+
+        when(stockBalanceRepository.findByProductId(productId)).thenReturn(Optional.of(balance));
+
+        BigDecimal result = service().calculateBalance(productId);
+
+        assertThat(result).isEqualByComparingTo("15.000");
+    }
+
     private StockService service() {
         return new StockService(
                 productRepository,
                 orderRepository,
                 stockMovementRepository,
+                stockBalanceRepository,
                 syncEventService,
                 auditService);
     }

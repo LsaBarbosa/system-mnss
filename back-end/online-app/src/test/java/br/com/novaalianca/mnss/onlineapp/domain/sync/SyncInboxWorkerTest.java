@@ -16,11 +16,11 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -29,12 +29,14 @@ class SyncInboxWorkerTest {
     @Mock SyncEventRepository syncEventRepository;
     @Mock OnlineProductRepository productRepository;
     @Mock OnlineLocalSaleSummaryRepository saleSummaryRepository;
+    @Mock OnlineStockBalanceRepository stockBalanceRepository;
 
     private SyncInboxWorker worker;
 
     @BeforeEach
     void setUp() {
-        worker = new SyncInboxWorker(syncEventRepository, productRepository, saleSummaryRepository);
+        worker = new SyncInboxWorker(syncEventRepository, productRepository,
+                saleSummaryRepository, stockBalanceRepository);
     }
 
     @Test
@@ -119,6 +121,67 @@ class SyncInboxWorkerTest {
         verify(saleSummaryRepository, never()).save(any());
     }
 
+    @Test
+    void handleStockMoved_adjustsOnlineBalanceForInboundMovement() {
+        UUID productId = UUID.randomUUID();
+        SyncEventEntity event = stockMovedEvent(productId, "IN", "10.000");
+
+        br.com.novaalianca.mnss.onlineapp.domain.catalog.OnlineProductEntity product =
+                mock(br.com.novaalianca.mnss.onlineapp.domain.catalog.OnlineProductEntity.class);
+        when(product.isAvailable()).thenReturn(true);
+
+        when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+        when(stockBalanceRepository.findByProductId(productId)).thenReturn(Optional.empty());
+        when(stockBalanceRepository.save(any(OnlineStockBalanceEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(syncEventRepository.findByStatusAndDirection(any(), any())).thenReturn(List.of(event));
+        when(syncEventRepository.findByStatusInAndNextRetryAtBefore(any(), any())).thenReturn(List.of());
+
+        worker.processInbox();
+
+        ArgumentCaptor<OnlineStockBalanceEntity> captor =
+                ArgumentCaptor.forClass(OnlineStockBalanceEntity.class);
+        verify(stockBalanceRepository).save(captor.capture());
+        assertThat(captor.getValue().getQuantity()).isEqualByComparingTo("10.000");
+    }
+
+    @Test
+    void handleStockMoved_adjustsOnlineBalanceForSaleMovement() {
+        UUID productId = UUID.randomUUID();
+        SyncEventEntity event = stockMovedEvent(productId, "SALE", "3.000");
+
+        br.com.novaalianca.mnss.onlineapp.domain.catalog.OnlineProductEntity product =
+                mock(br.com.novaalianca.mnss.onlineapp.domain.catalog.OnlineProductEntity.class);
+        when(product.isAvailable()).thenReturn(true);
+
+        OnlineStockBalanceEntity existingBalance =
+                new OnlineStockBalanceEntity(product);
+        existingBalance.adjust(new BigDecimal("5.000"));
+
+        when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+        when(stockBalanceRepository.findByProductId(productId)).thenReturn(Optional.of(existingBalance));
+        when(stockBalanceRepository.save(any(OnlineStockBalanceEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(syncEventRepository.findByStatusAndDirection(any(), any())).thenReturn(List.of(event));
+        when(syncEventRepository.findByStatusInAndNextRetryAtBefore(any(), any())).thenReturn(List.of());
+
+        worker.processInbox();
+
+        assertThat(existingBalance.getQuantity()).isEqualByComparingTo("2.000");
+    }
+
+    @Test
+    void handleStockMoved_skipsWhenProductNotFound() {
+        UUID productId = UUID.randomUUID();
+        SyncEventEntity event = stockMovedEvent(productId, "IN", "5.000");
+
+        when(productRepository.findById(productId)).thenReturn(Optional.empty());
+        when(syncEventRepository.findByStatusAndDirection(any(), any())).thenReturn(List.of(event));
+        when(syncEventRepository.findByStatusInAndNextRetryAtBefore(any(), any())).thenReturn(List.of());
+
+        worker.processInbox();
+
+        verify(stockBalanceRepository, never()).save(any());
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────────
 
     private SyncEventEntity saleFinishedEvent(String storeId, UUID orderId,
@@ -131,7 +194,7 @@ class SyncInboxWorkerTest {
         payload.put("paymentStatus", paymentStatus);
         payload.put("finishedAt", Instant.now().toString());
 
-        SyncEventEntity event = new SyncEventEntity(
+        return new SyncEventEntity(
                 UUID.randomUUID().toString(),
                 SyncDirection.LOCAL_TO_ONLINE,
                 br.com.novaalianca.mnss.sync.SyncEnvironment.LOCAL,
@@ -141,6 +204,27 @@ class SyncInboxWorkerTest {
                 payload,
                 SyncEventStatus.PENDING
         );
-        return event;
+    }
+
+    private SyncEventEntity stockMovedEvent(UUID productId, String type, String quantity) {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("productId", productId.toString());
+        payload.put("type", type);
+        payload.put("quantity", quantity);
+        payload.put("previousQuantity", "0");
+        payload.put("resultingQuantity", quantity);
+        payload.put("stockMovementId", UUID.randomUUID().toString());
+        payload.put("idempotencyKey", "STOCK-" + UUID.randomUUID());
+
+        return new SyncEventEntity(
+                UUID.randomUUID().toString(),
+                SyncDirection.LOCAL_TO_ONLINE,
+                br.com.novaalianca.mnss.sync.SyncEnvironment.LOCAL,
+                br.com.novaalianca.mnss.sync.SyncEnvironment.ONLINE,
+                "StockMovement",
+                "STOCK_MOVED",
+                payload,
+                SyncEventStatus.PENDING
+        );
     }
 }

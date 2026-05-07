@@ -15,22 +15,28 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Component
 public class SyncInboxWorker {
     private static final Logger log = LoggerFactory.getLogger(SyncInboxWorker.class);
 
+    private static final Set<String> OUTBOUND_TYPES = Set.of("OUT", "SALE", "LOSS", "ADJUSTMENT_NEGATIVE");
+
     private final SyncEventRepository syncEventRepository;
     private final OnlineProductRepository productRepository;
     private final OnlineLocalSaleSummaryRepository saleSummaryRepository;
+    private final OnlineStockBalanceRepository stockBalanceRepository;
 
     public SyncInboxWorker(SyncEventRepository syncEventRepository,
                            OnlineProductRepository productRepository,
-                           OnlineLocalSaleSummaryRepository saleSummaryRepository) {
+                           OnlineLocalSaleSummaryRepository saleSummaryRepository,
+                           OnlineStockBalanceRepository stockBalanceRepository) {
         this.syncEventRepository = syncEventRepository;
         this.productRepository = productRepository;
         this.saleSummaryRepository = saleSummaryRepository;
+        this.stockBalanceRepository = stockBalanceRepository;
     }
 
     @Scheduled(fixedDelay = 30000)
@@ -79,7 +85,7 @@ public class SyncInboxWorker {
                 handleProductAvailability(event);
                 break;
             case "STOCK_MOVED":
-                log.debug("Stock moved event received for product {}", event.getAggregateId());
+                handleStockMoved(event);
                 break;
             case "SALE_FINISHED":
                 handleSaleFinished(event);
@@ -117,6 +123,38 @@ public class SyncInboxWorker {
             productRepository.save(product);
             log.info("Product {} availability updated to {} via sync", productId, available);
         }, () -> log.warn("Product {} not found in online database for availability update", productId));
+    }
+
+    private void handleStockMoved(SyncEventEntity event) {
+        Map<String, Object> payload = event.getPayload();
+        Object productIdObj = payload.get("productId");
+        if (productIdObj == null) {
+            log.warn("STOCK_MOVED event {} missing productId — skipping", event.getId());
+            return;
+        }
+
+        UUID productId = UUID.fromString(productIdObj.toString());
+        String movementType = payload.get("type") != null ? payload.get("type").toString() : "IN";
+        BigDecimal quantity = payload.get("quantity") != null
+                ? new BigDecimal(payload.get("quantity").toString()) : BigDecimal.ZERO;
+
+        BigDecimal delta = OUTBOUND_TYPES.contains(movementType) ? quantity.negate() : quantity;
+
+        productRepository.findById(productId).ifPresentOrElse(product -> {
+            OnlineStockBalanceEntity balance = stockBalanceRepository.findByProductId(productId)
+                    .orElseGet(() -> new OnlineStockBalanceEntity(product));
+            balance.adjust(delta);
+            stockBalanceRepository.save(balance);
+
+            if (product.isAvailable() && balance.getQuantity().signum() <= 0) {
+                product.updateAvailability(false);
+                productRepository.save(product);
+                log.info("Product {} marked unavailable: stock zeroed via STOCK_MOVED", productId);
+            }
+
+            log.info("STOCK_MOVED applied: product={} type={} delta={} balance={}",
+                    productId, movementType, delta, balance.getQuantity());
+        }, () -> log.warn("Product {} not found in online database for STOCK_MOVED event {}", productId, event.getId()));
     }
 
     private void handleSaleFinished(SyncEventEntity event) {

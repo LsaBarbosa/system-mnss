@@ -54,7 +54,7 @@ public class SyncOutboxWorker {
     }
 
     @Scheduled(fixedDelayString = "${mnss.sync.fixed-delay:30000}")
-    @Transactional(readOnly = true)
+    @Transactional
     public void processPendingEvents() {
         List<SyncEventEntity> pending = repository.findByStatusAndDirection(SyncEventStatus.PENDING, SyncDirection.LOCAL_TO_ONLINE);
         pending.forEach(this::sendEvent);

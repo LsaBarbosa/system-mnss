@@ -72,7 +72,7 @@ public class ProductEntity extends BaseEntity {
     private boolean sellOnWhatsapp = true;
 
     @Column(nullable = false)
-    private boolean stockControlled = true;
+    private boolean stockControlled = false;
 
     protected ProductEntity() {}
 

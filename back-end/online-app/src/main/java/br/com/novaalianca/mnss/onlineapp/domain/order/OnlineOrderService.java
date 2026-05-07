@@ -56,7 +56,7 @@ public class OnlineOrderService {
     @Transactional
     public OnlineOrderResponse createOnlineOrder(CreateOnlineOrderRequest request, OrderOrigin origin) {
         OnlineCustomerEntity customer = resolveCustomer(request);
-        
+
         if (request.deliveryType() == DeliveryType.DELIVERY && request.address() == null) {
             throw new IllegalArgumentException("Address is required for DELIVERY");
         }
@@ -168,21 +168,23 @@ public class OnlineOrderService {
 
     private void createSyncEvent(OnlineOrderEntity order) {
         String idempotencyKey = UUID.randomUUID().toString();
-        
+
         Map<String, Object> payload = new java.util.LinkedHashMap<>();
         payload.put("orderId", order.getId().toString());
+        payload.put("origin", order.getOrigin().name());
         payload.put("orderNumber", order.getOrderNumber());
         payload.put("status", order.getStatus().name());
         payload.put("paymentStatus", order.getPaymentStatus().name());
         payload.put("deliveryType", order.getDeliveryType().name());
         payload.put("paymentMethod", order.getPaymentMethod().name());
+        payload.put("gateway", "ONLINE");
         payload.put("storeId", defaultStoreId);
         payload.put("subtotal", order.getSubtotal());
         payload.put("discountAmount", order.getDiscountAmount());
         payload.put("deliveryFee", order.getDeliveryFee());
         payload.put("totalAmount", order.getTotalAmount());
         payload.put("notes", order.getNotes());
-        
+
         java.util.List<Map<String, Object>> items = order.getItems().stream()
                 .map(item -> {
                     Map<String, Object> itemMap = new java.util.LinkedHashMap<>();
@@ -207,7 +209,7 @@ public class OnlineOrderService {
                 SyncEventStatus.PENDING
         );
         event.assignAggregateId(order.getId());
-        
+
         syncEventRepository.save(event);
     }
 }

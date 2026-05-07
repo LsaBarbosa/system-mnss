@@ -2,6 +2,7 @@ package br.com.novaalianca.mnss.onlineapp.security.config;
 
 import br.com.novaalianca.mnss.onlineapp.security.auth.JwtAuthenticationFilter;
 import br.com.novaalianca.mnss.onlineapp.security.auth.JwtTokenProvider;
+import br.com.novaalianca.mnss.onlineapp.security.auth.OnlineUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -57,8 +58,14 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
-        return http.getSharedObject(AuthenticationManagerBuilder.class).build();
+    public AuthenticationManager authenticationManager(HttpSecurity http,
+            OnlineUserDetailsService userDetailsService,
+            PasswordEncoder passwordEncoder) throws Exception {
+        return http.getSharedObject(AuthenticationManagerBuilder.class)
+                .userDetailsService(userDetailsService)
+                .passwordEncoder(passwordEncoder)
+                .and()
+                .build();
     }
 
     @Bean

@@ -126,9 +126,9 @@ MNSS_INITIAL_ADMIN_USERNAME=admin
 MNSS_INITIAL_ADMIN_PASSWORD=change_me_admin_password
 MNSS_INITIAL_ADMIN_EMAIL=admin@novaalianca.local
 
-ONLINE_SYNC_BASE_URL=https://api.padarianovaalianca.com.br
-STORE_ID=nova-alianca-001
-STORE_SECRET=change_me
+MNSS_ONLINE_URL=https://api.padarianovaalianca.com.br
+MNSS_STORE_ID=nova-alianca-001
+MNSS_STORE_SECRET=change_me
 ```
 
 ## 7. Docker Compose local
@@ -160,9 +160,9 @@ services:
       MNSS_INITIAL_ADMIN_USERNAME: ${MNSS_INITIAL_ADMIN_USERNAME}
       MNSS_INITIAL_ADMIN_PASSWORD: ${MNSS_INITIAL_ADMIN_PASSWORD}
       MNSS_INITIAL_ADMIN_EMAIL: ${MNSS_INITIAL_ADMIN_EMAIL}
-      ONLINE_SYNC_BASE_URL: ${ONLINE_SYNC_BASE_URL}
-      STORE_ID: ${STORE_ID}
-      STORE_SECRET: ${STORE_SECRET}
+      MNSS_ONLINE_URL: ${MNSS_ONLINE_URL}
+      MNSS_STORE_ID: ${MNSS_STORE_ID}
+      MNSS_STORE_SECRET: ${MNSS_STORE_SECRET}
     expose:
       - "8080"
     restart: unless-stopped

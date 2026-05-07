@@ -141,10 +141,10 @@ KdsTicket
 
 ```java
 public enum KdsTicketStatus {
-    PENDING,
-    PREPARING,
+    WAITING,
+    IN_PREPARATION,
     READY,
-    DELIVERED,
+    FINISHED,
     CANCELED
 }
 ```
@@ -197,19 +197,20 @@ A expedição pode visualizar o pedido completo.
 ### Por item
 
 ```text
-PENDING_PREPARATION
-PREPARING
+WAITING
+IN_PREPARATION
 READY
+FINISHED
 CANCELED
 ```
 
 ### Por ticket
 
 ```text
-PENDING
-PREPARING
+WAITING
+IN_PREPARATION
 READY
-DELIVERED
+FINISHED
 CANCELED
 ```
 
@@ -217,14 +218,14 @@ CANCELED
 
 ```text
 ACCEPTED
-PREPARING
+IN_PREPARATION
 READY
-DELIVERED
+FINISHED
 ```
 
 ## 10. Regras de status
 
-- Se pelo menos um item estiver em preparo, o pedido fica `PREPARING`.
+- Se pelo menos um item estiver em preparo, o pedido fica `IN_PREPARATION`.
 - Se todos os itens de preparo estiverem prontos, o pedido pode ficar `READY`.
 - Se um ticket for cancelado, deve registrar motivo.
 - Pedido só fica pronto quando todos os tickets obrigatórios estiverem prontos.
@@ -364,11 +365,11 @@ PATCH  /api/kds/orders/{id}/finish
 KDS_TICKET_CREATED
 KDS_TICKET_STARTED
 KDS_TICKET_READY
-KDS_TICKET_DELIVERED
-KDS_ITEM_STARTED
+KDS_TICKET_FINISHED
 KDS_ITEM_READY
 KDS_ITEM_CANCELED
 ORDER_READY
+KDS_ORDER_FINISHED
 ```
 
 ## 18. Integração com PDV

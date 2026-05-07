@@ -494,19 +494,23 @@ GET  /api/public/info
 POST /api/public/orders
 POST /api/public/payments/online
 POST /api/public/payments/webhook
+POST /api/auth/login
 POST /api/whatsapp/webhook
 POST /api/sync/events
 GET  /api/sync/pending
 ```
 
-Endpoints internos (exigem autenticação HTTP Basic):
+Endpoints internos (exigem autenticação HTTP Basic ou Bearer JWT):
 
 ```text
+GET  /api/auth/me
 GET  /api/whatsapp/catalog
 GET  /api/whatsapp/conversations
 POST /api/whatsapp/orders
+GET  /api/sync/events
 GET  /api/sync/status
 POST /api/sync/events/{id}/reprocess
+POST /api/sync/events/{id}/ignore
 ```
 
 ## 20. Segurança online
@@ -516,7 +520,7 @@ Medidas obrigatórias:
 - HTTPS
 - Firewall
 - Assinatura HMAC e segredos técnicos para sync/webhooks
-- HTTP Basic nos endpoints internos de `/api/**` que não são públicos
+- HTTP Basic e/ou Bearer JWT nos endpoints internos de `/api/**` que não são públicos
 - JWT para painéis administrativos quando o módulo de autenticação online estiver habilitado
 - Rate limit
 - Validação de webhook

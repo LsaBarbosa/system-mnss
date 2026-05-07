@@ -1,7 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-BACKUP_DIR="/backup"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BACKUP_DIR="${BACKUP_DIR:-$SCRIPT_DIR/../postgres/backup}"
 CONTAINER="postgres-local"
 DB="nova_alianca_local"
 USER="nova_alianca"

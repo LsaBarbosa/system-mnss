@@ -90,15 +90,36 @@ class OnlinePaymentServiceTest {
     @Test
     void processWebhook_WhenExpired_ShouldMarkPaymentAsExpired() {
         OnlinePaymentEntity payment = mock(OnlinePaymentEntity.class);
+        OnlineOrderEntity order = mock(OnlineOrderEntity.class);
 
         when(paymentRepository.findByTransactionId("txn-123")).thenReturn(Optional.of(payment));
         when(payment.getStatus()).thenReturn(PaymentStatus.PENDING);
+        when(payment.getOrder()).thenReturn(order);
 
         service.processWebhook("txn-123", "EXPIRED", "{\"status\":\"EXPIRED\"}");
 
         verify(payment).markAsExpired();
         verify(paymentRepository).save(payment);
-        verify(orderRepository, never()).save(any());
+        verify(order).updatePaymentStatus(PaymentStatus.EXPIRED);
+        verify(orderRepository).save(order);
+        verify(syncEventRepository, never()).save(any());
+    }
+
+    @Test
+    void processWebhook_WhenRefused_ShouldMarkPaymentAndOrderAsRefused() {
+        OnlinePaymentEntity payment = mock(OnlinePaymentEntity.class);
+        OnlineOrderEntity order = mock(OnlineOrderEntity.class);
+
+        when(paymentRepository.findByTransactionId("txn-321")).thenReturn(Optional.of(payment));
+        when(payment.getStatus()).thenReturn(PaymentStatus.PENDING);
+        when(payment.getOrder()).thenReturn(order);
+
+        service.processWebhook("txn-321", "REFUSED", "{\"status\":\"REFUSED\"}");
+
+        verify(payment).markAsRefused("txn-321", "{\"status\":\"REFUSED\"}");
+        verify(order).updatePaymentStatus(PaymentStatus.REFUSED);
+        verify(paymentRepository).save(payment);
+        verify(orderRepository).save(order);
         verify(syncEventRepository, never()).save(any());
     }
 }

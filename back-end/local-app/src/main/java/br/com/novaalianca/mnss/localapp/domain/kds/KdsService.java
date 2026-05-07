@@ -260,7 +260,7 @@ public class KdsService {
             messagingTemplate.convertAndSend("/topic/kds/tickets", response);
             messagingTemplate.convertAndSend("/topic/kds/tickets/" + ticket.getSector(), response);
         } catch (Exception e) {
-            // WebSocket errors should not break the transaction (S11-H03)
+            log.warn("Failed to send KDS ticket creation via WebSocket for ticket {}: {}", ticket.getId(), e.getMessage(), e);
         }
     }
 

@@ -7,8 +7,10 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Base64;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class AuthService {
@@ -27,6 +29,13 @@ public class AuthService {
 
         String token = tokenProvider.generateToken(request.username());
         Instant expiresAt = Instant.now().plus(8, ChronoUnit.HOURS);
+        Set<String> roles = auth.getAuthorities().stream()
+                .map(granted -> granted.getAuthority())
+                .map(authority -> authority.startsWith("ROLE_") ? authority.substring(5) : authority)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+        if (roles.isEmpty()) {
+            roles = Set.of("ADMIN");
+        }
 
         return new AuthResponse(
                 token,
@@ -37,7 +46,7 @@ public class AuthService {
                         request.username() + "@novaalianca.local",
                         request.username(),
                         true,
-                        true
+                        roles
                 )
         );
     }

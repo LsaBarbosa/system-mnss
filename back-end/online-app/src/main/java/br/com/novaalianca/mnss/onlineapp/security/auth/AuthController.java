@@ -9,7 +9,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -29,13 +32,22 @@ public class AuthController {
     public AuthUserResponse me() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth != null ? auth.getName() : "anonymous";
+        Set<String> roles = auth == null
+                ? Set.of()
+                : auth.getAuthorities().stream()
+                .map(granted -> granted.getAuthority())
+                .map(authority -> authority.startsWith("ROLE_") ? authority.substring(5) : authority)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+        if (roles.isEmpty() && auth != null && auth.isAuthenticated()) {
+            roles = Set.of("ADMIN");
+        }
         return new AuthUserResponse(
                 UUID.randomUUID().toString(),
                 username,
                 username + "@novaalianca.local",
                 username,
                 true,
-                auth != null && auth.isAuthenticated()
+                roles
         );
     }
 }

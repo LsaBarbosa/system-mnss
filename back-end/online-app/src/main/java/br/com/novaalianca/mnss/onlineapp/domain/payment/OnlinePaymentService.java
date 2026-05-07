@@ -118,10 +118,16 @@ public class OnlinePaymentService {
             createSyncEvent(order);
         } else if ("REFUSED".equalsIgnoreCase(status)) {
             payment.markAsRefused(transactionId, payload);
+            OnlineOrderEntity order = payment.getOrder();
+            order.updatePaymentStatus(PaymentStatus.REFUSED);
             paymentRepository.save(payment);
+            orderRepository.save(order);
         } else if ("EXPIRED".equalsIgnoreCase(status)) {
             payment.markAsExpired();
+            OnlineOrderEntity order = payment.getOrder();
+            order.updatePaymentStatus(PaymentStatus.EXPIRED);
             paymentRepository.save(payment);
+            orderRepository.save(order);
         }
     }
 

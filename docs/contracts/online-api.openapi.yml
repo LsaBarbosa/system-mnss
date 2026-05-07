@@ -27,6 +27,45 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VersionResponse'
+  /api/auth/login:
+    post:
+      summary: Autentica usuario interno do painel online e retorna token JWT.
+      operationId: onlineAuthLogin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login realizado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Credenciais invalidas.
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+  /api/auth/me:
+    get:
+      summary: Retorna dados do usuario autenticado no painel online.
+      operationId: onlineAuthMe
+      security:
+        - bearerAuth: []
+        - basicAuth: []
+      responses:
+        '200':
+          description: Usuario autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthUserResponse'
+        '401':
+          description: Nao autenticado.
+        default:
+          $ref: '#/components/responses/UnexpectedError'
   /actuator/health:
     get:
       summary: Health check tecnico do Spring Actuator.
@@ -162,6 +201,7 @@ paths:
       summary: Lista produtos ativos para atendimento via WhatsApp.
       operationId: listWhatsAppCatalog
       security:
+        - bearerAuth: []
         - basicAuth: []
       responses:
         '200':
@@ -179,6 +219,7 @@ paths:
       summary: Lista conversas de atendimento WhatsApp.
       operationId: listWhatsAppConversations
       security:
+        - bearerAuth: []
         - basicAuth: []
       responses:
         '200':
@@ -196,6 +237,7 @@ paths:
       summary: Lista mensagens de uma conversa.
       operationId: getWhatsAppConversationMessages
       security:
+        - bearerAuth: []
         - basicAuth: []
       parameters:
         - name: id
@@ -219,6 +261,7 @@ paths:
       summary: Envia mensagem manual para uma conversa.
       operationId: sendWhatsAppConversationMessage
       security:
+        - bearerAuth: []
         - basicAuth: []
       parameters:
         - name: id
@@ -249,6 +292,7 @@ paths:
       summary: Atribui conversa para um usuario operador.
       operationId: assignWhatsAppConversation
       security:
+        - bearerAuth: []
         - basicAuth: []
       parameters:
         - name: id
@@ -277,6 +321,7 @@ paths:
       summary: Cria pedido assistido a partir de uma conversa WhatsApp.
       operationId: createWhatsAppAssistedOrder
       security:
+        - bearerAuth: []
         - basicAuth: []
       requestBody:
         required: true
@@ -383,6 +428,7 @@ paths:
       summary: Lista eventos de sincronizacao por ordem de criacao (desc).
       operationId: listSyncEvents
       security:
+        - bearerAuth: []
         - basicAuth: []
       responses:
         '200':
@@ -464,6 +510,7 @@ paths:
       summary: Reenvia evento para processamento manual.
       operationId: reprocessSyncEvent
       security:
+        - bearerAuth: []
         - basicAuth: []
       parameters:
         - name: id
@@ -482,6 +529,7 @@ paths:
       summary: Ignora um evento com motivo operacional.
       operationId: ignoreSyncEvent
       security:
+        - bearerAuth: []
         - basicAuth: []
       parameters:
         - name: id
@@ -506,6 +554,7 @@ paths:
       summary: Retorna estatisticas de sincronizacao para o dashboard.
       operationId: getSyncStatus
       security:
+        - bearerAuth: []
         - basicAuth: []
       responses:
         '200':
@@ -521,6 +570,7 @@ paths:
       summary: Retorna o estado operacional da sincronizacao.
       operationId: getSyncHealth
       security:
+        - bearerAuth: []
         - basicAuth: []
       responses:
         '200':
@@ -531,6 +581,10 @@ paths:
                 $ref: '#/components/schemas/SyncHealthResponse'
 components:
   securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
     basicAuth:
       type: http
       scheme: basic
@@ -595,6 +649,54 @@ components:
         message:
           type: string
           example: must not be blank
+    LoginRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    AuthResponse:
+      type: object
+      required:
+        - token
+        - expiresAt
+        - user
+      properties:
+        token:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        user:
+          $ref: '#/components/schemas/AuthUserResponse'
+    AuthUserResponse:
+      type: object
+      required:
+        - id
+        - name
+        - email
+        - username
+        - active
+        - roles
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        username:
+          type: string
+        active:
+          type: boolean
+        roles:
+          type: array
+          items:
+            type: string
     VersionResponse:
       type: object
       required:

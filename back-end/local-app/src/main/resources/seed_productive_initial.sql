@@ -49,6 +49,7 @@ VALUES
     (md5('role:ATENDENTE')::uuid, 'ATENDENTE', 'Atendimento de balcao, pedidos e disponibilidade.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
     (md5('role:COZINHA')::uuid, 'COZINHA', 'Equipe de preparo/KDS.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
     (md5('role:ENTREGADOR')::uuid, 'ENTREGADOR', 'Entrega e expedicao.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    (md5('role:EXPEDICAO')::uuid, 'EXPEDICAO', 'Expedicao e finalizacao de pedidos.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
     (md5('role:CONSULTA')::uuid, 'CONSULTA', 'Acesso de consulta operacional.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 ON CONFLICT (name) DO UPDATE SET
     description = EXCLUDED.description,
@@ -67,6 +68,7 @@ FROM (
     UNION ALL SELECT caixa_id, 'ATENDENTE' FROM seed_user_refs
     UNION ALL SELECT cozinha_id, 'COZINHA' FROM seed_user_refs
     UNION ALL SELECT entregador_id, 'ENTREGADOR' FROM seed_user_refs
+    UNION ALL SELECT entregador_id, 'EXPEDICAO' FROM seed_user_refs
 ) x
 JOIN roles r ON r.name = x.role_name
 WHERE x.user_id IS NOT NULL

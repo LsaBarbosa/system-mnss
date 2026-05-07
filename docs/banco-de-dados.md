@@ -388,6 +388,9 @@ CREATE INDEX idx_payments_status ON payments(status);
 CREATE INDEX idx_payments_transaction_id ON payments(transaction_id);
 ```
 
+`webhook_payload` existe no banco online para auditoria de webhooks de pagamento. O banco local não
+usa essa coluna atualmente.
+
 ## 6.12 Cash Registers
 
 ```sql
@@ -489,6 +492,10 @@ CREATE INDEX idx_stock_movements_order_id ON stock_movements(order_id);
 CREATE UNIQUE INDEX idx_stock_movements_idempotency_key
     ON stock_movements(idempotency_key) WHERE idempotency_key IS NOT NULL;
 ```
+
+Os campos `previous_quantity`, `resulting_quantity`, `source`, `reference_type`, `reference_id` e
+`idempotency_key` existem no banco local. No banco online, `stock_movements` permanece como tabela
+operacional herdada do schema inicial e recebe apenas `version` para compatibilidade futura.
 
 ## 6.17 Stock Balances
 
@@ -639,8 +646,9 @@ CREATE TABLE whatsapp_messages (
 
 ```sql
 CREATE INDEX idx_whatsapp_messages_conversation ON whatsapp_messages(conversation_id);
-CREATE INDEX idx_whatsapp_messages_external_id ON whatsapp_messages(external_message_id);
 ```
+
+`external_message_id` possui constraint `UNIQUE`; o PostgreSQL já mantém índice para essa constraint.
 
 ## 7. Flyway
 
@@ -674,7 +682,8 @@ back-end/online-app/src/main/resources/db/migration/
 ├── V12__create_stock_balances.sql
 ├── V13__enforce_payment_method_on_orders.sql
 ├── V14__add_version_to_online_operational_tables.sql
-└── V15__add_fk_whatsapp_conversations_assigned_to.sql
+├── V15__add_fk_whatsapp_conversations_assigned_to.sql
+└── V16__drop_redundant_whatsapp_external_message_index.sql
 ```
 
 ## 8. Separação local e online

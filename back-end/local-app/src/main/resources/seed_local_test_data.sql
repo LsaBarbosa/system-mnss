@@ -26,7 +26,8 @@ INSERT INTO roles (id, name, description) VALUES
 ('b1000000-0000-0000-0000-000000000004', 'ATENDENTE', 'Atendimento e pedidos.'),
 ('b1000000-0000-0000-0000-000000000005', 'COZINHA', 'Operacao do KDS e preparo.'),
 ('b1000000-0000-0000-0000-000000000006', 'ENTREGADOR', 'Operacao de entregas.'),
-('b1000000-0000-0000-0000-000000000007', 'CONSULTA', 'Acesso somente leitura.');
+('b1000000-0000-0000-0000-000000000007', 'CONSULTA', 'Acesso somente leitura.'),
+('b1000000-0000-0000-0000-000000000008', 'EXPEDICAO', 'Operacao de expedicao e entrega.');
 
 -- Seed de Usuários
 -- Admin: admin / admin123

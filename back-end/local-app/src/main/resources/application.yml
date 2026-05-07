@@ -2,7 +2,7 @@ spring:
   application:
     name: mnss-local-api
   datasource:
-    url: ${MNSS_LOCAL_DB_URL:jdbc:postgresql://localhost:5432/mnss_local}
+    url: ${MNSS_LOCAL_DB_URL:jdbc:postgresql://localhost:5432/nova_alianca_local}
     username: ${MNSS_LOCAL_DB_USER}
     password: ${MNSS_LOCAL_DB_PASSWORD}
   rabbitmq:

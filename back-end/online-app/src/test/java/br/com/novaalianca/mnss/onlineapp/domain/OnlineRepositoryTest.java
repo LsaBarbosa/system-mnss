@@ -91,9 +91,52 @@ class OnlineRepositoryTest {
     }
 
     @Test
+    void onlineSpecificColumnsAndConstraintsMatchJpaMappings() {
+        List<String> paymentColumns = columnsOf("payments");
+        List<String> stockBalanceColumns = columnsOf("stock_balances");
+        List<String> whatsappConversationColumns = columnsOf("whatsapp_conversations");
+        List<String> whatsappMessageColumns = columnsOf("whatsapp_messages");
+        List<String> whatsappMessageIndexes = jdbcTemplate.queryForList(
+                "select indexname from pg_indexes where schemaname = 'public' and tablename = 'whatsapp_messages'",
+                String.class);
+        Integer assignedToFkCount = jdbcTemplate.queryForObject(
+                "select count(*) from information_schema.table_constraints "
+                        + "where table_schema = 'public' "
+                        + "and table_name = 'whatsapp_conversations' "
+                        + "and constraint_name = 'fk_whatsapp_conversations_assigned_to' "
+                        + "and constraint_type = 'FOREIGN KEY'",
+                Integer.class);
+        Integer externalMessageUniqueCount = jdbcTemplate.queryForObject(
+                "select count(*) from information_schema.table_constraints "
+                        + "where table_schema = 'public' "
+                        + "and table_name = 'whatsapp_messages' "
+                        + "and constraint_type = 'UNIQUE'",
+                Integer.class);
+
+        assertThat(paymentColumns).contains("webhook_payload", "version");
+        assertThat(stockBalanceColumns)
+                .contains("product_id", "quantity", "version", "created_at", "updated_at")
+                .doesNotContain("reserved_quantity");
+        assertThat(whatsappConversationColumns).contains("assigned_to", "version");
+        assertThat(whatsappMessageColumns).contains("external_message_id", "version");
+        assertThat(assignedToFkCount).isEqualTo(1);
+        assertThat(externalMessageUniqueCount).isGreaterThanOrEqualTo(1);
+        assertThat(whatsappMessageIndexes)
+                .doesNotContain("idx_whatsapp_messages_external_id")
+                .anyMatch(indexName -> indexName.contains("external_message_id"));
+    }
+
+    @Test
     void mainRepositoriesAreCreated() {
         assertThat(syncEventRepository).isNotNull();
         assertThat(onlineOrderRepository).isNotNull();
         assertThat(saleSummaryRepository).isNotNull();
+    }
+
+    private List<String> columnsOf(String tableName) {
+        return jdbcTemplate.queryForList(
+                "select column_name from information_schema.columns where table_schema = 'public' and table_name = ?",
+                String.class,
+                tableName);
     }
 }

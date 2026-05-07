@@ -100,7 +100,7 @@ services:
     image: postgres:17
     container_name: postgres-online
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-mnss_online}
+      POSTGRES_DB: ${POSTGRES_DB:-nova_alianca_online}
       POSTGRES_USER: ${POSTGRES_USER:-nova_alianca}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
@@ -109,7 +109,7 @@ services:
       - postgres_online_data:/var/lib/postgresql/data
       - ./postgres/backup:/backup
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nova_alianca} -d ${POSTGRES_DB:-mnss_online}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nova_alianca} -d ${POSTGRES_DB:-nova_alianca_online}"]
       interval: 10s
       timeout: 5s
       retries: 5

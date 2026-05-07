@@ -4,8 +4,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKUP_DIR="${BACKUP_DIR:-$SCRIPT_DIR/../postgres/backup}"
 CONTAINER="postgres-local"
-DB="nova_alianca_local"
-USER="nova_alianca"
+DB="${POSTGRES_DB:-nova_alianca_local}"
+USER="${POSTGRES_USER:-nova_alianca}"
 
 if [ -z "${1:-}" ]; then
     echo "Uso: $0 <arquivo_backup.sql>"

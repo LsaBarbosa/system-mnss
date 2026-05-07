@@ -72,14 +72,14 @@ Quando faltar contexto do meu projeto, peça o arquivo necessário ou gere uma v
 
 **Resumo do que deve ser feito:**
 - Back-end: Criar estrutura `back-end/`, `infra/`, `docs/`.
-- Front-end: Criar estrutura `front-end/` com apps `admin`, `pdv`, `kds`, `site-publico`.
+- Front-end: Manter `front-end/` como app Angular unico, com features `admin`, `pdv`, `kds` e `site-publico` em `src/app/features/`.
 - Testes back-end: Teste de arquitetura verificando pacotes obrigatórios com ArchUnit.
 - Testes front-end: Teste simples validando que cada app Angular inicial renderiza o shell.
 - Documentos-base: ARQ, README
 
 **Arquivos/módulos esperados:**
 - Back-end: `back-end/` — módulo alvo: back-end/core-domain, back-end/local-app, back-end/online-app e back-end/shared-infra
-- Front-end: `front-end/` — app/feature alvo: front-end/admin, front-end/pdv, front-end/kds e front-end/site-publico
+- Front-end: `front-end/` — app/feature alvo: front-end/src/app/features/admin, front-end/src/app/features/pdv, front-end/src/app/features/kds e front-end/src/app/features/site-publico
 
 **Prompt para copiar e colar no ChatGPT UI:**
 
@@ -99,7 +99,7 @@ Contexto do projeto:
 
 O que gerar:
 1. Back-end: Criar estrutura `back-end/`, `infra/`, `docs/`.
-2. Front-end: Criar estrutura `front-end/` com apps `admin`, `pdv`, `kds`, `site-publico`.
+2. Front-end: Manter `front-end/` como app Angular unico, com features `admin`, `pdv`, `kds` e `site-publico` em `src/app/features/`.
 3. Testes unitários back-end: Teste de arquitetura verificando pacotes obrigatórios com ArchUnit.
 4. Testes unitários front-end: Teste simples validando que cada app Angular inicial renderiza o shell.
 
@@ -135,7 +135,7 @@ Entregue a resposta neste formato:
 
 **Arquivos/módulos esperados:**
 - Back-end: `back-end/` — módulo alvo: back-end/core-domain, back-end/local-app, back-end/online-app e back-end/shared-infra
-- Front-end: `front-end/` — app/feature alvo: front-end/admin, front-end/pdv, front-end/kds e front-end/site-publico
+- Front-end: `front-end/` — app/feature alvo: front-end/src/app/features/admin, front-end/src/app/features/pdv, front-end/src/app/features/kds e front-end/src/app/features/site-publico
 
 **Prompt para copiar e colar no ChatGPT UI:**
 
@@ -191,7 +191,7 @@ Entregue a resposta neste formato:
 
 **Arquivos/módulos esperados:**
 - Back-end: `back-end/` — módulo alvo: back-end/core-domain, back-end/local-app, back-end/online-app e back-end/shared-infra
-- Front-end: `front-end/` — app/feature alvo: front-end/admin, front-end/pdv, front-end/kds e front-end/site-publico
+- Front-end: `front-end/` — app/feature alvo: front-end/src/app/features/admin, front-end/src/app/features/pdv, front-end/src/app/features/kds e front-end/src/app/features/site-publico
 
 **Prompt para copiar e colar no ChatGPT UI:**
 
@@ -247,7 +247,7 @@ Entregue a resposta neste formato:
 
 **Arquivos/módulos esperados:**
 - Back-end: `back-end/` — módulo alvo: back-end/core-domain, back-end/local-app, back-end/online-app e back-end/shared-infra
-- Front-end: `front-end/` — app/feature alvo: front-end/admin, front-end/pdv, front-end/kds e front-end/site-publico
+- Front-end: `front-end/` — app/feature alvo: front-end/src/app/features/admin, front-end/src/app/features/pdv, front-end/src/app/features/kds e front-end/src/app/features/site-publico
 
 **Prompt para copiar e colar no ChatGPT UI:**
 
@@ -303,7 +303,7 @@ Entregue a resposta neste formato:
 
 **Arquivos/módulos esperados:**
 - Back-end: `back-end/` — módulo alvo: back-end/core-domain, back-end/local-app, back-end/online-app e back-end/shared-infra
-- Front-end: `front-end/` — app/feature alvo: front-end/admin, front-end/pdv, front-end/kds e front-end/site-publico
+- Front-end: `front-end/` — app/feature alvo: front-end/src/app/features/admin, front-end/src/app/features/pdv, front-end/src/app/features/kds e front-end/src/app/features/site-publico
 
 **Prompt para copiar e colar no ChatGPT UI:**
 
@@ -4467,7 +4467,7 @@ Entregue a resposta neste formato:
 ### S15-H04 — Como cliente, quero criar pedido online.
 
 **Resumo do que deve ser feito:**
-- Back-end: `POST /api/orders`.
+- Back-end: `POST /api/public/orders`.
 - Front-end: Checkout confirma pedido.
 - Testes back-end: Pedido sem itens falha; snapshot de nome/preço salvo; status inicial correto.
 - Testes front-end: Confirmação mostra número/status.
@@ -4494,7 +4494,7 @@ Contexto do projeto:
 - Regras importantes desta história: pedido online deve ter cliente; pedido delivery exige endereço; servidor recalcula valores e não confia no carrinho do front-end; pedido deve gerar SyncEvent para a loja.
 
 O que gerar:
-1. Back-end: `POST /api/orders`.
+1. Back-end: `POST /api/public/orders`.
 2. Front-end: Checkout confirma pedido.
 3. Testes unitários back-end: Pedido sem itens falha; snapshot de nome/preço salvo; status inicial correto.
 4. Testes unitários front-end: Confirmação mostra número/status.
@@ -4585,7 +4585,7 @@ Entregue a resposta neste formato:
 ### S16-H01 — Como cliente, quero escolher pagamento online.
 
 **Resumo do que deve ser feito:**
-- Back-end: `POST /api/payments/online`.
+- Back-end: `POST /api/public/payments/online`.
 - Front-end: Opção Pix/cartão online no checkout.
 - Testes back-end: Cria Payment PENDING; pedido fica PAYMENT_PENDING.
 - Testes front-end: Seleção de método altera etapa de pagamento.
@@ -4612,7 +4612,7 @@ Contexto do projeto:
 - Regras importantes desta história: pagamento online não pode ser confirmado pelo front-end; webhook deve validar assinatura/token; webhook duplicado deve ser idempotente; payload bruto deve ser registrado para auditoria técnica.
 
 O que gerar:
-1. Back-end: `POST /api/payments/online`.
+1. Back-end: `POST /api/public/payments/online`.
 2. Front-end: Opção Pix/cartão online no checkout.
 3. Testes unitários back-end: Cria Payment PENDING; pedido fica PAYMENT_PENDING.
 4. Testes unitários front-end: Seleção de método altera etapa de pagamento.
@@ -4697,7 +4697,7 @@ Entregue a resposta neste formato:
 ### S16-H03 — Como gateway, quero enviar webhook.
 
 **Resumo do que deve ser feito:**
-- Back-end: `POST /api/payments/webhook`.
+- Back-end: `POST /api/public/payments/webhook`.
 - Front-end: Página de status consulta pedido.
 - Testes back-end: Assinatura inválida falha; payload bruto é registrado; webhook duplicado é idempotente.
 - Testes front-end: Status muda conforme polling/mock.
@@ -4724,7 +4724,7 @@ Contexto do projeto:
 - Regras importantes desta história: pagamento online não pode ser confirmado pelo front-end; webhook deve validar assinatura/token; webhook duplicado deve ser idempotente; payload bruto deve ser registrado para auditoria técnica.
 
 O que gerar:
-1. Back-end: `POST /api/payments/webhook`.
+1. Back-end: `POST /api/public/payments/webhook`.
 2. Front-end: Página de status consulta pedido.
 3. Testes unitários back-end: Assinatura inválida falha; payload bruto é registrado; webhook duplicado é idempotente.
 4. Testes unitários front-end: Status muda conforme polling/mock.

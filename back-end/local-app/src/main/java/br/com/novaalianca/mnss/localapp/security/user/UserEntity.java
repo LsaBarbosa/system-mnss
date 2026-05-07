@@ -1,10 +1,9 @@
 package br.com.novaalianca.mnss.localapp.security.user;
 
+import br.com.novaalianca.mnss.sharedinfra.domain.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
@@ -16,10 +15,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "users")
-public class UserEntity {
-    @Id
-    @GeneratedValue
-    private UUID id;
+public class UserEntity extends BaseEntity {
 
     @Column(nullable = false, length = 150)
     private String name;
@@ -35,12 +31,6 @@ public class UserEntity {
 
     @Column(nullable = false)
     private boolean active;
-
-    @Column(nullable = false)
-    private Instant createdAt = Instant.now();
-
-    @Column(nullable = false)
-    private Instant updatedAt = Instant.now();
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -65,10 +55,6 @@ public class UserEntity {
         this.passwordHash = passwordHash;
         this.active = active;
         replaceRoles(roles);
-    }
-
-    public UUID getId() {
-        return id;
     }
 
     public String getName() {
@@ -97,6 +83,6 @@ public class UserEntity {
 
     public void replaceRoles(Set<RoleEntity> roles) {
         this.roles = new LinkedHashSet<>(roles);
-        this.updatedAt = Instant.now();
+        touch();
     }
 }

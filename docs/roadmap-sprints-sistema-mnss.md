@@ -77,11 +77,11 @@
 | Sprint 10 | Finalização, impressão e cancelamento | Finalizar venda, imprimir, acionar gaveta e cancelar venda. |
 | Sprint 11 | KDS — tickets e WebSocket | Criar tickets por setor e exibir em tempo real no KDS. |
 | Sprint 12 | KDS — preparo e expedição | Iniciar preparo, marcar pronto e refletir no PDV/expedição. |
-| Sprint 13 | Sincronização base | SyncEvent, outbox, envio local → online e idempotência básica. |
+| Sprint 13 | Sincronização base | SyncEvent, outbox, envio local → online, RECEIVED_BY_STORE e idempotência básica. |
 | Sprint 14 | Site e cardápio público | Site institucional, cardápio público e visualização de produtos. |
 | Sprint 15 | Pedido online | Checkout, cliente, endereço, pedido online e status inicial. |
 | Sprint 16 | Pagamento online e webhook | Criar cobrança, receber webhook, validar assinatura e atualizar pedido. |
-| Sprint 17 | Sync online → local e painel | Pull de pedidos online, ACK, retry, painel de sync. |
+| Sprint 17 | Sync online → local e painel | Pull de pedidos online, ACK (RECEIVED_BY_STORE), retry, painel de sync. |
 | Sprint 18 | Observabilidade, deploy e homologação | Health checks, backup, deploy local/online e teste fim a fim. |
 | Sprint 19 | Estoque básico | Baixa por venda, ajuste manual e disponibilidade automática. |
 | Sprint 20 | WhatsApp inicial | Webhook, conversa assistida e pedido via WhatsApp. |
@@ -399,7 +399,7 @@
 | S15-H01 | Como cliente, quero adicionar produto ao carrinho online. | Validação server-side no checkout. | Carrinho no site. | Produto indisponível é recusado; preço recalculado no servidor. | Carrinho adiciona/remove item e recalcula visual. | DOM, FLUXOS |
 | S15-H02 | Como cliente, quero informar meus dados. | Criar/atualizar `Customer`. | Form de dados do cliente. | Nome e telefone obrigatórios; e-mail inválido falha se informado. | Form valida campos obrigatórios. | DOM |
 | S15-H03 | Como cliente, quero informar endereço para entrega. | Criar `CustomerAddress` quando `DELIVERY`. | Form de endereço condicional. | Delivery sem endereço falha; pickup não exige endereço. | Campo endereço aparece apenas em entrega. | DOM, FLUXOS |
-| S15-H04 | Como cliente, quero criar pedido online. | `POST /api/orders`. | Checkout confirma pedido. | Pedido sem itens falha; snapshot de nome/preço salvo; status inicial correto. | Confirmação mostra número/status. | FLUXOS, DOM |
+| S15-H04 | Como cliente, quero criar pedido online. | `POST /api/public/orders`. | Checkout confirma pedido. | Pedido sem itens falha; snapshot de nome/preço salvo; status inicial correto. | Confirmação mostra número/status. | FLUXOS, DOM |
 | S15-H05 | Como sistema, quero criar sync event do pedido online. | Criar `SyncEvent ORDER_CREATED` online. | Mostrar status “aguardando loja”. | Evento PENDING criado; pedido fica SENT_TO_STORE/aguardando envio. | Página de status exibe “aguardando confirmação da loja”. | SYNC, FLUXOS |
 
 **Critério de aceite da sprint:** cliente cria pedido online válido e ele fica aguardando sincronização com a loja.
@@ -418,9 +418,9 @@
 
 | ID | História pequena | Back-end | Front-end | Testes unitários back-end | Testes unitários front-end | Docs |
 |---|---|---|---|---|---|---|
-| S16-H01 | Como cliente, quero escolher pagamento online. | `POST /api/payments/online`. | Opção Pix/cartão online no checkout. | Cria Payment PENDING; pedido fica PAYMENT_PENDING. | Seleção de método altera etapa de pagamento. | DOM, FLUXOS |
+| S16-H01 | Como cliente, quero escolher pagamento online. | `POST /api/public/payments/online`. | Opção Pix/cartão online no checkout. | Cria Payment PENDING; pedido fica PAYMENT_PENDING. | Seleção de método altera etapa de pagamento. | DOM, FLUXOS |
 | S16-H02 | Como sistema, quero integrar gateway de pagamento. | Interface `PaymentGatewayService`. | Tela mostra instruções/dados retornados. | Integração mock retorna cobrança; falha do gateway retorna erro controlado. | Componente renderiza QR/instruções mockadas. | FLUXOS |
-| S16-H03 | Como gateway, quero enviar webhook. | `POST /api/payments/webhook`. | Página de status consulta pedido. | Assinatura inválida falha; payload bruto é registrado; webhook duplicado é idempotente. | Status muda conforme polling/mock. | DO, FLUXOS |
+| S16-H03 | Como gateway, quero enviar webhook. | `POST /api/public/payments/webhook`. | Página de status consulta pedido. | Assinatura inválida falha; payload bruto é registrado; webhook duplicado é idempotente. | Status muda conforme polling/mock. | DO, FLUXOS |
 | S16-H04 | Como sistema, quero aprovar pagamento por webhook. | Atualizar `PaymentStatus.PAID` e `Order.PAID`. | Página de pedido mostra pago. | Front-end não consegue confirmar pagamento; só webhook altera para PAID. | Status “Pago” aparece após atualização. | DOM, FLUXOS |
 | S16-H05 | Como sistema, quero tratar pagamento recusado/expirado. | Atualizar para REFUSED/EXPIRED. | Mostrar instrução para nova tentativa. | Status recusado não cria envio para loja; expirado bloqueia pagamento antigo. | Mensagem de recusado/expirado aparece. | DOM, FLUXOS |
 

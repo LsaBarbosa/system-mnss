@@ -8,6 +8,7 @@ import br.com.novaalianca.mnss.localapp.security.config.AuthTokenProperties;
 import br.com.novaalianca.mnss.localapp.security.user.RoleEntity;
 import br.com.novaalianca.mnss.localapp.security.user.RoleName;
 import br.com.novaalianca.mnss.localapp.security.user.UserEntity;
+import br.com.novaalianca.mnss.localapp.security.user.UserMapper;
 import br.com.novaalianca.mnss.localapp.security.user.UserRepository;
 import br.com.novaalianca.mnss.sharedinfra.web.error.BusinessException;
 import java.time.Clock;
@@ -18,6 +19,7 @@ import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.factory.Mappers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -29,6 +31,7 @@ class AuthServiceTest {
     private UserRepository userRepository;
 
     private final PasswordHasher passwordHasher = new PasswordHasher();
+    private final UserMapper userMapper = Mappers.getMapper(UserMapper.class);
 
     @Test
     void validLoginReturnsTokenAndUserProfiles() {
@@ -70,7 +73,7 @@ class AuthServiceTest {
         AuthTokenService tokenService = new AuthTokenService(
                 new AuthTokenProperties("test-secret", Duration.ofHours(8)),
                 Clock.fixed(NOW, ZoneOffset.UTC));
-        return new AuthService(userRepository, passwordHasher, tokenService);
+        return new AuthService(userRepository, passwordHasher, tokenService, userMapper);
     }
 
     private UserEntity activeUser() {

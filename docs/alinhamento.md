@@ -610,7 +610,7 @@ sync-worker-online, se separado
 ```env
 POSTGRES_PASSWORD=change_me
 JWT_SECRET=change_me
-STORE_SECRET=change_me
+MNSS_STORE_SECRET=change_me
 ```
 
 **Critérios de aceite:**

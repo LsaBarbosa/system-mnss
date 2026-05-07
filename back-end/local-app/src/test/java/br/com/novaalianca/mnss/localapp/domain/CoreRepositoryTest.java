@@ -110,8 +110,8 @@ class CoreRepositoryTest {
         flyway.migrate();
 
         Integer countAfter = jdbcTemplate.queryForObject("select count(*) from roles", Integer.class);
-        assertThat(countBefore).isEqualTo(7);
-        assertThat(countAfter).isEqualTo(7);
+        assertThat(countBefore).isEqualTo(8);
+        assertThat(countAfter).isEqualTo(8);
     }
 
     @Test

@@ -91,28 +91,25 @@ A regra mais importante:
 
 Back-end:
 
-```text
-```
-
-- `domain` contem regras puras, entidades, value objects e eventos.
-- Camada de serviço contém a lógica de negócio e orquestração.
-- Camada web contém controladores HTTP e DTOs.
-- Domínio não pode depender de Spring, JPA, HTTP, RabbitMQ, Redis ou APIs externas.
+- Organização por domínio com pacote plano: `XController`, `XService`, `XEntity`, `XRepository`, `XRequest` e `XResponse`.
+- Controllers recebem requests e delegam; não concentram regra de negócio.
+- Services concentram a lógica de aplicação e negócio.
+- Entities representam persistência/estado e não devem ser expostas diretamente na API.
+- Repositories ficam isolados por módulo/domínio.
 
 Front-end:
 
 ```text
 features/<feature>/
-  domain/
-  application/
-  data-access/
-  ui/
-  pages/
+  domain/       # modelos TypeScript e interfaces
+  data-access/  # services HTTP e DTOs
+  components/   # componentes presentacionais (opcional)
+  pages/        # componentes roteáveis
 ```
 
-- `data-access` concentra HTTP, DTOs e mappers.
-- `application` concentra facades, estado e orquestração.
-- `ui` contem componentes presentacionais.
+- `domain` concentra modelos TypeScript, interfaces e tipos da feature.
+- `data-access` concentra services HTTP, DTOs e acesso à API.
+- `components` é opcional; use quando há componentes presentacionais reutilizáveis dentro da feature.
 - `pages` contem componentes roteáveis e composição de tela.
 - `core` guarda infraestrutura global; `shared` guarda peças reutilizáveis sem depender de features.
 
@@ -123,7 +120,7 @@ O front-end atual deve ser mantido como **um único app Angular** (`front-end/`)
 ```text
 front-end/src/app/features/
   admin/
-  site/
+  site-publico/
   pdv/
   kds/
 ```

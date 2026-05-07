@@ -2,7 +2,9 @@ package br.com.novaalianca.mnss.onlineapp.domain.sync;
 
 import br.com.novaalianca.mnss.sharedinfra.security.HmacUtils;
 import br.com.novaalianca.mnss.sync.SyncDirection;
+import br.com.novaalianca.mnss.sync.SyncEnvironment;
 import br.com.novaalianca.mnss.sync.SyncEventEntity;
+import br.com.novaalianca.mnss.sync.SyncEventDto;
 import br.com.novaalianca.mnss.sync.SyncEventStatus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,6 +33,9 @@ class SyncControllerTest {
     @Mock
     private SyncEventRepository repository;
 
+    @Mock
+    private SyncEventMapper syncEventMapper;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private SyncController controller;
@@ -42,7 +47,7 @@ class SyncControllerTest {
 
     @BeforeEach
     void setUp() {
-        controller = new SyncController(repository, objectMapper);
+        controller = new SyncController(repository, objectMapper, syncEventMapper);
         Map<String, String> stores = new HashMap<>();
         stores.put(storeId, secret);
         stores.put(otherStoreId, otherSecret);
@@ -131,20 +136,41 @@ class SyncControllerTest {
 
         when(repository.findByStatusAndDirection(SyncEventStatus.PENDING, SyncDirection.ONLINE_TO_LOCAL))
                 .thenReturn(List.of(ownedEvent, otherEvent));
+        when(syncEventMapper.toDto(any())).thenAnswer(invocation -> {
+            SyncEventEntity event = invocation.getArgument(0);
+            return new SyncEventDto(
+                    event.getId(),
+                    event.getIdempotencyKey(),
+                    event.getDirection(),
+                    event.getSourceEnvironment(),
+                    event.getTargetEnvironment(),
+                    event.getAggregateType(),
+                    event.getAggregateId(),
+                    event.getEventType(),
+                    event.getPayload(),
+                    event.getStatus(),
+                    event.getRetryCount(),
+                    event.getNextRetryAt(),
+                    event.getLastError(),
+                    event.getProcessedAt(),
+                    event.getCreatedAt(),
+                    event.getUpdatedAt()
+            );
+        });
 
-        ResponseEntity<List<SyncEventEntity>> response = controller.getPendingEvents(storeId, signature, null);
+        ResponseEntity<List<SyncEventDto>> response = controller.getPendingEvents(storeId, signature, null);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(1, response.getBody().size());
-        assertEquals(storeId, response.getBody().get(0).getPayload().get("storeId"));
+        assertEquals(storeId, response.getBody().get(0).payload().get("storeId"));
     }
 
     @Test
     void getPendingEvents_WithQueryStoreIdDifferentFromHeader_ShouldReturnForbidden() {
         String signature = HmacUtils.calculateHmac(storeId + ":pull", secret);
 
-        ResponseEntity<List<SyncEventEntity>> response = controller.getPendingEvents(
+        ResponseEntity<List<SyncEventDto>> response = controller.getPendingEvents(
                 storeId,
                 signature,
                 otherStoreId);

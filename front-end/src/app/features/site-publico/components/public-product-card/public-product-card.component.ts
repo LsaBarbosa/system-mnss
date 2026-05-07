@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
-import { PublicProductResponse } from '../../models/public-menu.model';
-import { CartService } from '../../services/cart.service';
+import { PublicProductResponse } from '../../domain/public-menu.model';
+import { CartService } from '../../data-access/cart.service';
 
 @Component({
   selector: 'app-public-product-card',

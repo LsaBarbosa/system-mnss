@@ -8,9 +8,11 @@ import java.util.UUID;
 
 public class SyncEventService {
     private final SyncEventRepository repository;
+    private final SyncEventRabbitPublisher rabbitPublisher;
 
-    public SyncEventService(SyncEventRepository repository) {
+    public SyncEventService(SyncEventRepository repository, SyncEventRabbitPublisher rabbitPublisher) {
         this.repository = repository;
+        this.rabbitPublisher = rabbitPublisher;
     }
 
     @Transactional
@@ -26,6 +28,8 @@ public class SyncEventService {
                 SyncEventStatus.PENDING
         );
         event.assignAggregateId(aggregateId);
-        repository.save(event);
+        SyncEventEntity saved = repository.save(event);
+        // Trigger immediate processing via RabbitMQ; DB outbox acts as fallback
+        rabbitPublisher.publishSyncOutbox(saved);
     }
 }

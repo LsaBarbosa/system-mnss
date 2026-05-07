@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { PublicMenuResponse, StoreInfoResponse } from '../models/public-menu.model';
+import { PublicMenuResponse, StoreInfoResponse } from '../domain/public-menu.model';
 
 @Injectable({
   providedIn: 'root'

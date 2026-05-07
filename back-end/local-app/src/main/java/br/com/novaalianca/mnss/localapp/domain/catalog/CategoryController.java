@@ -2,7 +2,6 @@ package br.com.novaalianca.mnss.localapp.domain.catalog;
 
 import br.com.novaalianca.mnss.localapp.security.auth.AuthenticatedUser;
 import org.springframework.security.access.prepost.PreAuthorize;
-import br.com.novaalianca.mnss.localapp.security.user.RoleName;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -35,7 +34,7 @@ class CategoryController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasRole('GERENTE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
     CategoryResponse createCategory(
             @Valid @RequestBody CreateCategoryRequest request,
             HttpServletRequest servletRequest) {
@@ -43,7 +42,7 @@ class CategoryController {
     }
 
     @PatchMapping("/{id}")
-    @PreAuthorize("hasRole('GERENTE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
     CategoryResponse updateCategory(
             @PathVariable UUID id,
             @Valid @RequestBody PatchCategoryRequest request,

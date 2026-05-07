@@ -36,13 +36,21 @@ public class SyncOutboxWorker {
     @Value("${mnss.sync.retry-intervals:1m,5m,15m,1h}")
     private String retryIntervals;
 
+    @Value("${mnss.sync.require-https:false}")
+    private boolean requireHttps;
+
     public SyncOutboxWorker(SyncEventRepository repository, RestTemplate restTemplate, ObjectMapper objectMapper) {
         this.repository = repository;
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
     }
 
-    @Scheduled(fixedDelayString = "${mnss.sync.fixed-delay:5000}")
+    // Permite que o consumer RabbitMQ processe um evento específico imediatamente
+    public void sendEventById(java.util.UUID id) {
+        repository.findById(id).ifPresent(this::sendEvent);
+    }
+
+    @Scheduled(fixedDelayString = "${mnss.sync.fixed-delay:30000}")
     public void processPendingEvents() {
         List<SyncEventEntity> pending = repository.findByStatusAndDirection(SyncEventStatus.PENDING, SyncDirection.LOCAL_TO_ONLINE);
         pending.forEach(this::sendEvent);
@@ -56,8 +64,9 @@ public class SyncOutboxWorker {
 
     private void sendEvent(SyncEventEntity event) {
         try {
+            validateSyncUrl();
             log.info("Sending sync event: {} ({})", event.getEventType(), event.getIdempotencyKey());
-            
+
             String payloadJson = objectMapper.writeValueAsString(event.getPayload());
             String signature = HmacUtils.calculateHmac(event.getIdempotencyKey() + ":" + payloadJson, storeSecret);
 
@@ -88,6 +97,16 @@ public class SyncOutboxWorker {
             handleFailure(event, e.getMessage());
         } finally {
             repository.save(event);
+        }
+    }
+
+    private void validateSyncUrl() {
+        if (requireHttps && onlineUrl != null && onlineUrl.startsWith("http://")) {
+            throw new IllegalStateException(
+                    "SECURITY VIOLATION: Sync URL must use HTTPS in production. " +
+                    "Current URL: " + onlineUrl + ". " +
+                    "Set mnss.sync.online-url to an HTTPS URL or disable require-https."
+            );
         }
     }
 

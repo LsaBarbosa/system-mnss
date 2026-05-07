@@ -10,6 +10,7 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SyncEventRepository extends JpaRepository<SyncEventEntity, UUID> {
+    Optional<SyncEventEntity> findByIdempotencyKey(String idempotencyKey);
     List<SyncEventEntity> findByStatusAndDirection(SyncEventStatus status, SyncDirection direction);
     List<SyncEventEntity> findByStatusInAndNextRetryAtBefore(List<SyncEventStatus> statuses, Instant now);
     Optional<SyncEventEntity> findFirstByAggregateIdOrderByCreatedAtDesc(UUID aggregateId);

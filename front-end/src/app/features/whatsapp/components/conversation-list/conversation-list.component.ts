@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ConversationResponse } from '../../models/whatsapp.model';
+import { ConversationResponse } from '../../domain/whatsapp.model';
 
 @Component({
   selector: 'app-conversation-list',

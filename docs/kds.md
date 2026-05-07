@@ -197,9 +197,10 @@ A expedição pode visualizar o pedido completo.
 ### Por item
 
 ```text
-WAITING_PREPARATION
+WAITING
 IN_PREPARATION
 READY
+FINISHED
 CANCELED
 ```
 
@@ -351,13 +352,11 @@ Endpoints sugeridos:
 ```text
 GET    /api/kds/tickets
 GET    /api/kds/tickets?sector=CHAPA
-GET    /api/kds/tickets/{id}
 PATCH  /api/kds/tickets/{id}/start
 PATCH  /api/kds/tickets/{id}/ready
 PATCH  /api/kds/tickets/{id}/finish
-PATCH  /api/kds/items/{id}/start
 PATCH  /api/kds/items/{id}/ready
-PATCH  /api/kds/items/{id}/cancel
+PATCH  /api/kds/orders/{id}/finish
 ```
 
 ## 17. Eventos gerados
@@ -367,10 +366,10 @@ KDS_TICKET_CREATED
 KDS_TICKET_STARTED
 KDS_TICKET_READY
 KDS_TICKET_FINISHED
-KDS_ITEM_STARTED
 KDS_ITEM_READY
 KDS_ITEM_CANCELED
 ORDER_READY
+KDS_ORDER_FINISHED
 ```
 
 ## 18. Integração com PDV

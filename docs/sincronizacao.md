@@ -115,7 +115,7 @@ CREATE TABLE sync_events (
     processed_at TIMESTAMP,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    version INTEGER NOT NULL DEFAULT 0
+    version BIGINT NOT NULL DEFAULT 0
 );
 ```
 
@@ -128,6 +128,8 @@ SYNCED
 FAILED
 RETRYING
 IGNORED
+RECEIVED_BY_STORE
+DEAD_LETTER
 ```
 
 ### Significado
@@ -296,10 +298,9 @@ Assinatura HMAC do payload
 Exemplo de headers:
 
 ```http
-X-Store-Id: nova-alianca-001
+X-Store-ID: nova-alianca-001
 X-Signature: hash_hmac_sha256(payload, secret)
-X-Event-Id: uuid
-X-Event-Timestamp: 2026-05-03T10:30:00Z
+X-Idempotency-Key: uuid
 ```
 
 ## 13. Idempotência
@@ -497,24 +498,35 @@ Verificações online:
 
 ```text
 POST /api/sync/events
-POST /api/sync/events/batch
-GET  /api/sync/events/{id}/status
 ```
+
+Envia um evento da loja para o servidor online. Requer cabeçalhos `X-Store-ID`, `X-Signature` e `X-Idempotency-Key`.
 
 ### Online → Local por pull
 
 ```text
 GET  /api/sync/pending?storeId=nova-alianca-001
 POST /api/sync/events/{id}/ack
-POST /api/sync/events/{id}/fail
 ```
 
-### Status
+`GET /api/sync/pending` retorna eventos `PENDING` direção `ONLINE_TO_LOCAL` filtrados pelo `storeId`.
+`POST /api/sync/events/{id}/ack` marca o evento como `RECEIVED_BY_STORE`.
+
+### Administração (uso interno / backoffice)
 
 ```text
-GET /api/sync/status
-GET /api/sync/health
+GET  /api/sync/events
+GET  /api/sync/status
+POST /api/sync/events/{id}/reprocess
+POST /api/sync/events/{id}/ignore
 ```
+
+- `GET /api/sync/events` — lista todos os eventos ordenados por data decrescente.
+- `GET /api/sync/status` — retorna contagem de eventos por status (`PENDING`, `SYNCED`, `FAILED`, etc.).
+- `POST /api/sync/events/{id}/reprocess` — reseta o status do evento para `PENDING`, reiniciando o processamento.
+- `POST /api/sync/events/{id}/ignore` — descarta o evento com uma justificativa. Body: `{"reason": "texto"}`.
+
+> **Nota:** Os endpoints `/events/batch`, `/events/{id}/status` e `/events/{id}/fail` não fazem parte da implementação. O envio em lote não existe — cada evento é enviado individualmente com chave de idempotência. Falha é gerenciada automaticamente pelo worker com retry exponencial.
 
 ## 21. Payload de evento
 

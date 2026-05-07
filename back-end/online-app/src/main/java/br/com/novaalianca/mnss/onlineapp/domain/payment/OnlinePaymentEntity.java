@@ -6,7 +6,7 @@ import br.com.novaalianca.mnss.core.payment.PaymentStatus;
 import br.com.novaalianca.mnss.sharedinfra.domain.BaseEntity;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "payments")
@@ -34,10 +34,10 @@ public class OnlinePaymentEntity extends BaseEntity {
     private String gateway;
 
     @Column(name = "paid_at")
-    private LocalDateTime paidAt;
+    private Instant paidAt;
 
     @Column(name = "canceled_at")
-    private LocalDateTime canceledAt;
+    private Instant canceledAt;
 
     @Column(name = "webhook_payload", columnDefinition = "text")
     private String webhookPayload;
@@ -71,7 +71,7 @@ public class OnlinePaymentEntity extends BaseEntity {
         this.status = PaymentStatus.PAID;
         this.transactionId = transactionId;
         this.webhookPayload = payload;
-        this.paidAt = LocalDateTime.now();
+        this.paidAt = Instant.now();
     }
 
     public void markAsRefused(String transactionId, String payload) {
@@ -82,7 +82,7 @@ public class OnlinePaymentEntity extends BaseEntity {
 
     public void markAsCanceled(String reason) {
         this.status = PaymentStatus.CANCELED;
-        this.canceledAt = LocalDateTime.now();
+        this.canceledAt = Instant.now();
     }
 
     public void markAsExpired() {
@@ -95,7 +95,7 @@ public class OnlinePaymentEntity extends BaseEntity {
     public BigDecimal getAmount() { return amount; }
     public String getTransactionId() { return transactionId; }
     public String getGateway() { return gateway; }
-    public LocalDateTime getPaidAt() { return paidAt; }
-    public LocalDateTime getCanceledAt() { return canceledAt; }
+    public Instant getPaidAt() { return paidAt; }
+    public Instant getCanceledAt() { return canceledAt; }
     public String getWebhookPayload() { return webhookPayload; }
 }

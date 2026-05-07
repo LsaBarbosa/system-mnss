@@ -21,13 +21,15 @@ public class WhatsAppWebhookController {
 
     private final WhatsAppService whatsAppService;
     private final WhatsAppProviderPort providerPort;
+    private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
     @Value("${mnss.whatsapp.verify-token:change_me}")
     private String verifyToken;
 
-    public WhatsAppWebhookController(WhatsAppService whatsAppService, WhatsAppProviderPort providerPort) {
+    public WhatsAppWebhookController(WhatsAppService whatsAppService, WhatsAppProviderPort providerPort, com.fasterxml.jackson.databind.ObjectMapper objectMapper) {
         this.whatsAppService = whatsAppService;
         this.providerPort = providerPort;
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -55,18 +57,20 @@ public class WhatsAppWebhookController {
      */
     @PostMapping
     public ResponseEntity<Void> receiveMessage(
-            @RequestBody Map<String, Object> payload,
+            @RequestBody String rawBody,
             @RequestHeader(value = "X-Hub-Signature-256", required = false) String signature) {
 
-        log.info("WhatsApp webhook received: {}", payload.getOrDefault("object", "unknown"));
+        log.info("WhatsApp webhook received");
 
         // Validate signature when available
-        if (signature != null && !providerPort.validateWebhookSignature(payload.toString(), signature)) {
+        if (signature != null && !providerPort.validateWebhookSignature(rawBody, signature)) {
             log.warn("Invalid WhatsApp webhook signature");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> payload = objectMapper.readValue(rawBody, Map.class);
             processPayload(payload);
         } catch (Exception e) {
             // Log but still return 200 to prevent provider retries for parsing errors

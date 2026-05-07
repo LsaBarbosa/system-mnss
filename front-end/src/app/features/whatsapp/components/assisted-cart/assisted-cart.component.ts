@@ -2,8 +2,8 @@ import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { WhatsAppService } from '../../data-access/whatsapp.service';
-import { ConversationResponse, WhatsAppOrderItemRequest, CreateWhatsAppOrderRequest } from '../../models/whatsapp.model';
-import { PublicProductResponse } from '../../../site-publico/models/public-menu.model';
+import { ConversationResponse, WhatsAppOrderItemRequest, CreateWhatsAppOrderRequest } from '../../domain/whatsapp.model';
+import { PublicProductResponse } from '../../../site-publico/domain/public-menu.model';
 import { DeliveryType } from '../../../../core/models/order.model';
 
 @Component({

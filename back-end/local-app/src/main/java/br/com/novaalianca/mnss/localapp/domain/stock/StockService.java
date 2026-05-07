@@ -21,16 +21,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class StockService {
-    private final Optional<ProductRepository> productRepository;
-    private final Optional<OrderRepository> orderRepository;
-    private final Optional<StockMovementRepository> stockMovementRepository;
+    private final ProductRepository productRepository;
+    private final OrderRepository orderRepository;
+    private final StockMovementRepository stockMovementRepository;
     private final StockSyncEventService syncEventService;
     private final AuditService auditService;
 
     StockService(
-            Optional<ProductRepository> productRepository,
-            Optional<OrderRepository> orderRepository,
-            Optional<StockMovementRepository> stockMovementRepository,
+            ProductRepository productRepository,
+            OrderRepository orderRepository,
+            StockMovementRepository stockMovementRepository,
             StockSyncEventService syncEventService,
             AuditService auditService) {
         this.productRepository = productRepository;
@@ -43,16 +43,16 @@ public class StockService {
     @Transactional(readOnly = true)
     public List<StockMovementResponse> listMovements(UUID productId) {
         List<StockMovementEntity> movements = productId == null
-                ? stockMovementRepository().findAllByOrderByCreatedAtDesc()
-                : stockMovementRepository().findByProductIdOrderByCreatedAtDesc(productId);
+                ? stockMovementRepository.findAllByOrderByCreatedAtDesc()
+                : stockMovementRepository.findByProductIdOrderByCreatedAtDesc(productId);
         return movements.stream().map(StockMovementResponse::from).toList();
     }
 
     @Transactional(readOnly = true)
     public List<StockBalanceResponse> listBalances() {
-        List<ProductEntity> products = productRepository().findAllByOrderByNameAsc();
+        List<ProductEntity> products = productRepository.findAllByOrderByNameAsc();
         List<UUID> productIds = products.stream().map(ProductEntity::getId).toList();
-        Map<UUID, BigDecimal> balances = aggregateBalances(stockMovementRepository().findByProductIdIn(productIds));
+        Map<UUID, BigDecimal> balances = aggregateBalances(stockMovementRepository.findByProductIdIn(productIds));
         return products.stream()
                 .map(product -> new StockBalanceResponse(
                         product.getId(),
@@ -69,12 +69,12 @@ public class StockService {
         requireAuthenticatedUser(actorUserId);
         validateReason(type, request.reason());
 
-        ProductEntity product = productRepository().findById(productId)
+        ProductEntity product = productRepository.findById(productId)
                 .orElseThrow(() -> notFound("PRODUCT_NOT_FOUND", "Produto nao encontrado."));
         OrderEntity order = findOrder(request.orderId());
         BigDecimal balanceBefore = calculateBalance(productId);
         BigDecimal balanceAfter = balanceBefore.add(signedQuantity(type, quantity));
-        if (isOutbound(type) && balanceAfter.signum() < 0) {
+        if (product.isStockControlled() && isOutbound(type) && balanceAfter.signum() < 0) {
             throw new BusinessException("INSUFFICIENT_STOCK", "Estoque insuficiente para a movimentacao.", HttpStatus.BAD_REQUEST);
         }
 
@@ -85,12 +85,12 @@ public class StockService {
                 normalizeReason(request.reason()),
                 order,
                 actorUserId);
-        StockMovementEntity saved = stockMovementRepository().save(movement);
+        StockMovementEntity saved = stockMovementRepository.save(movement);
         syncEventService.recordStockMovementEvent(saved, balanceAfter);
 
         if (product.isStockControlled() && product.isAvailable() && balanceAfter.signum() <= 0) {
             product.changeAvailability(false);
-            productRepository().save(product);
+            productRepository.save(product);
             syncEventService.recordProductAvailabilityEvent(product);
         }
 
@@ -127,7 +127,7 @@ public class StockService {
     @Transactional(readOnly = true)
     public BigDecimal calculateBalance(UUID productId) {
         requireProductId(productId);
-        return stockMovementRepository().findByProductIdOrderByCreatedAtDesc(productId).stream()
+        return stockMovementRepository.findByProductIdOrderByCreatedAtDesc(productId).stream()
                 .map(movement -> signedQuantity(movement.getType(), movement.getQuantity()))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
@@ -210,7 +210,7 @@ public class StockService {
         if (orderId == null) {
             return null;
         }
-        return orderRepository()
+        return orderRepository
                 .findById(orderId)
                 .orElseThrow(() -> notFound("ORDER_NOT_FOUND", "Pedido nao encontrado."));
     }
@@ -221,18 +221,5 @@ public class StockService {
 
     private BusinessException notFound(String code, String message) {
         return new BusinessException(code, message, HttpStatus.NOT_FOUND);
-    }
-
-    private ProductRepository productRepository() {
-        return productRepository.orElseThrow(() -> new IllegalStateException("Product repository is not available."));
-    }
-
-    private OrderRepository orderRepository() {
-        return orderRepository.orElseThrow(() -> new IllegalStateException("Order repository is not available."));
-    }
-
-    private StockMovementRepository stockMovementRepository() {
-        return stockMovementRepository
-                .orElseThrow(() -> new IllegalStateException("Stock movement repository is not available."));
     }
 }

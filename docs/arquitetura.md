@@ -123,7 +123,7 @@ local/
 | `rabbitmq-local` | Eventos internos da loja |
 | `redis-local` | Cache e apoio operacional |
 | `nginx-local` | Proxy reverso local |
-| `sync-worker-local` | Envio e recebimento de sincronizações |
+| `local-api` (worker embutido) | Envio de sincronizações via `SyncOutboxWorker` (`@Scheduled`) |
 | `pdv` | Interface do caixa |
 | `kds` | Interface de produção |
 | `admin-local` | Gestão local |
@@ -149,15 +149,14 @@ O ambiente online roda na VPS Hostinger.
 
 ```text
 online/
-├── Java Online API
+├── Java Online API  (inclui SyncInboxWorker embutido)
 ├── PostgreSQL Online
 ├── RabbitMQ Online
 ├── Redis Online
 ├── Nginx
 ├── Certbot
 ├── Angular Site
-├── Angular Admin Online
-└── Sync Worker Online
+└── Angular Admin Online
 ```
 
 ### 6.3 Serviços online
@@ -172,7 +171,7 @@ online/
 | `certbot` | Certificados SSL |
 | `site` | Site institucional e cardápio |
 | `admin-online` | Gestão remota |
-| `sync-worker-online` | Processamento de eventos externos |
+| `online-api` (worker embutido) | Processamento de eventos externos via `SyncInboxWorker` (`@Scheduled`) |
 
 ## 7. Stack definida
 
@@ -197,10 +196,11 @@ online/
 - Angular
 - TypeScript
 - RxJS
-- Angular Material ou PrimeNG
-- SCSS ou Tailwind
+- SCSS customizado (sem biblioteca de componentes por ora)
 - PWA
 - WebSocket client
+
+> **Decisão pendente — biblioteca de UI:** Angular Material e PrimeNG são candidatos. Nenhuma está instalada. A adoção deve ser feita de forma incremental, feature a feature, quando houver necessidade real de componentes complexos (datepicker, tabela virtual, etc.). Até lá, SCSS customizado é o padrão.
 
 ### Infraestrutura
 
@@ -240,18 +240,21 @@ Monólito modular local
 
 O back-end deve ser organizado de forma modular, separando as responsabilidades técnicas.
 
-### 9.1 Camadas sugeridas
+### 9.1 Camadas por domínio
 
-Cada domínio funcional deve ser organizado de forma clara:
+Cada domínio funcional colooca todas as suas classes no mesmo pacote, com a camada identificada pelo sufixo do nome da classe:
 
 ```text
-<dominio>/
-├── web/            # controladores e DTOs de entrada
-├── service/        # lógica de negócio e serviços
-├── entity/         # entidades JPA e objetos de domínio
-├── repository/     # interfaces de acesso a dados
-└── dto/            # objetos de transferência de dados (interno/externo)
+domain/<dominio>/
+├── XController.java     # entrada HTTP, delegação ao service
+├── XService.java        # lógica de negócio
+├── XEntity.java         # entidade JPA
+├── XRepository.java     # interface de acesso a dados
+├── XRequest.java        # DTO de entrada (ou CreateXRequest, UpdateXRequest)
+└── XResponse.java       # DTO de saída
 ```
+
+> Sub-pacotes (`web/`, `service/`, `entity/`, `repository/`, `dto/`) devem ser criados apenas quando um domínio ultrapassar ~10 arquivos e a colocação plana dificultar a navegação.
 
 ### 9.2 Módulos Gradle e responsabilidades
 
@@ -265,10 +268,10 @@ Cada domínio funcional deve ser organizado de forma clara:
 
 ### 9.3 DTOs e entidades
 
-- DTOs de Request/Response pertencem à camada de entrada (web).
-- Entidades JPA são usadas para persistência e estado de domínio.
+- DTOs de Request/Response ficam no mesmo pacote do domínio (ex: `XRequest.java`, `XResponse.java`).
+- Entidades JPA são usadas para persistência e estado de domínio; nunca devem ser retornadas diretamente pelos controllers.
 - A lógica de negócio é concentrada nos Services.
-- MapStruct deve ser usado para mapeamento entre os modelos.
+- Mapeamentos Entity→DTO podem usar **MapStruct** (`@Mapper(componentModel = "spring")`) ou factories estáticas de Response quando o mapeamento for simples e local ao domínio.
 
 ## 10. Arquitetura do front-end
 
@@ -289,12 +292,13 @@ src/app/
 │   └── testing/
 └── features/
     └── <feature>/
-        ├── domain/      # modelos TS e tipos
-        ├── application/ # facades e serviços de tela
-        ├── data-access/ # services HTTP e DTOs
-        ├── ui/          # componentes presentacionais
+        ├── domain/      # modelos TypeScript, interfaces e tipos
+        ├── data-access/ # services HTTP, DTOs e acesso a API
+        ├── components/  # componentes presentacionais (opcional)
         └── pages/       # componentes roteáveis
 ```
+
+> Sub-diretórios `application/` e `ui/` devem ser criados apenas se a feature crescer a ponto de justificar a separação de facades e componentes presentacionais.
 
 ## 11. Estrutura do repositório
 

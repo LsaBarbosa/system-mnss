@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { WhatsAppService } from '../../data-access/whatsapp.service';
-import { ConversationResponse, MessageResponse } from '../../models/whatsapp.model';
+import { ConversationResponse, MessageResponse } from '../../domain/whatsapp.model';
 import { ConversationListComponent } from '../../components/conversation-list/conversation-list.component';
 import { ChatViewComponent } from '../../components/chat-view/chat-view.component';
 import { AssistedCartComponent } from '../../components/assisted-cart/assisted-cart.component';

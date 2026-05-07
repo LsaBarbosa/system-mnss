@@ -91,8 +91,9 @@ rabbitmq-online
 redis-online
 nginx
 certbot
-sync-worker-online
 ```
+
+> **Nota sobre sincronização:** Não há serviço `sync-worker-online` separado. O worker de processamento (`SyncInboxWorker`) roda embutido dentro do container `nova-alianca-online-api` via agendamento `@Scheduled`. Nenhum container adicional é necessário para sincronização.
 
 ## 6. Estrutura de diretórios na VPS
 
@@ -133,6 +134,13 @@ REDIS_PORT=6379
 
 JWT_SECRET=change_me
 SYNC_MASTER_SECRET=change_me
+MNSS_DEFAULT_STORE_ID=store-001
+MNSS_STORE_001_SECRET=change_me
+MNSS_PAYMENT_WEBHOOK_SECRET=change_me
+WHATSAPP_VERIFY_TOKEN=change_me
+WHATSAPP_PROVIDER=mock
+SPRING_SECURITY_USER_NAME=online_admin
+SPRING_SECURITY_USER_PASSWORD=change_me
 
 SITE_URL=https://padarianovaalianca.com.br
 API_URL=https://api.padarianovaalianca.com.br
@@ -156,17 +164,38 @@ services:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
       DB_HOST: postgres-online
       DB_PORT: 5432
-      DB_NAME: ${POSTGRES_DB}
-      DB_USER: ${POSTGRES_USER}
-      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       RABBITMQ_HOST: rabbitmq-online
-      RABBITMQ_USER: ${RABBITMQ_DEFAULT_USER}
-      RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
       REDIS_HOST: redis-online
       JWT_SECRET: ${JWT_SECRET}
       SYNC_MASTER_SECRET: ${SYNC_MASTER_SECRET}
+      MNSS_DEFAULT_STORE_ID: ${MNSS_DEFAULT_STORE_ID}
+      MNSS_STORE_001_SECRET: ${MNSS_STORE_001_SECRET}
+      MNSS_PAYMENT_WEBHOOK_SECRET: ${MNSS_PAYMENT_WEBHOOK_SECRET}
+      WHATSAPP_VERIFY_TOKEN: ${WHATSAPP_VERIFY_TOKEN}
+      WHATSAPP_PROVIDER: ${WHATSAPP_PROVIDER}
+      SPRING_SECURITY_USER_NAME: ${SPRING_SECURITY_USER_NAME}
+      SPRING_SECURITY_USER_PASSWORD: ${SPRING_SECURITY_USER_PASSWORD}
     expose:
       - "8080"
+    restart: unless-stopped
+
+  nova-alianca-site:
+    image: nova-alianca/site:latest
+    container_name: nova-alianca-site
+    depends_on:
+      - nova-alianca-online-api
+    restart: unless-stopped
+
+  nova-alianca-admin:
+    image: nova-alianca/admin:latest
+    container_name: nova-alianca-admin
+    depends_on:
+      - nova-alianca-online-api
     restart: unless-stopped
 
   postgres-online:
@@ -204,6 +233,8 @@ services:
     container_name: nginx
     depends_on:
       - nova-alianca-online-api
+      - nova-alianca-site
+      - nova-alianca-admin
     ports:
       - "80:80"
       - "443:443"
@@ -459,12 +490,27 @@ Exemplos:
 
 ```text
 GET  /api/public/menu
-GET  /api/public/products
-POST /api/orders
-POST /api/payments/webhook
+GET  /api/public/info
+POST /api/public/orders
+POST /api/public/payments/online
+POST /api/public/payments/webhook
+POST /api/auth/login
 POST /api/whatsapp/webhook
 POST /api/sync/events
 GET  /api/sync/pending
+```
+
+Endpoints internos (exigem autenticação HTTP Basic ou Bearer JWT):
+
+```text
+GET  /api/auth/me
+GET  /api/whatsapp/catalog
+GET  /api/whatsapp/conversations
+POST /api/whatsapp/orders
+GET  /api/sync/events
+GET  /api/sync/status
+POST /api/sync/events/{id}/reprocess
+POST /api/sync/events/{id}/ignore
 ```
 
 ## 20. Segurança online
@@ -473,7 +519,9 @@ Medidas obrigatórias:
 
 - HTTPS
 - Firewall
-- JWT
+- Assinatura HMAC e segredos técnicos para sync/webhooks
+- HTTP Basic e/ou Bearer JWT nos endpoints internos de `/api/**` que não são públicos
+- JWT para painéis administrativos quando o módulo de autenticação online estiver habilitado
 - Rate limit
 - Validação de webhook
 - Banco privado

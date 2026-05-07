@@ -13,7 +13,6 @@ import br.com.novaalianca.mnss.localapp.domain.order.OrderItemRepository;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderOrigin;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderRepository;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderStatus;
-import br.com.novaalianca.mnss.localapp.domain.stock.StockService;
 import br.com.novaalianca.mnss.core.payment.PaymentMethod;
 import br.com.novaalianca.mnss.core.payment.PaymentStatus;
 import br.com.novaalianca.mnss.sharedinfra.web.error.BusinessException;
@@ -35,7 +34,6 @@ public class PaymentService {
     private final Optional<PaymentRepository> paymentRepository;
     private final Optional<CashRegisterRepository> cashRegisterRepository;
     private final CashRegisterService cashRegisterService;
-    private final StockService stockService;
     private final AuditService auditService;
 
     PaymentService(
@@ -44,14 +42,12 @@ public class PaymentService {
             Optional<PaymentRepository> paymentRepository,
             Optional<CashRegisterRepository> cashRegisterRepository,
             CashRegisterService cashRegisterService,
-            StockService stockService,
             AuditService auditService) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.paymentRepository = paymentRepository;
         this.cashRegisterRepository = cashRegisterRepository;
         this.cashRegisterService = cashRegisterService;
-        this.stockService = stockService;
         this.auditService = auditService;
     }
 
@@ -99,7 +95,6 @@ public class PaymentService {
         OrderEntity savedOrder = order;
 
         if (newRemainingAmount.signum() <= 0) {
-            recordStockMovements(order, items, actorUserId);
             order.markPaid(nextPaidStatus(items));
             savedOrder = orderRepository().save(order);
         }
@@ -125,16 +120,6 @@ public class PaymentService {
             throw new BusinessException("ORDER_NOT_PAYABLE", "Pedido nao esta aberto para pagamento.", HttpStatus.BAD_REQUEST);
         }
         return order;
-    }
-
-    private void recordStockMovements(OrderEntity order, List<OrderItemEntity> items, UUID actorUserId) {
-        items.stream()
-                .filter(item -> item.getProduct() != null)
-                .forEach(item -> stockService.recordSaleMovement(
-                        item.getProduct().getId(),
-                        item.getQuantity(),
-                        order.getId(),
-                        actorUserId));
     }
 
     private OrderStatus nextPaidStatus(List<OrderItemEntity> items) {

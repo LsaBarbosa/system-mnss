@@ -430,6 +430,7 @@ GERENTE
 CAIXA
 ATENDENTE
 COZINHA
+EXPEDICAO
 ENTREGADOR
 CONSULTA
 ```
@@ -771,7 +772,7 @@ Sistema cria evento de sincronização
 SALE_CREATED
 SALE_ITEM_ADDED
 PAYMENT_REGISTERED
-SALE_FINISHED
+SALE_DELIVERED
 ORDER_SENT_TO_KDS
 ```
 
@@ -1196,7 +1197,7 @@ Resultado:
 - Pedido com setores diferentes pode gerar tickets diferentes.
 - Expedição pode visualizar o pedido completo.
 - Itens sem preparo não precisam gerar ticket.
-- Ticket deve iniciar com status WAITING.
+- Ticket deve iniciar com status PENDING.
 
 ### Eventos gerados
 
@@ -1232,7 +1233,7 @@ Produção visualiza ticket aguardando
 ↓
 Produção clica em iniciar preparo
 ↓
-Sistema altera ticket para IN_PREPARATION
+Sistema altera ticket para PREPARING
 ↓
 Sistema atualiza itens relacionados
 ↓
@@ -1249,7 +1250,7 @@ Se sim, pedido fica READY
 
 ### Regras
 
-- Se pelo menos um item estiver em preparo, pedido fica IN_PREPARATION.
+- Se pelo menos um item estiver em preparo, pedido fica PREPARING.
 - Se todos os tickets obrigatórios estiverem prontos, pedido pode ficar READY.
 - Cancelamento de item no KDS deve exigir permissão.
 - Pedido só fica pronto quando todos os tickets obrigatórios estiverem prontos.
@@ -1297,7 +1298,7 @@ Atendente chama cliente ou separa retirada
 ↓
 Pedido é entregue ao cliente
 ↓
-Sistema marca pedido como FINISHED
+Sistema marca pedido como DELIVERED
 ```
 
 ### Fluxo para delivery
@@ -1313,7 +1314,7 @@ Entregador recebe pedido
 ↓
 Sistema muda pedido para OUT_FOR_DELIVERY
 ↓
-Após entrega, sistema muda para DELIVERED ou FINISHED
+Após entrega, sistema muda para DELIVERED ou DELIVERED
 ```
 
 ### Regras
@@ -1435,11 +1436,11 @@ PAID
 SENT_TO_STORE
 RECEIVED_BY_STORE
 ACCEPTED
-IN_PREPARATION
+PREPARING
 READY
 OUT_FOR_DELIVERY
 DELIVERED
-FINISHED
+DELIVERED
 CANCELED
 ```
 
@@ -2498,7 +2499,7 @@ PAYMENT_REGISTERED
 1. Operador confirma finalização.
 2. Sistema valida itens.
 3. Sistema valida pagamento.
-4. Sistema altera pedido para FINISHED ou ACCEPTED conforme tipo.
+4. Sistema altera pedido para DELIVERED ou ACCEPTED conforme tipo.
 5. Sistema imprime comprovante.
 6. Sistema aciona gaveta, se dinheiro.
 7. Sistema gera tickets KDS, se necessário.
@@ -2524,7 +2525,7 @@ PAYMENT_REGISTERED
 ### Eventos
 
 ```text
-SALE_FINISHED
+SALE_DELIVERED
 ORDER_SENT_TO_KDS
 ```
 
@@ -2670,9 +2671,9 @@ KDS_TICKET_CREATED
 ### Fluxo principal
 
 ```text
-1. Produção visualiza ticket WAITING.
+1. Produção visualiza ticket PENDING.
 2. Clica em iniciar preparo.
-3. Sistema atualiza ticket para IN_PREPARATION.
+3. Sistema atualiza ticket para PREPARING.
 4. Sistema atualiza pedido se necessário.
 5. Sistema notifica PDV/expedição.
 ```
@@ -2680,7 +2681,7 @@ KDS_TICKET_CREATED
 ### Regras
 
 - Status deve obedecer transição válida.
-- Pedido fica IN_PREPARATION se algum ticket estiver em preparo.
+- Pedido fica PREPARING se algum ticket estiver em preparo.
 
 ### Entidades
 
@@ -3116,7 +3117,7 @@ RECEIVED_BY_STORE
 ↓
 ACCEPTED
 ↓
-IN_PREPARATION
+PREPARING
 ↓
 READY
 ↓
@@ -3124,7 +3125,7 @@ OUT_FOR_DELIVERY
 ↓
 DELIVERED
 ↓
-FINISHED
+DELIVERED
 ```
 
 Status alternativo em quase todas as etapas operacionais:
@@ -3140,11 +3141,11 @@ CREATED
 ↓
 ACCEPTED
 ↓
-IN_PREPARATION
+PREPARING
 ↓
 READY
 ↓
-FINISHED
+DELIVERED
 ```
 
 Para venda simples sem preparo:
@@ -3154,7 +3155,7 @@ CREATED
 ↓
 PAID
 ↓
-FINISHED
+DELIVERED
 ```
 
 ## 10.3 Item do pedido
@@ -3162,9 +3163,9 @@ FINISHED
 ```text
 CREATED
 ↓
-WAITING_PREPARATION
+PENDING_PREPARATION
 ↓
-IN_PREPARATION
+PREPARING
 ↓
 READY
 ↓
@@ -3180,13 +3181,13 @@ CANCELED
 ## 10.4 Ticket KDS
 
 ```text
-WAITING
+PENDING
 ↓
-IN_PREPARATION
+PREPARING
 ↓
 READY
 ↓
-FINISHED
+DELIVERED
 ```
 
 Alternativo:
@@ -3272,7 +3273,7 @@ SALE_ITEM_ADDED
 SALE_ITEM_REMOVED
 SALE_DISCOUNT_APPLIED
 PAYMENT_REGISTERED
-SALE_FINISHED
+SALE_DELIVERED
 SALE_CANCELED
 CASH_REGISTER_OPENED
 CASH_REGISTER_CLOSED
@@ -3286,7 +3287,7 @@ ORDER_SENT_TO_KDS
 KDS_TICKET_CREATED
 KDS_TICKET_STARTED
 KDS_TICKET_READY
-KDS_TICKET_FINISHED
+KDS_TICKET_DELIVERED
 KDS_ITEM_STARTED
 KDS_ITEM_READY
 KDS_ITEM_CANCELED
@@ -3402,18 +3403,16 @@ PATCH  /api/kds/items/{id}/cancel
 
 ```text
 GET  /api/public/menu
-GET  /api/public/products
-POST /api/orders
-GET  /api/orders/{id}/status
-POST /api/checkout/quote
+GET  /api/public/info
+POST /api/public/orders
+GET  /api/public/orders/{id}
 ```
 
 ## 12.7 Pagamentos e webhooks
 
 ```text
-POST /api/payments/online
-POST /api/payments/webhook
-GET  /api/payments/{id}
+POST /api/public/payments/online
+POST /api/public/payments/webhook
 ```
 
 ## 12.8 WhatsApp
@@ -3634,10 +3633,11 @@ GET  /api/sync/health
 ## 17.2 KDS
 
 - Recebe pedidos locais via WebSocket.
-- Separa tickets por setor.
-- Permite iniciar preparo.
-- Permite marcar pronto.
-- Atualiza pedido no PDV.
+- O sistema notifica o KDS.
+- O ticket aparece como `PENDING`.
+- O operador inicia o preparo (`PREPARING`).
+- O operador marca como pronto (`READY`).
+- O sistema atualiza o status do pedido no PDV.
 - Funciona sem internet.
 
 ## 17.3 Online

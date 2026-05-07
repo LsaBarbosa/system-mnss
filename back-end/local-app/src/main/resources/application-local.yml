@@ -21,17 +21,7 @@ server:
 
 mnss:
   environment: local
-  local:
-    database-host: ${DB_HOST}
-    database-port: ${DB_PORT}
-    database-name: ${POSTGRES_DB}
-    database-user: ${POSTGRES_USER}
-    database-password: ${POSTGRES_PASSWORD}
-    rabbitmq-host: ${RABBITMQ_HOST}
-    rabbitmq-user: ${RABBITMQ_DEFAULT_USER}
-    rabbitmq-password: ${RABBITMQ_DEFAULT_PASS}
-    redis-host: ${REDIS_HOST}
-    redis-port: ${REDIS_PORT:6379}
-    online-sync-base-url: ${ONLINE_SYNC_BASE_URL}
-    store-id: ${STORE_ID}
-    store-secret: ${STORE_SECRET}
+  sync:
+    online-url: ${MNSS_ONLINE_URL}
+    store-id: ${MNSS_STORE_ID}
+    store-secret: ${MNSS_STORE_SECRET}

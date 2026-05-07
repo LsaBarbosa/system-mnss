@@ -103,7 +103,7 @@ class PdvSaleController {
             @PathVariable UUID saleId,
             @Valid @RequestBody CancelSaleRequest request,
             HttpServletRequest servletRequest) {
-        return pdvSaleService.cancelSale(saleId, request, authenticatedUserId(servletRequest));
+        return pdvSaleService.cancelSale(saleId, request, authenticatedUserId(servletRequest), authenticatedUserRoles(servletRequest));
     }
 
     @PostMapping("/{saleId}/print")

@@ -14,7 +14,9 @@ public record KdsTicketResponse(
     PreparationSector sector,
     KdsTicketStatus status,
     Instant createdAt,
+    Instant updatedAt,
     Instant startedAt,
     Instant readyAt,
+    Instant finishedAt,
     List<KdsTicketItemResponse> items
 ) {}

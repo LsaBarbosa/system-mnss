@@ -3,26 +3,21 @@ package br.com.novaalianca.mnss.localapp.security.user;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingConstants;
+import org.mapstruct.Named;
 
-public final class UserMapper {
-    private UserMapper() {
-    }
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+public interface UserMapper {
 
-    public static UserResponse toResponse(UserEntity user) {
-        return new UserResponse(
-                user.getId(),
-                user.getName(),
-                user.getEmail(),
-                user.getUsername(),
-                user.isActive(),
-                roleNames(user));
-    }
+    @Mapping(target = "roles", source = "user", qualifiedByName = "mapRoleNames")
+    UserResponse toResponse(UserEntity user);
 
-    public static RoleResponse toResponse(RoleEntity role) {
-        return new RoleResponse(role.getId(), role.getName(), role.getDescription());
-    }
+    RoleResponse toResponse(RoleEntity role);
 
-    public static Set<RoleName> roleNames(UserEntity user) {
+    @Named("mapRoleNames")
+    default Set<RoleName> mapRoleNames(UserEntity user) {
         return user.getRoles().stream()
                 .map(RoleEntity::getName)
                 .sorted(Comparator.comparing(Enum::name))

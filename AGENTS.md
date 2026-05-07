@@ -69,7 +69,7 @@ Consequências obrigatórias:
 - Angular
 - TypeScript
 - RxJS
-- Angular Material ou PrimeNG
+- SCSS customizado (Angular Material ou PrimeNG podem ser adotados incrementalmente se necessário)
 - SCSS ou Tailwind
 - PWA quando aplicável
 - WebSocket client para KDS e atualizações em tempo real
@@ -103,7 +103,7 @@ Regras:
 
 - Não criar microserviços no início.
 - Não separar serviços antes de necessidade real de escala ou isolamento.
-- Organizar o monólito modular em camadas por domínio (web, service, entity, repository, dto).
+- Organizar o monólito modular em pacote plano por domínio: `XController`, `XService`, `XEntity`, `XRepository`, `XRequest`/`XResponse` no mesmo pacote. Sub-pacotes só quando o domínio ultrapassar ~10 arquivos.
 - Manter módulos coesos por domínio.
 - Evitar acoplamento direto entre front-end e regras críticas de negócio.
 - Toda regra crítica deve ficar no back-end.
@@ -119,10 +119,11 @@ nova-alianca-system/
 │   ├── sync-module/
 │   └── shared-infra/
 ├── front-end/
-│   ├── site-publico/
-│   ├── admin/
-│   ├── pdv/
-│   └── kds/
+│   └── src/app/features/
+│       ├── site-publico/
+│       ├── admin/
+│       ├── pdv/
+│       └── kds/
 ├── infra/
 │   ├── local/
 │   └── online/

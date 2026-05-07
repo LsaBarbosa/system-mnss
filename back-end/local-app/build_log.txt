@@ -1,0 +1,1 @@
+bash: linha 1: ./gradlew: Arquivo ou diretório inexistente

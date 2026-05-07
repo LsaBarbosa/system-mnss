@@ -41,7 +41,7 @@ mnss:
     stores:
       store-001: ${MNSS_STORE_001_SECRET}
   payment:
-    webhook-secret: ${MNSS_PAYMENT_WEBHOOK_SECRET:change_me}
+    webhook-secret: ${MNSS_PAYMENT_WEBHOOK_SECRET}
   store:
     name: "Padaria e Lanchonete Nova Aliança"
     address: "Rua Exemplo, 123 - Centro"

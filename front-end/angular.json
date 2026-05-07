@@ -30,6 +30,7 @@
               }
             ],
             "styles": ["src/styles.scss"],
+            "allowedCommonJsDependencies": ["@stomp/stompjs", "sockjs-client"],
             "serviceWorker": "ngsw-config.json"
           },
           "configurations": {

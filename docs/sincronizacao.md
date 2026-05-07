@@ -339,7 +339,7 @@ Tentativa 5: após 1 hora
 Depois da quantidade máxima de tentativas:
 
 ```text
-Status = FAILED
+Status = DEAD_LETTER
 ```
 
 A falha deve aparecer no painel de sincronização.

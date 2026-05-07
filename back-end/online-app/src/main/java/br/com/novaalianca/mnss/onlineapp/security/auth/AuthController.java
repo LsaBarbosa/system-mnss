@@ -39,7 +39,7 @@ public class AuthController {
                 .map(authority -> authority.startsWith("ROLE_") ? authority.substring(5) : authority)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
         if (roles.isEmpty() && auth != null && auth.isAuthenticated()) {
-            roles = Set.of("ADMIN");
+            roles = Set.of("USER");
         }
         return new AuthUserResponse(
                 UUID.randomUUID().toString(),

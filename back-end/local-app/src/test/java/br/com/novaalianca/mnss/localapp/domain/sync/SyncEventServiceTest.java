@@ -22,6 +22,8 @@ class SyncEventServiceTest {
 
     @Mock
     private SyncEventRepository repository;
+    @Mock
+    private SyncEventRabbitPublisher rabbitPublisher;
 
     @InjectMocks
     private SyncEventService service;

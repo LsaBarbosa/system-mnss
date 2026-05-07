@@ -1197,7 +1197,7 @@ Resultado:
 - Pedido com setores diferentes pode gerar tickets diferentes.
 - Expedição pode visualizar o pedido completo.
 - Itens sem preparo não precisam gerar ticket.
-- Ticket deve iniciar com status PENDING.
+- Ticket deve iniciar com status WAITING.
 
 ### Eventos gerados
 
@@ -1233,7 +1233,7 @@ Produção visualiza ticket aguardando
 ↓
 Produção clica em iniciar preparo
 ↓
-Sistema altera ticket para PREPARING
+Sistema altera ticket para IN_PREPARATION
 ↓
 Sistema atualiza itens relacionados
 ↓
@@ -1250,7 +1250,7 @@ Se sim, pedido fica READY
 
 ### Regras
 
-- Se pelo menos um item estiver em preparo, pedido fica PREPARING.
+- Se pelo menos um item estiver em preparo, pedido fica IN_PREPARATION.
 - Se todos os tickets obrigatórios estiverem prontos, pedido pode ficar READY.
 - Cancelamento de item no KDS deve exigir permissão.
 - Pedido só fica pronto quando todos os tickets obrigatórios estiverem prontos.
@@ -1259,7 +1259,6 @@ Se sim, pedido fica READY
 
 ```text
 KDS_TICKET_STARTED
-KDS_ITEM_STARTED
 KDS_ITEM_READY
 KDS_TICKET_READY
 ORDER_READY
@@ -1314,7 +1313,7 @@ Entregador recebe pedido
 ↓
 Sistema muda pedido para OUT_FOR_DELIVERY
 ↓
-Após entrega, sistema muda para DELIVERED ou DELIVERED
+Após entrega, sistema muda para DELIVERED ou FINISHED
 ```
 
 ### Regras
@@ -1436,7 +1435,7 @@ PAID
 SENT_TO_STORE
 RECEIVED_BY_STORE
 ACCEPTED
-PREPARING
+IN_PREPARATION
 READY
 OUT_FOR_DELIVERY
 DELIVERED
@@ -1683,10 +1682,9 @@ Sync Worker Local marca evento como SYNCED
 ### Headers sugeridos
 
 ```http
-X-Store-Id: nova-alianca-001
+X-Store-ID: nova-alianca-001
 X-Signature: hash_hmac_sha256(payload, secret)
-X-Event-Id: uuid
-X-Event-Timestamp: 2026-05-03T10:30:00Z
+X-Idempotency-Key: uuid
 ```
 
 ---
@@ -2671,9 +2669,9 @@ KDS_TICKET_CREATED
 ### Fluxo principal
 
 ```text
-1. Produção visualiza ticket PENDING.
+1. Produção visualiza ticket WAITING.
 2. Clica em iniciar preparo.
-3. Sistema atualiza ticket para PREPARING.
+3. Sistema atualiza ticket para IN_PREPARATION.
 4. Sistema atualiza pedido se necessário.
 5. Sistema notifica PDV/expedição.
 ```
@@ -2681,7 +2679,7 @@ KDS_TICKET_CREATED
 ### Regras
 
 - Status deve obedecer transição válida.
-- Pedido fica PREPARING se algum ticket estiver em preparo.
+- Pedido fica IN_PREPARATION se algum ticket estiver em preparo.
 
 ### Entidades
 
@@ -3117,7 +3115,7 @@ RECEIVED_BY_STORE
 ↓
 ACCEPTED
 ↓
-PREPARING
+IN_PREPARATION
 ↓
 READY
 ↓
@@ -3125,7 +3123,7 @@ OUT_FOR_DELIVERY
 ↓
 DELIVERED
 ↓
-DELIVERED
+FINISHED
 ```
 
 Status alternativo em quase todas as etapas operacionais:
@@ -3141,7 +3139,7 @@ CREATED
 ↓
 ACCEPTED
 ↓
-PREPARING
+IN_PREPARATION
 ↓
 READY
 ↓
@@ -3163,9 +3161,9 @@ DELIVERED
 ```text
 CREATED
 ↓
-PENDING_PREPARATION
+WAITING_PREPARATION
 ↓
-PREPARING
+IN_PREPARATION
 ↓
 READY
 ↓
@@ -3181,13 +3179,13 @@ CANCELED
 ## 10.4 Ticket KDS
 
 ```text
-PENDING
+WAITING
 ↓
-PREPARING
+IN_PREPARATION
 ↓
 READY
 ↓
-DELIVERED
+FINISHED
 ```
 
 Alternativo:
@@ -3287,8 +3285,7 @@ ORDER_SENT_TO_KDS
 KDS_TICKET_CREATED
 KDS_TICKET_STARTED
 KDS_TICKET_READY
-KDS_TICKET_DELIVERED
-KDS_ITEM_STARTED
+KDS_TICKET_FINISHED
 KDS_ITEM_READY
 KDS_ITEM_CANCELED
 ORDER_READY
@@ -3634,8 +3631,8 @@ GET  /api/sync/health
 
 - Recebe pedidos locais via WebSocket.
 - O sistema notifica o KDS.
-- O ticket aparece como `PENDING`.
-- O operador inicia o preparo (`PREPARING`).
+- O ticket aparece como `WAITING`.
+- O operador inicia o preparo (`IN_PREPARATION`).
 - O operador marca como pronto (`READY`).
 - O sistema atualiza o status do pedido no PDV.
 - Funciona sem internet.

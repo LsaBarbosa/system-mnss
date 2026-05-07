@@ -570,10 +570,10 @@ finishedAt
 
 ```java
 public enum KdsTicketStatus {
-    PENDING,
-    PREPARING,
+    WAITING,
+    IN_PREPARATION,
     READY,
-    DELIVERED,
+    FINISHED,
     CANCELED
 }
 ```

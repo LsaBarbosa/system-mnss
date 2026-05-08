@@ -29,10 +29,15 @@ Use este checklist antes de liberar uma nova versão para o ambiente local da pa
 - [ ] `curl -s http://localhost/api/public/info` — informações da loja
 - [ ] `curl -s http://localhost/api/public/menu` — cardápio público
 
-Ou rode o script:
+Ou rode os scripts:
 
 ```bash
-BASE_URL=http://localhost infra/local/scripts/smoke-local.sh
+# Infraestrutura (Docker, PostgreSQL, RabbitMQ, Redis)
+BASE_URL=http://localhost bash infra/local/scripts/smoke-local-infra.sh
+
+# PDV funcional (login, caixa, venda, pagamento, finish, status)
+MNSS_SMOKE_USERNAME=admin MNSS_SMOKE_PASSWORD=<senha> \
+  BASE_URL=http://localhost bash infra/local/scripts/smoke-local-pdv.sh
 ```
 
 ## Smoke funcional — PDV

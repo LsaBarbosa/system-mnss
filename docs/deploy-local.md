@@ -124,7 +124,8 @@ Variáveis obrigatórias (o Docker Compose injeta as corretas no container da AP
 | `RABBITMQ_DEFAULT_PASS` | Senha do RabbitMQ (mín. 16 chars) |
 | `AUTH_TOKEN_SECRET` | Segredo JWT (mín. 32 chars) |
 | `MNSS_INITIAL_ADMIN_PASSWORD` | Senha do admin inicial |
-| `MNSS_STORE_SECRET` | Segredo HMAC da loja (mín. 32 chars) |
+| `MNSS_STORE_ID` | Identificador da loja — **deve ser idêntico** ao `MNSS_DEFAULT_STORE_ID` do ambiente online (`store-001`) |
+| `MNSS_STORE_SECRET` | Segredo HMAC da loja (mín. 32 chars) — **deve ser idêntico** ao `MNSS_STORE_001_SECRET` do ambiente online |
 | `MNSS_SYNC_REQUIRE_HTTPS` | `true` em produção, `false` só em dev HTTP |
 
 > **Importante:** O Compose local já monta as variáveis nos nomes que o Spring lê
@@ -380,8 +381,9 @@ docker compose up -d --build
 docker compose ps
 docker logs -f nova-alianca-local-api
 
-# 6. Executar smoke test
-./scripts/smoke-local.sh
+# 6. Executar smoke de infra e PDV
+bash scripts/smoke-local-infra.sh
+bash scripts/smoke-local-pdv.sh
 ```
 
 > A API só inicia após PostgreSQL, RabbitMQ e Redis estarem healthy

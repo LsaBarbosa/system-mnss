@@ -36,6 +36,8 @@ management:
 
 mnss:
   environment: online
+  online:
+    sync-master-secret: ${SYNC_MASTER_SECRET:}
   sync:
     default-store-id: ${MNSS_DEFAULT_STORE_ID:store-001}
     stores:

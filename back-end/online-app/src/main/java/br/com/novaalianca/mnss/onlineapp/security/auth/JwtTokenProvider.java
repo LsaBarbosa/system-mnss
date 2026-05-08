@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.Base64;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -93,7 +94,9 @@ public class JwtTokenProvider {
         String[] parts = token.split("\\.");
         if (parts.length != 3) return null;
         String expected = hmacSha256(parts[0] + "." + parts[1]);
-        return expected.equals(parts[2]) ? parts : null;
+        byte[] expectedBytes = expected.getBytes(StandardCharsets.UTF_8);
+        byte[] actualBytes   = parts[2].getBytes(StandardCharsets.UTF_8);
+        return MessageDigest.isEqual(expectedBytes, actualBytes) ? parts : null;
     }
 
     private String b64url(String value) {

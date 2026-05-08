@@ -60,3 +60,23 @@ Este documento descreve os passos para validar o funcionamento do MVP em ambient
     - A venda deve ser processada normalmente.
     - O evento de sync deve ficar com status `PENDING` ou `FAILED` (aguardando retry).
     - Reativar internet e verificar se o evento é sincronizado automaticamente.
+
+---
+
+## 4. Escopo Explicitamente Fora do MVP
+
+> **As integrações abaixo NÃO estão ativas neste MVP e não devem ser testadas como produção real.**
+
+### Pagamento Online — Mock
+
+- O gateway de pagamento está **mockado** (`PaymentGatewayPort` usa implementação mock).
+- `WHATSAPP_PROVIDER=mock` — nenhuma chamada real à API do gateway é feita.
+- Webhooks de pagamento podem ser enviados manualmente (com HMAC válido) para testar o fluxo, mas o gateway real não está integrado.
+- **Não liberar pagamento real em produção** sem implementar e homologar o gateway correspondente.
+
+### WhatsApp — Mock
+
+- `WHATSAPP_PROVIDER=mock` é o valor padrão e deve permanecer assim.
+- Nenhuma chamada real à API Meta/WhatsApp Business é realizada.
+- O webhook de WhatsApp pode ser testado com o token de verificação, mas sem provider real.
+- **Não liberar WhatsApp real em produção** sem contrato com a Meta, implementação do provider real e homologação completa.

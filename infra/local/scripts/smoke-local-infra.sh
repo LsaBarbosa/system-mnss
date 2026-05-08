@@ -4,6 +4,17 @@ set -euo pipefail
 
 COMPOSE_DIR="${COMPOSE_DIR:-$(cd "$(dirname "$0")/.." && pwd)}"
 
+# Carregar .env local se existir (evita exigir export manual das variáveis)
+if [ -f "$COMPOSE_DIR/.env" ]; then
+  set -a
+  # shellcheck source=/dev/null
+  . "$COMPOSE_DIR/.env"
+  set +a
+fi
+
+RABBITMQ_DEFAULT_USER="${RABBITMQ_DEFAULT_USER:-nova_alianca}"
+RABBITMQ_DEFAULT_PASS="${RABBITMQ_DEFAULT_PASS:?RABBITMQ_DEFAULT_PASS não definido — copie .env.example para .env e configure o valor}"
+
 pass() { echo "[OK]  $*"; }
 fail() { echo "[FAIL] $*"; FAILURES=$((FAILURES + 1)); }
 
@@ -48,7 +59,7 @@ echo ""
 
 # ── 3. RabbitMQ: management API ───────────────────────────────────────────────
 echo "--- RabbitMQ ---"
-if curl -fsS --max-time 5 -u "nova_alianca:${RABBITMQ_DEFAULT_PASS:-nova_alianca}" \
+if curl -fsS --max-time 5 -u "${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}" \
      http://localhost:15672/api/healthchecks/node >/dev/null 2>&1; then
   pass "rabbitmq-local: management API respondeu"
 else

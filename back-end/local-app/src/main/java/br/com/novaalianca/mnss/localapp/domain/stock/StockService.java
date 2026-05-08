@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -123,6 +124,11 @@ public class StockService {
     public StockMovementResponse recordSaleMovement(UUID productId, BigDecimal quantity, UUID orderId, UUID actorUserId) {
         UUID pid = requireProductId(productId);
         BigDecimal qty = requirePositiveQuantity(quantity);
+        String idempotencyKey = saleMovementIdempotencyKey(orderId, pid);
+        Optional<StockMovementEntity> existingMovement = findExistingSaleMovement(idempotencyKey);
+        if (existingMovement.isPresent()) {
+            return StockMovementResponse.from(existingMovement.get());
+        }
 
         ProductEntity product = productRepository.findById(pid)
                 .orElseThrow(() -> notFound("PRODUCT_NOT_FOUND", "Produto nao encontrado."));
@@ -145,6 +151,7 @@ public class StockService {
                 product, StockMovementType.SALE, qty,
                 "Venda finalizada", order, actorUserId,
                 previousQuantity, resultingQuantity);
+        movement.assignIdempotencyKey(idempotencyKey);
         StockMovementEntity saved = stockMovementRepository.save(movement);
         syncEventService.recordStockMovementEvent(saved, resultingQuantity);
 
@@ -278,6 +285,16 @@ public class StockService {
 
     private String normalizeReason(String reason) {
         return reason == null || reason.isBlank() ? null : reason.trim();
+    }
+
+    private String saleMovementIdempotencyKey(UUID orderId, UUID productId) {
+        return orderId == null ? null : "SALE:" + orderId + ":" + productId;
+    }
+
+    private Optional<StockMovementEntity> findExistingSaleMovement(String idempotencyKey) {
+        return idempotencyKey == null
+                ? Optional.empty()
+                : stockMovementRepository.findByIdempotencyKey(idempotencyKey);
     }
 
     private BusinessException notFound(String code, String message) {

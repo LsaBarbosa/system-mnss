@@ -90,6 +90,19 @@ class SyncControllerTest {
     }
 
     @Test
+    void receiveEvent_MissingSignature_ShouldReturnUnauthorized() {
+        Map<String, Object> body = new HashMap<>();
+        body.put("aggregateType", "Order");
+        body.put("eventType", "SALE_FINISHED");
+        body.put("payload", Map.of("data", "val"));
+
+        ResponseEntity<Void> response = controller.receiveEvent(storeId, null, "key-missing-sig", body);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        verify(repository, never()).save(any());
+    }
+
+    @Test
     void receiveEvent_Duplicate_ShouldReturnOkWithoutSaving() throws Exception {
         String idempotencyKey = "key-1";
         Map<String, Object> payload = Map.of("data", "val");
@@ -126,6 +139,84 @@ class SyncControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         verify(repository).save(argThat(event -> storeId.equals(event.getPayload().get("storeId"))));
+    }
+
+    @Test
+    void receiveEvent_WithPayloadStoreIdEqualToHeader_ShouldReturnOk() throws Exception {
+        String idempotencyKey = "key-store-match";
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("storeId", storeId);
+        payload.put("data", "value");
+        String signature = HmacUtils.calculateHmac(idempotencyKey + ":" + objectMapper.writeValueAsString(payload), secret);
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("aggregateType", "Order");
+        body.put("eventType", "ORDER_CREATED");
+        body.put("payload", payload);
+
+        when(repository.findByIdempotencyKey(idempotencyKey)).thenReturn(Optional.empty());
+
+        ResponseEntity<Void> response = controller.receiveEvent(storeId, signature, idempotencyKey, body);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(repository).save(argThat(event -> storeId.equals(event.getPayload().get("storeId"))));
+    }
+
+    @Test
+    void receiveEvent_WithPayloadStoreIdDifferentFromHeader_ShouldReturnForbidden() throws Exception {
+        String idempotencyKey = "key-store-mismatch";
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("storeId", otherStoreId);
+        payload.put("data", "value");
+        String signature = HmacUtils.calculateHmac(idempotencyKey + ":" + objectMapper.writeValueAsString(payload), secret);
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("aggregateType", "Order");
+        body.put("eventType", "ORDER_CREATED");
+        body.put("payload", payload);
+
+        ResponseEntity<Void> response = controller.receiveEvent(storeId, signature, idempotencyKey, body);
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void receiveEvent_WithBlankPayloadStoreId_ShouldReturnBadRequest() throws Exception {
+        String idempotencyKey = "key-store-blank";
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("storeId", " ");
+        payload.put("data", "value");
+        String signature = HmacUtils.calculateHmac(idempotencyKey + ":" + objectMapper.writeValueAsString(payload), secret);
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("aggregateType", "Order");
+        body.put("eventType", "ORDER_CREATED");
+        body.put("payload", payload);
+
+        ResponseEntity<Void> response = controller.receiveEvent(storeId, signature, idempotencyKey, body);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void receiveEvent_WithNonStringPayloadStoreId_ShouldReturnBadRequest() throws Exception {
+        String idempotencyKey = "key-store-number";
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("storeId", 123);
+        payload.put("data", "value");
+        String signature = HmacUtils.calculateHmac(idempotencyKey + ":" + objectMapper.writeValueAsString(payload), secret);
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("aggregateType", "Order");
+        body.put("eventType", "ORDER_CREATED");
+        body.put("payload", payload);
+
+        ResponseEntity<Void> response = controller.receiveEvent(storeId, signature, idempotencyKey, body);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        verify(repository, never()).save(any());
     }
 
     @Test

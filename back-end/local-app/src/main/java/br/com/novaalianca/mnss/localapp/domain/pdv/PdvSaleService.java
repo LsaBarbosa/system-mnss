@@ -36,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -43,6 +45,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PdvSaleService {
+    private static final Logger log = LoggerFactory.getLogger(PdvSaleService.class);
     private static final BigDecimal DEFAULT_QUANTITY = BigDecimal.ONE.setScale(3, RoundingMode.HALF_UP);
 
     private final CashRegisterRepository cashRegisterRepository;
@@ -172,28 +175,31 @@ public class PdvSaleService {
             throw new BusinessException("SALE_NOT_FULLY_PAID", "Venda nao esta totalmente paga.", HttpStatus.BAD_REQUEST);
         }
 
+        for (OrderItemEntity item : items) {
+            try {
+                stockService.recordSaleMovement(item.getProduct().getId(), item.getQuantity(), sale.getId(), actorUserId);
+            } catch (BusinessException ex) {
+                throw ex;
+            } catch (Exception ex) {
+                log.error("Failed to record stock movement for sale {}", sale.getId(), ex);
+                throw new BusinessException(
+                        "STOCK_MOVEMENT_FAILED",
+                        "Falha ao baixar estoque da venda.",
+                        HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
         sale.changeStatus(nextFinishedStatus(items));
         orderRepository.save(sale);
 
         pdvSyncEventService.recordOrderFinishedEvent(sale);
+        kdsService.createTicketsForOrder(sale, items);
 
         if (payments.stream().anyMatch(p -> p.getMethod() == PaymentMethod.CASH)) {
             hardwareAdapterService.openDrawer();
         }
 
         hardwareAdapterService.printReceipt(sale, items, payments);
-        
-        kdsService.createTicketsForOrder(sale, items);
-
-        // Baixar estoque
-        for (OrderItemEntity item : items) {
-            try {
-                stockService.recordSaleMovement(item.getProduct().getId(), item.getQuantity(), sale.getId(), actorUserId);
-            } catch (Exception e) {
-                // Log and continue to avoid blocking the sale finishing if stock fails (monolith safety)
-                // In a production environment with strict stock, we might want to block or handle differently.
-            }
-        }
 
         return response(sale);
     }

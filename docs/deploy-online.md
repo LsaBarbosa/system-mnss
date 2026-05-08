@@ -141,6 +141,7 @@ Segredos obrigatórios (mínimo 32 caracteres):
 | `MNSS_PAYMENT_WEBHOOK_SECRET` | Segredo do webhook de pagamento |
 | `WHATSAPP_VERIFY_TOKEN` | Token de verificação do WhatsApp Business |
 | `MNSS_CORS_ALLOWED_ORIGINS` | Origins CORS permitidas (separadas por vírgula). Default: `https://padarianovaalianca.com.br,https://admin.padarianovaalianca.com.br` |
+| `MNSS_HSTS_ENABLED` | Default `true`. Use `true` somente quando HTTPS/TLS estiver pronto no domínio final; use `false` em homologação HTTP. |
 
 ## 8. Docker Compose online
 
@@ -515,7 +516,7 @@ Medidas obrigatórias:
 - HTTPS com certificado válido (Let's Encrypt)
 - Firewall restritivo (porta 22 SSH, porta 80/443 HTTP/HTTPS)
 - CORS configurável por `MNSS_CORS_ALLOWED_ORIGINS`
-- Headers de segurança (X-Frame-Options, X-Content-Type-Options, HSTS, Referrer-Policy)
+- Headers de segurança (X-Frame-Options, X-Content-Type-Options, HSTS configurável por `MNSS_HSTS_ENABLED`, Referrer-Policy)
 - Assinatura HMAC e segredos técnicos para sync/webhooks
 - HTTP Basic e/ou Bearer JWT nos endpoints internos de `/api/**` que não são públicos
 - JWT para painéis administrativos quando o módulo de autenticação online estiver habilitado

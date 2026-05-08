@@ -139,4 +139,8 @@ public class StockMovementEntity extends BaseEntity {
     public String getIdempotencyKey() {
         return idempotencyKey;
     }
+
+    public void assignIdempotencyKey(String idempotencyKey) {
+        this.idempotencyKey = idempotencyKey;
+    }
 }

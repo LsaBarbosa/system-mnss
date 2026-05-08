@@ -4,22 +4,29 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import br.com.novaalianca.mnss.core.catalog.PreparationSector;
 import br.com.novaalianca.mnss.core.catalog.UnitType;
+import br.com.novaalianca.mnss.core.payment.PaymentStatus;
 import br.com.novaalianca.mnss.localapp.domain.audit.AuditLogRequest;
 import br.com.novaalianca.mnss.localapp.domain.audit.AuditService;
 import br.com.novaalianca.mnss.localapp.domain.catalog.CategoryEntity;
 import br.com.novaalianca.mnss.localapp.domain.catalog.ProductEntity;
 import br.com.novaalianca.mnss.localapp.domain.catalog.ProductRepository;
+import br.com.novaalianca.mnss.localapp.domain.order.DeliveryType;
+import br.com.novaalianca.mnss.localapp.domain.order.OrderEntity;
+import br.com.novaalianca.mnss.localapp.domain.order.OrderOrigin;
 import br.com.novaalianca.mnss.localapp.domain.order.OrderRepository;
+import br.com.novaalianca.mnss.localapp.domain.order.OrderStatus;
 import br.com.novaalianca.mnss.sharedinfra.web.error.BusinessException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -243,6 +250,97 @@ class StockServiceTest {
         assertThat(saved.getResultingQuantity()).isEqualByComparingTo("7.000");
     }
 
+    @Test
+    void saleMovementUsesLogicalIdempotencyBeforeChangingBalance() {
+        UUID productId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
+        UUID actorUserId = UUID.randomUUID();
+        String idempotencyKey = "SALE:" + orderId + ":" + productId;
+        ProductEntity product = product(productId);
+        OrderEntity order = order(orderId);
+        StockBalanceEntity balance = new StockBalanceEntity(product);
+        balance.adjust(new BigDecimal("5.000"));
+        AtomicReference<StockMovementEntity> savedMovement = new AtomicReference<>();
+
+        when(stockMovementRepository.findByIdempotencyKey(idempotencyKey))
+                .thenReturn(Optional.empty())
+                .thenAnswer(invocation -> Optional.of(savedMovement.get()));
+        when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+        when(stockBalanceRepository.findByProductIdForUpdate(productId)).thenReturn(Optional.of(balance));
+        when(stockBalanceRepository.save(any(StockBalanceEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(stockMovementRepository.save(any(StockMovementEntity.class))).thenAnswer(inv -> {
+            StockMovementEntity movement = inv.getArgument(0);
+            savedMovement.set(movement);
+            return movement;
+        });
+        when(auditService.record(any(AuditLogRequest.class))).thenReturn(null);
+
+        StockMovementResponse first = service().recordSaleMovement(
+                productId, new BigDecimal("2.000"), orderId, actorUserId);
+        StockMovementResponse second = service().recordSaleMovement(
+                productId, new BigDecimal("2.000"), orderId, actorUserId);
+
+        assertThat(first.resultingQuantity()).isEqualByComparingTo("3.000");
+        assertThat(second.resultingQuantity()).isEqualByComparingTo("3.000");
+        assertThat(balance.getQuantity()).isEqualByComparingTo("3.000");
+        verify(stockBalanceRepository, times(1)).save(any(StockBalanceEntity.class));
+        verify(stockMovementRepository, times(1)).save(any(StockMovementEntity.class));
+        verify(syncEventService, times(1)).recordStockMovementEvent(any(StockMovementEntity.class), any(BigDecimal.class));
+        verify(auditService, times(1)).record(any(AuditLogRequest.class));
+    }
+
+    @Test
+    void saleMovementStoresIdempotencyKey() {
+        UUID productId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
+        UUID actorUserId = UUID.randomUUID();
+        ProductEntity product = product(productId);
+        StockBalanceEntity balance = new StockBalanceEntity(product);
+        balance.adjust(new BigDecimal("4.000"));
+        when(stockMovementRepository.findByIdempotencyKey("SALE:" + orderId + ":" + productId))
+                .thenReturn(Optional.empty());
+        when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order(orderId)));
+        when(stockBalanceRepository.findByProductIdForUpdate(productId)).thenReturn(Optional.of(balance));
+        when(stockBalanceRepository.save(any(StockBalanceEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(stockMovementRepository.save(any(StockMovementEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(auditService.record(any(AuditLogRequest.class))).thenReturn(null);
+
+        service().recordSaleMovement(productId, new BigDecimal("1.000"), orderId, actorUserId);
+
+        ArgumentCaptor<StockMovementEntity> captor = ArgumentCaptor.forClass(StockMovementEntity.class);
+        verify(stockMovementRepository).save(captor.capture());
+        assertThat(captor.getValue().getIdempotencyKey()).isEqualTo("SALE:" + orderId + ":" + productId);
+    }
+
+    @Test
+    void saleMovementsWithDifferentIdempotencyKeysSubtractNormally() {
+        UUID productId = UUID.randomUUID();
+        UUID firstOrderId = UUID.randomUUID();
+        UUID secondOrderId = UUID.randomUUID();
+        UUID actorUserId = UUID.randomUUID();
+        ProductEntity product = product(productId);
+        StockBalanceEntity balance = new StockBalanceEntity(product);
+        balance.adjust(new BigDecimal("10.000"));
+
+        when(stockMovementRepository.findByIdempotencyKey(any())).thenReturn(Optional.empty());
+        when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+        when(orderRepository.findById(firstOrderId)).thenReturn(Optional.of(order(firstOrderId)));
+        when(orderRepository.findById(secondOrderId)).thenReturn(Optional.of(order(secondOrderId)));
+        when(stockBalanceRepository.findByProductIdForUpdate(productId)).thenReturn(Optional.of(balance));
+        when(stockBalanceRepository.save(any(StockBalanceEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(stockMovementRepository.save(any(StockMovementEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(auditService.record(any(AuditLogRequest.class))).thenReturn(null);
+
+        service().recordSaleMovement(productId, new BigDecimal("2.000"), firstOrderId, actorUserId);
+        service().recordSaleMovement(productId, new BigDecimal("3.000"), secondOrderId, actorUserId);
+
+        assertThat(balance.getQuantity()).isEqualByComparingTo("5.000");
+        verify(stockMovementRepository, times(2)).save(any(StockMovementEntity.class));
+        verify(syncEventService, times(2)).recordStockMovementEvent(any(StockMovementEntity.class), any(BigDecimal.class));
+    }
+
     // S05-H03: ajuste manual auditável
     @Test
     void adjustmentRequiresReason() {
@@ -329,5 +427,15 @@ class StockServiceTest {
                 PreparationSector.SEM_PREPARO);
         ReflectionTestUtils.setField(product, "id", id);
         return product;
+    }
+
+    private OrderEntity order(UUID id) {
+        OrderEntity order = new OrderEntity(
+                OrderOrigin.PDV,
+                OrderStatus.CREATED,
+                PaymentStatus.PENDING,
+                DeliveryType.LOCAL_CONSUMPTION);
+        ReflectionTestUtils.setField(order, "id", id);
+        return order;
     }
 }

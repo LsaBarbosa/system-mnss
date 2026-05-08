@@ -3,6 +3,7 @@ package br.com.novaalianca.mnss.onlineapp.security.config;
 import br.com.novaalianca.mnss.onlineapp.security.auth.JwtAuthenticationFilter;
 import br.com.novaalianca.mnss.onlineapp.security.auth.JwtTokenProvider;
 import br.com.novaalianca.mnss.onlineapp.security.auth.OnlineUserDetailsService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -26,10 +27,15 @@ import org.springframework.web.cors.CorsConfigurationSource;
 public class SecurityConfiguration {
     private final JwtTokenProvider jwtTokenProvider;
     private final CorsConfigurationSource corsConfigurationSource;
+    private final boolean hstsEnabled;
 
-    public SecurityConfiguration(JwtTokenProvider jwtTokenProvider, CorsConfigurationSource corsConfigurationSource) {
+    public SecurityConfiguration(
+            JwtTokenProvider jwtTokenProvider,
+            CorsConfigurationSource corsConfigurationSource,
+            @Value("${mnss.security.hsts-enabled:true}") boolean hstsEnabled) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.corsConfigurationSource = corsConfigurationSource;
+        this.hstsEnabled = hstsEnabled;
     }
 
     @Bean
@@ -41,7 +47,6 @@ public class SecurityConfiguration {
                         .frameOptions(frameOptions -> frameOptions.deny())
                         .contentTypeOptions(config -> {})
                         .referrerPolicy(referrerPolicy -> referrerPolicy.policy(org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
-                        .httpStrictTransportSecurity(hsts -> hsts.maxAgeInSeconds(31536000).includeSubDomains(true))
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
@@ -63,6 +68,13 @@ public class SecurityConfiguration {
                 .httpBasic(Customizer.withDefaults())
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
                 .formLogin(AbstractHttpConfigurer::disable);
+
+        if (hstsEnabled) {
+            http.headers(headers -> headers
+                    .httpStrictTransportSecurity(hsts -> hsts.maxAgeInSeconds(31536000).includeSubDomains(true)));
+        } else {
+            http.headers(headers -> headers.httpStrictTransportSecurity(hsts -> hsts.disable()));
+        }
 
         return http.build();
     }

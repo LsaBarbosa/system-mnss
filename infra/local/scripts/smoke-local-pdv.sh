@@ -10,11 +10,11 @@ PASSWORD="${MNSS_SMOKE_PASSWORD:-change_me}"
 COOKIE_FILE=$(mktemp)
 trap 'rm -f "$COOKIE_FILE"' EXIT
 
-log() { echo "[PDV-SMOKE] $*"; }
+log()  { echo "[PDV-SMOKE] $*"; }
 fail() { echo "[PDV-SMOKE] FAIL: $*" >&2; exit 1; }
 
 # 1. Login
-log "1/7 — Login como '$USERNAME'..."
+log "1/8 — Login como '$USERNAME'..."
 LOGIN_STATUS=$(curl -fsS -o /dev/null -w "%{http_code}" \
   -X POST "$BASE_URL/api/auth/login" \
   -H "Content-Type: application/json" \
@@ -24,7 +24,7 @@ LOGIN_STATUS=$(curl -fsS -o /dev/null -w "%{http_code}" \
 log "   Login OK."
 
 # 2. Listar produtos disponíveis no PDV
-log "2/7 — Listando produtos PDV..."
+log "2/8 — Listando produtos PDV..."
 PRODUCTS=$(curl -fsS "$BASE_URL/api/pdv/products" -b "$COOKIE_FILE" 2>/dev/null || echo "[]")
 PRODUCT_ID=$(echo "$PRODUCTS" | python3 -c "
 import sys, json
@@ -40,7 +40,7 @@ print(prods[0]['price'])
 log "   Produto selecionado: $PRODUCT_ID (preço: $PRODUCT_PRICE)"
 
 # 3. Abrir caixa (tenta abrir; ignora 409 Conflict se já aberto)
-log "3/7 — Abrindo caixa..."
+log "3/8 — Abrindo caixa..."
 CASH_STATUS=$(curl -fsS -o /dev/null -w "%{http_code}" \
   -X POST "$BASE_URL/api/cash-registers/open" \
   -H "Content-Type: application/json" \
@@ -53,7 +53,7 @@ else
 fi
 
 # 4. Criar venda
-log "4/7 — Criando venda..."
+log "4/8 — Criando venda..."
 SALE=$(curl -fsS -X POST "$BASE_URL/api/pdv/sales" \
   -H "Content-Type: application/json" \
   -d '{"deliveryType":"LOCAL_CONSUMPTION"}' \
@@ -63,7 +63,7 @@ SALE_ID=$(echo "$SALE" | python3 -c "import sys,json; print(json.load(sys.stdin)
 log "   Venda criada: $SALE_ID"
 
 # 5. Adicionar item
-log "5/7 — Adicionando item à venda..."
+log "5/8 — Adicionando item à venda..."
 ITEM_STATUS=$(curl -fsS -o /dev/null -w "%{http_code}" \
   -X POST "$BASE_URL/api/pdv/sales/$SALE_ID/items" \
   -H "Content-Type: application/json" \
@@ -74,7 +74,7 @@ ITEM_STATUS=$(curl -fsS -o /dev/null -w "%{http_code}" \
 log "   Item adicionado."
 
 # 6. Registrar pagamento
-log "6/7 — Registrando pagamento..."
+log "6/8 — Registrando pagamento..."
 PAY_STATUS=$(curl -fsS -o /dev/null -w "%{http_code}" \
   -X POST "$BASE_URL/api/pdv/sales/$SALE_ID/payment" \
   -H "Content-Type: application/json" \
@@ -84,14 +84,28 @@ PAY_STATUS=$(curl -fsS -o /dev/null -w "%{http_code}" \
   || fail "Pagamento retornou HTTP $PAY_STATUS"
 log "   Pagamento registrado."
 
-# 7. Confirmar venda finalizada
-log "7/7 — Consultando venda finalizada..."
+# 7. Finalizar venda
+log "7/8 — Finalizando venda (POST /finish)..."
+FINISH_STATUS=$(curl -fsS -o /dev/null -w "%{http_code}" \
+  -X POST "$BASE_URL/api/pdv/sales/$SALE_ID/finish" \
+  -H "Content-Type: application/json" \
+  -b "$COOKIE_FILE")
+[ "$FINISH_STATUS" = "200" ] || [ "$FINISH_STATUS" = "204" ] \
+  || fail "Finalização da venda retornou HTTP $FINISH_STATUS (esperado 200 ou 204)"
+log "   Venda finalizada (HTTP $FINISH_STATUS)."
+
+# 8. Verificar status final da venda
+log "8/8 — Verificando status final da venda..."
 SALE_DETAIL=$(curl -fsS "$BASE_URL/api/pdv/sales/$SALE_ID" -b "$COOKIE_FILE" 2>/dev/null || echo "{}")
 SALE_STATUS=$(echo "$SALE_DETAIL" | python3 -c "
 import sys,json; d=json.load(sys.stdin); print(d.get('status',''))
 " 2>/dev/null)
-log "   Status da venda: $SALE_STATUS"
+log "   Status final: $SALE_STATUS"
 [ -n "$SALE_STATUS" ] || fail "Não foi possível verificar o status da venda."
+case "$SALE_STATUS" in
+  PAID|SENT_TO_STORE|FINISHED) ;;
+  *) fail "Status inesperado: '$SALE_STATUS' (esperado PAID, SENT_TO_STORE ou FINISHED)" ;;
+esac
 
 echo ""
-echo "[PDV-SMOKE] ✓ Smoke test do PDV local concluído com sucesso."
+echo "[PDV-SMOKE] ✓ Smoke test do PDV local concluído com sucesso. Status final: $SALE_STATUS"

@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Restaura o banco local a partir de um dump SQL.
+# Restaura o banco online a partir de um dump SQL.
 # ATENÇÃO: destrói o banco atual — cria backup automático antes.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKUP_DIR="${BACKUP_DIR:-$SCRIPT_DIR/../postgres/backup}"
-CONTAINER="postgres-local"
-DB="${POSTGRES_DB:-nova_alianca_local}"
+CONTAINER="postgres-online"
+DB="${POSTGRES_DB:-nova_alianca_online}"
 USER="${POSTGRES_USER:-nova_alianca}"
 
 # ── 1. Argumento obrigatório ──────────────────────────────────────────────────
@@ -36,8 +36,9 @@ fi
 # ── 4. Confirmação explícita ──────────────────────────────────────────────────
 echo ""
 echo "╔══════════════════════════════════════════════════════════════╗"
-echo "║  ATENÇÃO: esta operação DESTRÓI o banco '$DB'          ║"
+echo "║  ATENÇÃO: esta operação DESTRÓI o banco '$DB'    ║"
 echo "║  Será criado um backup pré-restore antes do DROP.           ║"
+echo "║  Este é o banco de PRODUÇÃO ONLINE. Prossiga com cuidado.  ║"
 echo "╚══════════════════════════════════════════════════════════════╝"
 echo ""
 printf "Digite exatamente  RESTAURAR-%s  para confirmar: " "$DB"

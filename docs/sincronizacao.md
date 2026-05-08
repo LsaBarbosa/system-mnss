@@ -298,7 +298,7 @@ Assinatura HMAC do payload
 Exemplo de headers:
 
 ```http
-X-Store-ID: nova-alianca-001
+X-Store-ID: store-001
 X-Signature: hash_hmac_sha256(payload, secret)
 X-Idempotency-Key: uuid
 ```
@@ -505,7 +505,7 @@ Envia um evento da loja para o servidor online. Requer cabeçalhos `X-Store-ID`,
 ### Online → Local por pull
 
 ```text
-GET  /api/sync/pending?storeId=nova-alianca-001
+GET  /api/sync/pending?storeId=store-001
 POST /api/sync/events/{id}/ack
 ```
 

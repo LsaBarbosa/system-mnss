@@ -49,8 +49,15 @@ BASE_URL=https://<dominio> infra/online/scripts/smoke-online.sh
 - [ ] Criar pedido online como cliente
 - [ ] Pedido aparece no painel administrativo
 
-## Webhook de pagamento (mock)
+## Escopo fora do release atual
 
+> **Pagamento real:** NÃO implementado. O gateway de pagamento está mockado. Não libere em produção real sem implementar e homologar o gateway correspondente.
+>
+> **WhatsApp real:** NÃO implementado. `WHATSAPP_PROVIDER=mock` deve permanecer. Não libere provider real sem contrato com a Meta e homologação completa.
+
+## Webhook de pagamento (mock/sandbox)
+
+- [ ] Confirmar que `WHATSAPP_PROVIDER=mock` está configurado (não deve ser outro valor)
 - [ ] Enviar webhook mock para `/api/public/payments/webhook` com assinatura válida
   ```bash
   PAYLOAD='{"event":"payment.approved","orderId":"test-123","amount":10.00}'
@@ -62,8 +69,12 @@ BASE_URL=https://<dominio> infra/online/scripts/smoke-online.sh
   ```
 - [ ] Webhook com assinatura inválida retorna 401
 
-## Webhook WhatsApp (mock)
+## Webhook WhatsApp (mock — provider real fora do escopo)
 
+> Provider real de WhatsApp exige contrato com a Meta e implementação futura.
+> Testar apenas o mock abaixo.
+
+- [ ] Confirmar `WHATSAPP_PROVIDER=mock` no `.env`
 - [ ] `GET /api/whatsapp/webhook?hub.mode=subscribe&hub.verify_token=<token>&hub.challenge=test` retorna `test`
 - [ ] Webhook inválido retorna 403
 
@@ -83,9 +94,8 @@ BASE_URL=https://<dominio> infra/online/scripts/smoke-online.sh
 ## Rollback (se necessário)
 
 ```bash
-# Restaurar backup
-docker exec -i postgres-online pg_restore -U nova_alianca -d nova_alianca_online \
-  /backup/pre_release_YYYYMMDD_HHMMSS.dump
+# Restaurar banco (exige confirmação textual — veja docs/backup-restore.md)
+bash infra/online/scripts/restore-postgres.sh postgres/backup/pre_release_YYYYMMDD_HHMMSS.sql
 
 # Subir versão anterior
 git checkout <tag-anterior>

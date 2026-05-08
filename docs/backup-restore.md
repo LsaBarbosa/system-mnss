@@ -39,7 +39,7 @@ docker exec postgres-local pg_dump \
 docker cp postgres-local:/tmp/backup_${TIMESTAMP}.dump ./backup_${TIMESTAMP}.dump
 ```
 
-## Restore
+## Restore — Local
 
 ```bash
 cd infra/local
@@ -53,10 +53,25 @@ bash scripts/restore-postgres.sh postgres/backup/backup_2026-05-08_10-00-00.sql
 ```
 
 O script:
-1. Encerra conexões ativas ao banco
-2. Remove o banco existente
-3. Recria o banco vazio
-4. Aplica o dump SQL
+1. Exige confirmação textual: `RESTAURAR-nova_alianca_local`
+2. Cria backup pré-restore automático antes de qualquer alteração
+3. Falha se o arquivo de backup não existir ou o container não estiver rodando
+4. Encerra conexões ativas ao banco
+5. Remove o banco existente
+6. Recria o banco vazio
+7. Aplica o dump SQL
+
+## Restore — Online
+
+```bash
+cd infra/online
+bash scripts/restore-postgres.sh <caminho/para/backup.sql>
+```
+
+O script online segue o mesmo protocolo do local, mas opera sobre `postgres-online` e `nova_alianca_online`:
+1. Exige confirmação textual: `RESTAURAR-nova_alianca_online`
+2. Cria backup pré-restore automático
+3. Só prossegue se o container `postgres-online` estiver rodando
 
 ## Restore de backup no formato customizado
 

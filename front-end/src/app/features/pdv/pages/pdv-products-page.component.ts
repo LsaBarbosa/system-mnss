@@ -165,7 +165,7 @@ export class PdvProductsPageComponent implements OnInit {
         openingAmount: formValue.openingAmount,
         notes: this.emptyToNull(formValue.notes)
       })
-      .subscribe({
+.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (cashRegister) => {
           this.currentCash = { open: true, cashRegister };
           this.cashSuccess = 'Caixa aberto.';
@@ -197,7 +197,7 @@ export class PdvProductsPageComponent implements OnInit {
         amount: formValue.amount,
         description: formValue.description.trim()
       })
-      .subscribe({
+.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
           this.cashSuccess = formValue.type === 'CASH_OUT' ? 'Sangria registrada.' : 'Suprimento registrado.';
           this.movementForm.reset({ type: 'CASH_OUT', amount: '', description: '' });
@@ -231,7 +231,7 @@ export class PdvProductsPageComponent implements OnInit {
         closingAmount: formValue.closingAmount,
         notes: this.emptyToNull(formValue.notes)
       })
-      .subscribe({
+.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (summary) => {
           this.cashSummary = summary;
           this.currentCash = { open: false, cashRegister: summary.cashRegister };
@@ -369,7 +369,7 @@ export class PdvProductsPageComponent implements OnInit {
         transactionId: this.emptyToNull(formValue.transactionId),
         gateway: null
       })
-      .subscribe({
+.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (payment) => {
           this.changeAmount = Number(payment.changeAmount) > 0 ? payment.changeAmount : null;
 

@@ -127,6 +127,7 @@ Variáveis obrigatórias (o Docker Compose injeta as corretas no container da AP
 | `MNSS_STORE_ID` | Identificador da loja — **deve ser idêntico** ao `MNSS_DEFAULT_STORE_ID` do ambiente online (`store-001`) |
 | `MNSS_STORE_SECRET` | Segredo HMAC da loja (mín. 32 chars) — **deve ser idêntico** ao `MNSS_STORE_001_SECRET` do ambiente online |
 | `MNSS_SYNC_REQUIRE_HTTPS` | `true` em produção, `false` só em dev HTTP |
+| `MNSS_CORS_ALLOWED_ORIGINS` | Origins CORS permitidas (separadas por vírgula). Default: `http://localhost,http://127.0.0.1` |
 
 > **Importante:** O Compose local já monta as variáveis nos nomes que o Spring lê
 > (`MNSS_LOCAL_DB_URL`, `MNSS_LOCAL_RABBITMQ_HOST`, etc.). Não altere os nomes

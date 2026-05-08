@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { WhatsAppService } from '../../data-access/whatsapp.service';
+import { ErrorMessageService } from '../../../../core/errors/error-message.service';
 import {
   ConversationResponse,
   WhatsAppOrderItemRequest,
@@ -330,7 +331,10 @@ export class AssistedCartComponent implements OnInit {
   searchTerm = '';
   isSubmitting = false;
 
-  constructor(private whatsappService: WhatsAppService) {}
+  constructor(
+    private whatsappService: WhatsAppService,
+    private errorMessageService: ErrorMessageService
+  ) {}
 
   ngOnInit(): void {
     this.whatsappService.getCatalog().subscribe((data) => (this.catalog = data));
@@ -387,12 +391,12 @@ export class AssistedCartComponent implements OnInit {
 
     this.whatsappService.createOrder(request).subscribe({
       next: () => {
-        alert('Pedido criado com sucesso!');
+        this.errorMessageService.showMessage('Pedido criado com sucesso!');
         this.orderCreated.emit();
         this.isSubmitting = false;
       },
       error: (err) => {
-        alert('Erro ao criar pedido: ' + (err.error?.message || err.message));
+        this.errorMessageService.showMessage('Erro ao criar pedido: ' + (err.error?.message || err.message));
         this.isSubmitting = false;
       }
     });

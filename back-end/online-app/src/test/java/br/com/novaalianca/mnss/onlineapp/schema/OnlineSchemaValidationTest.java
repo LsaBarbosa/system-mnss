@@ -59,7 +59,9 @@ class OnlineSchemaValidationTest {
         List<String> entityTables = List.of(
                 "roles", "users", "categories", "products", "product_availability",
                 "customers", "customer_addresses", "orders", "order_items", "payments",
-                "sync_events", "stock_balances");
+                "sync_events", "stock_balances",
+                "whatsapp_conversations", "whatsapp_messages",
+                "online_local_sale_summaries");
 
         for (String table : entityTables) {
             List<String> cols = jdbc.queryForList(
@@ -69,5 +71,38 @@ class OnlineSchemaValidationTest {
                     .as("Tabela '%s' deve ter coluna version (Hibernate @Version)", table)
                     .isNotEmpty();
         }
+    }
+
+    @Test
+    void stockBalancesHasReservedQuantityAddedByV19() {
+        List<String> cols = jdbc.queryForList(
+                "SELECT column_name FROM information_schema.columns WHERE table_name = 'stock_balances'",
+                String.class);
+        assertThat(cols).contains("quantity", "reserved_quantity", "version");
+
+        String notNullable = jdbc.queryForObject(
+                "SELECT is_nullable FROM information_schema.columns "
+                        + "WHERE table_name = 'stock_balances' AND column_name = 'reserved_quantity'",
+                String.class);
+        assertThat(notNullable).isEqualTo("NO");
+    }
+
+    @Test
+    void onlineLocalSaleSummariesSchemaMatchesEntity() {
+        List<String> cols = jdbc.queryForList(
+                "SELECT column_name FROM information_schema.columns "
+                        + "WHERE table_name = 'online_local_sale_summaries'",
+                String.class);
+        assertThat(cols).contains(
+                "store_id", "local_order_id", "order_number",
+                "total_amount", "payment_status", "finished_at",
+                "raw_payload", "version");
+
+        Integer uniqueCount = jdbc.queryForObject(
+                "SELECT count(*) FROM information_schema.table_constraints "
+                        + "WHERE table_name = 'online_local_sale_summaries' "
+                        + "AND constraint_type = 'UNIQUE'",
+                Integer.class);
+        assertThat(uniqueCount).isGreaterThanOrEqualTo(1);
     }
 }

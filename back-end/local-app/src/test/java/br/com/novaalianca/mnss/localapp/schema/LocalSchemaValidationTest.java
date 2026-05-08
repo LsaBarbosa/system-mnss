@@ -78,4 +78,58 @@ class LocalSchemaValidationTest {
                     .isNotEmpty();
         }
     }
+
+    @Test
+    void stockBalancesHasReservedQuantityAndIndexes() {
+        List<String> cols = jdbc.queryForList(
+                "SELECT column_name FROM information_schema.columns WHERE table_name = 'stock_balances'",
+                String.class);
+        assertThat(cols).contains("product_id", "quantity", "reserved_quantity", "version");
+
+        List<String> indexes = jdbc.queryForList(
+                "SELECT indexname FROM pg_indexes WHERE tablename = 'stock_balances'",
+                String.class);
+        assertThat(indexes).contains("idx_stock_balances_product_id");
+    }
+
+    @Test
+    void stockMovementsHasExtendedColumnsFromV10() {
+        List<String> cols = jdbc.queryForList(
+                "SELECT column_name FROM information_schema.columns WHERE table_name = 'stock_movements'",
+                String.class);
+        assertThat(cols).contains(
+                "previous_quantity", "resulting_quantity",
+                "source", "reference_type", "reference_id", "idempotency_key");
+    }
+
+    @Test
+    void customerAddressCustomerIdIsNullable() {
+        String isNullable = jdbc.queryForObject(
+                "SELECT is_nullable FROM information_schema.columns "
+                        + "WHERE table_name = 'customer_addresses' AND column_name = 'customer_id'",
+                String.class);
+        assertThat(isNullable).isEqualTo("YES");
+    }
+
+    @Test
+    void ordersHasDeliveryAddressAndEnumCheckConstraints() {
+        List<String> cols = jdbc.queryForList(
+                "SELECT column_name FROM information_schema.columns WHERE table_name = 'orders'",
+                String.class);
+        assertThat(cols).contains("delivery_address_id", "delivery_type", "payment_status", "origin", "status");
+
+        Integer checkCount = jdbc.queryForObject(
+                "SELECT count(*) FROM information_schema.table_constraints "
+                        + "WHERE table_name = 'orders' AND constraint_type = 'CHECK'",
+                Integer.class);
+        assertThat(checkCount).isGreaterThanOrEqualTo(4);
+    }
+
+    @Test
+    void syncEventsHasCompositeStatusDirectionIndex() {
+        List<String> indexes = jdbc.queryForList(
+                "SELECT indexname FROM pg_indexes WHERE tablename = 'sync_events'",
+                String.class);
+        assertThat(indexes).contains("idx_sync_events_status_direction");
+    }
 }

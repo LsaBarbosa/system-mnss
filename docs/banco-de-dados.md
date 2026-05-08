@@ -21,7 +21,7 @@ O banco online será usado para site, WhatsApp, pagamentos, pedidos online e rel
 - Versionamento de schema: Flyway.
 - IDs principais: UUID.
 - Valores monetários: `NUMERIC(12,2)`.
-- Datas de criação/alteração: `TIMESTAMP`.
+- Datas de criação/alteração: `TIMESTAMPTZ` (convertido de `TIMESTAMP` por V11/V17 para garantir fuso horário UTC).
 - Payloads de sincronização: `JSONB`.
 - Banco local e online podem compartilhar boa parte do schema.
 - Algumas tabelas terão uso principal local.
@@ -291,9 +291,9 @@ CREATE TABLE customer_addresses (
 );
 ```
 
-No banco local, `customer_id` é opcional a partir de `V8__make_customer_address_customer_nullable.sql`
-para permitir endereços recebidos por sincronização sem cliente local. No banco online, o vínculo com
-cliente continua obrigatório na criação de endereço online.
+No banco **local**, `customer_id` é opcional a partir de `V8__make_customer_address_customer_nullable.sql`
+para permitir endereços recebidos por sincronização sem cliente local associado. No banco **online**,
+o vínculo com o cliente é obrigatório na criação do endereço.
 
 ## 6.9 Orders
 
@@ -331,6 +331,10 @@ CREATE INDEX idx_orders_origin ON orders(origin);
 CREATE INDEX idx_orders_created_at ON orders(created_at);
 CREATE INDEX idx_orders_payment_method ON orders(payment_method);
 ```
+
+`payment_method` e `idx_orders_payment_method` existem apenas no banco **online** (adicionados por
+`V8__add_payment_method_to_orders.sql` e tornados NOT NULL por `V13__enforce_payment_method_on_orders.sql`).
+O banco local não possui essa coluna em `orders`; o método de pagamento é registrado em `payments`.
 
 ## 6.10 Order Items
 
@@ -517,8 +521,10 @@ CREATE TABLE stock_balances (
 CREATE INDEX idx_stock_balances_product_id ON stock_balances(product_id);
 ```
 
-No banco online, `stock_balances` não possui `reserved_quantity` atualmente. O local mantém a reserva
-para proteger a operação presencial e o online mantém apenas o saldo consolidado recebido por sync.
+Ambos os bancos (local e online) possuem `reserved_quantity`. No banco local, esse campo é usado para
+proteger o estoque contra vendas simultâneas. No banco online, a coluna foi adicionada por
+`V19__add_reserved_quantity_and_check_constraints.sql` para manter a estrutura idêntica à da entidade
+`OnlineStockBalanceEntity`.
 
 ## 6.18 Sync Events
 
@@ -665,7 +671,11 @@ back-end/local-app/src/main/resources/db/migration/
 ├── V7__add_index_orders_delivery_address_id.sql
 ├── V8__make_customer_address_customer_nullable.sql
 ├── V9__create_stock_balances.sql
-└── V10__expand_stock_movements.sql
+├── V10__expand_stock_movements.sql
+├── V11__fix_timestamp_timezone.sql
+├── V12__fix_fk_on_delete_behaviors.sql
+├── V13__add_enum_check_constraints.sql
+└── V14__add_version_to_local_tables.sql
 
 back-end/online-app/src/main/resources/db/migration/
 ├── V1__baseline_schema.sql
@@ -683,7 +693,10 @@ back-end/online-app/src/main/resources/db/migration/
 ├── V13__enforce_payment_method_on_orders.sql
 ├── V14__add_version_to_online_operational_tables.sql
 ├── V15__add_fk_whatsapp_conversations_assigned_to.sql
-└── V16__drop_redundant_whatsapp_external_message_index.sql
+├── V16__drop_redundant_whatsapp_external_message_index.sql
+├── V17__fix_timestamp_timezone.sql
+├── V18__fix_fk_on_delete_behaviors.sql
+└── V19__add_reserved_quantity_and_check_constraints.sql
 ```
 
 ## 8. Separação local e online
@@ -751,7 +764,9 @@ back-end/online-app/src/main/resources/db/migration/
 
 A aplicação deve gravar datas em UTC.
 
-As colunas `TIMESTAMP` devem ser interpretadas como UTC pela aplicação.
+Todas as colunas de data/hora usam `TIMESTAMPTZ` após as migrations de fuso horário
+(`V11__fix_timestamp_timezone.sql` para local, `V17__fix_timestamp_timezone.sql` para online).
+O Hibernate mapeia `java.time.Instant` para `TIMESTAMPTZ` corretamente.
 
 Não usar horário local de máquina para regra de negócio.
 

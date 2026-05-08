@@ -6,14 +6,15 @@
         <i class="icon-refresh"></i>
       </button>
     </header>
-    
+
     <div class="sidebar-content">
-      <app-conversation-list 
-        [conversations]="conversations" 
+      <app-conversation-list
+        [conversations]="conversations"
         [selectedId]="selectedConversation?.id"
-        (selected)="selectConversation($event)">
+        (selected)="selectConversation($event)"
+      >
       </app-conversation-list>
-      
+
       <div *ngIf="isLoading" class="loading-overlay">
         <div class="spinner"></div>
       </div>
@@ -32,25 +33,22 @@
             <small>{{ selectedConversation.customerPhone }}</small>
           </div>
         </div>
-        
+
         <div class="header-actions">
           <button class="action-button" [class.active]="showCart" (click)="toggleCart()">
             {{ showCart ? 'Ver Conversa' : 'Novo Pedido' }}
           </button>
         </div>
       </header>
-      
+
       <main class="chat-content">
-        <app-chat-view 
-          *ngIf="!showCart"
-          [messages]="messages" 
-          (sendMessage)="onSendMessage($event)">
-        </app-chat-view>
+        <app-chat-view *ngIf="!showCart" [messages]="messages" (sendMessage)="onSendMessage($event)"> </app-chat-view>
 
         <app-assisted-cart
           *ngIf="showCart"
           [conversation]="selectedConversation"
-          (orderCreated)="loadConversations(); showCart = false">
+          (orderCreated)="loadConversations(); showCart = false"
+        >
         </app-assisted-cart>
       </main>
     </div>

@@ -91,4 +91,43 @@ class OnlinePaymentControllerTest {
 
         verify(paymentService, never()).processWebhook(anyString(), anyString(), anyString());
     }
+
+    @Test
+    void handleWebhook_WithBlankSignature_ShouldReturnUnauthorized() throws Exception {
+        mockMvc.perform(post("/api/public/payments/webhook").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-Signature", "   ")
+                        .content("{\"transactionId\":\"tx-1\",\"status\":\"PAID\"}"))
+                .andExpect(status().isUnauthorized());
+
+        verify(paymentService, never()).processWebhook(anyString(), anyString(), anyString());
+    }
+
+    @Test
+    void handleWebhook_WithMalformedJson_ShouldReturnBadRequest() throws Exception {
+        String payload = "not-a-json";
+        String signature = HmacUtils.calculateHmac(payload, "test-secret");
+
+        mockMvc.perform(post("/api/public/payments/webhook").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-Signature", signature)
+                        .content(payload))
+                .andExpect(status().isBadRequest());
+
+        verify(paymentService, never()).processWebhook(anyString(), anyString(), anyString());
+    }
+
+    @Test
+    void handleWebhook_WithEmptyTransactionId_ShouldReturnBadRequest() throws Exception {
+        String payload = "{\"transactionId\":\"\",\"status\":\"PAID\"}";
+        String signature = HmacUtils.calculateHmac(payload, "test-secret");
+
+        mockMvc.perform(post("/api/public/payments/webhook").with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-Signature", signature)
+                        .content(payload))
+                .andExpect(status().isBadRequest());
+
+        verify(paymentService, never()).processWebhook(anyString(), anyString(), anyString());
+    }
 }

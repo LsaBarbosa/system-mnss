@@ -2,11 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { 
-  ConversationResponse, 
-  MessageResponse, 
-  CreateWhatsAppOrderRequest 
-} from '../domain/whatsapp.model';
+import { ConversationResponse, MessageResponse, CreateWhatsAppOrderRequest } from '../domain/whatsapp.model';
 import { PublicProductResponse } from '../../site-publico/domain/public-menu.model';
 import { OrderResponse } from '../../../core/models/order.model';
 

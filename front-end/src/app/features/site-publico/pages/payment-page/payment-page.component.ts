@@ -61,9 +61,9 @@ export class PaymentPageComponent implements OnInit, OnDestroy {
     this.statusSubscription = interval(5000)
       .pipe(
         switchMap(() => this.orderService.getOrder(orderId)),
-        takeWhile(order => order.status !== 'SENT_TO_STORE' && order.status !== 'ACCEPTED', true)
+        takeWhile((order) => order.status !== 'SENT_TO_STORE' && order.status !== 'ACCEPTED', true)
       )
-      .subscribe(order => {
+      .subscribe((order) => {
         this.order = order;
         if (order.status === 'SENT_TO_STORE' || order.status === 'ACCEPTED') {
           this.router.navigate(['/pedido-confirmado', orderId]);

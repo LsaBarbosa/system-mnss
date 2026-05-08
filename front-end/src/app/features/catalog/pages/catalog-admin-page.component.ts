@@ -246,7 +246,7 @@ export class CatalogAdminPageComponent implements OnInit {
       });
   }
 
-  getSyncStatus(productId: Uuid): any {
+  getSyncStatus(productId: Uuid): 'FAILED' | 'PENDING' | 'SYNCED' {
     if (this.failedSyncProductIds.has(productId)) {
       return 'FAILED';
     }

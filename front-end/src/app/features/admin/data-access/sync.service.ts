@@ -16,7 +16,7 @@ export interface SyncEvent {
   aggregateType: string;
   aggregateId: string;
   eventType: string;
-  payload: any;
+  payload: Record<string, unknown>;
   status: string;
   retryCount: number;
   lastError?: string;

@@ -6,12 +6,7 @@
       "name": "app",
       "installMode": "prefetch",
       "resources": {
-        "files": [
-          "/favicon.ico",
-          "/index.html",
-          "/*.css",
-          "/*.js"
-        ]
+        "files": ["/favicon.ico", "/index.html", "/*.css", "/*.js"]
       }
     },
     {
@@ -19,19 +14,14 @@
       "installMode": "lazy",
       "updateMode": "lazy",
       "resources": {
-        "files": [
-          "/assets/**",
-          "/*.(eot|svg|cur|jpg|png|webp|gif|otf|ttf|woff|woff2|ani)"
-        ]
+        "files": ["/assets/**", "/*.(eot|svg|cur|jpg|png|webp|gif|otf|ttf|woff|woff2|ani)"]
       }
     }
   ],
   "dataGroups": [
     {
       "name": "api-cache",
-      "urls": [
-        "/api/**"
-      ],
+      "urls": ["/api/**"],
       "cacheConfig": {
         "strategy": "performance",
         "maxSize": 100,

@@ -14,7 +14,9 @@
   font-weight: var(--font-weight-medium);
   animation: fade-in-down var(--duration-normal) var(--ease-out) both;
 
-  span { min-width: 0; }
+  span {
+    min-width: 0;
+  }
 
   button {
     display: grid;

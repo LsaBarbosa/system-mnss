@@ -3,27 +3,21 @@
     <div class="header-left">
       <h1>KDS — Produção</h1>
       <div class="sector-selector">
-        <button 
-          [class.active]="selectedSector === ''" 
-          (click)="onSectorChange('')">
-          TODOS
-        </button>
+        <button [class.active]="selectedSector === ''" (click)="onSectorChange('')">TODOS</button>
         @for (sector of sectors; track sector) {
-          <button 
-            [class.active]="selectedSector === sector" 
-            (click)="onSectorChange(sector)">
+          <button [class.active]="selectedSector === sector" (click)="onSectorChange(sector)">
             {{ sector }}
           </button>
         }
       </div>
     </div>
-    
+
     <div class="header-right">
       <div class="connection-status" [class.connected]="connectionStatus$ | async">
         <span class="dot"></span>
         {{ (connectionStatus$ | async) ? 'Conectado' : 'Desconectado' }}
       </div>
-      <div class="clock">{{ currentTime$ | async | date:'HH:mm:ss' }}</div>
+      <div class="clock">{{ currentTime$ | async | date: 'HH:mm:ss' }}</div>
     </div>
   </header>
 
@@ -52,9 +46,7 @@
                     <span class="qty">{{ item.quantity }}x</span>
                     <span class="name">{{ item.productName }}</span>
                     @if (item.status === 'WAITING' || item.status === 'IN_PREPARATION') {
-                      <button class="btn-item-ready" (click)="onReadyItem(item.id); $event.stopPropagation()">
-                        ✓
-                      </button>
+                      <button class="btn-item-ready" (click)="onReadyItem(item.id); $event.stopPropagation()">✓</button>
                     }
                     @if (item.observation) {
                       <div class="obs">{{ item.observation }}</div>
@@ -92,9 +84,7 @@
                     <span class="qty">{{ item.quantity }}x</span>
                     <span class="name">{{ item.productName }}</span>
                     @if (item.status === 'WAITING' || item.status === 'IN_PREPARATION') {
-                      <button class="btn-item-ready" (click)="onReadyItem(item.id); $event.stopPropagation()">
-                        ✓
-                      </button>
+                      <button class="btn-item-ready" (click)="onReadyItem(item.id); $event.stopPropagation()">✓</button>
                     }
                   </div>
                 }

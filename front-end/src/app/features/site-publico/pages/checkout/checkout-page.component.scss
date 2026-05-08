@@ -7,7 +7,7 @@
 .checkout-header {
   background-color: white;
   padding: 24px 0;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   margin-bottom: 32px;
 
   .container {
@@ -63,8 +63,8 @@
   border-radius: 16px;
   padding: 32px;
   margin-bottom: 24px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-  border: 1px solid rgba(0,0,0,0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.05);
 
   .section-header {
     display: flex;
@@ -162,7 +162,8 @@ textarea {
   }
 }
 
-.delivery-options, .payment-options {
+.delivery-options,
+.payment-options {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
@@ -172,7 +173,8 @@ textarea {
     grid-template-columns: 1fr;
   }
 
-  .delivery-card, .payment-card {
+  .delivery-card,
+  .payment-card {
     cursor: pointer;
     border: 2px solid #eee;
     border-radius: 12px;
@@ -198,7 +200,7 @@ textarea {
       .text {
         display: flex;
         flex-direction: column;
-        
+
         strong {
           font-size: 1rem;
           color: #2c3e50;
@@ -219,7 +221,7 @@ textarea {
     &.active {
       border-color: #3498db;
       background-color: rgba(52, 152, 219, 0.05);
-      
+
       strong {
         color: #3498db;
       }
@@ -238,8 +240,8 @@ textarea {
     background-color: white;
     border-radius: 16px;
     padding: 24px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.05);
     position: sticky;
     top: 24px;
 
@@ -265,7 +267,7 @@ textarea {
       .item-info {
         display: flex;
         gap: 8px;
-        
+
         .quantity {
           font-weight: 700;
           color: #3498db;

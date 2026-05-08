@@ -12,7 +12,7 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
         <div class="success-icon">✓</div>
         <h1>Pedido Confirmado!</h1>
         <p class="subtitle">Seu pedido foi recebido com sucesso.</p>
-        
+
         <div class="order-id-box">
           <span>ID do Pedido:</span>
           <strong>{{ orderId }}</strong>
@@ -33,136 +33,138 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
       </div>
     </div>
   `,
-  styles: [`
-    .confirmation-container {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #f8f9fa;
-      padding: 20px;
-    }
-
-    .card {
-      background-color: white;
-      padding: 48px;
-      border-radius: 24px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-      max-width: 500px;
-      width: 100%;
-      text-align: center;
-    }
-
-    .success-icon {
-      width: 80px;
-      height: 80px;
-      background-color: #2ecc71;
-      color: white;
-      border-radius: 50%;
-      font-size: 40px;
-      line-height: 80px;
-      margin: 0 auto 24px;
-      box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
-    }
-
-    h1 {
-      font-size: 2rem;
-      font-weight: 800;
-      color: #2c3e50;
-      margin-bottom: 8px;
-    }
-
-    .subtitle {
-      color: #7f8c8d;
-      font-size: 1.1rem;
-      margin-bottom: 32px;
-    }
-
-    .order-id-box {
-      background-color: #f1f3f5;
-      padding: 16px;
-      border-radius: 12px;
-      margin-bottom: 32px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-
-      span {
-        font-size: 0.85rem;
-        color: #95a5a6;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        font-weight: 600;
+  styles: [
+    `
+      .confirmation-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f8f9fa;
+        padding: 20px;
       }
 
-      strong {
-        font-size: 1.1rem;
+      .card {
+        background-color: white;
+        padding: 48px;
+        border-radius: 24px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        max-width: 500px;
+        width: 100%;
+        text-align: center;
+      }
+
+      .success-icon {
+        width: 80px;
+        height: 80px;
+        background-color: #2ecc71;
+        color: white;
+        border-radius: 50%;
+        font-size: 40px;
+        line-height: 80px;
+        margin: 0 auto 24px;
+        box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+      }
+
+      h1 {
+        font-size: 2rem;
+        font-weight: 800;
         color: #2c3e50;
-        word-break: break-all;
-      }
-    }
-
-    .status-box {
-      display: flex;
-      align-items: flex-start;
-      gap: 16px;
-      text-align: left;
-      padding: 20px;
-      background-color: #fff9db;
-      border: 1px solid #ffe066;
-      border-radius: 12px;
-      margin-bottom: 40px;
-
-      .status-icon {
-        font-size: 24px;
+        margin-bottom: 8px;
       }
 
-      .status-text {
+      .subtitle {
+        color: #7f8c8d;
+        font-size: 1.1rem;
+        margin-bottom: 32px;
+      }
+
+      .order-id-box {
+        background-color: #f1f3f5;
+        padding: 16px;
+        border-radius: 12px;
+        margin-bottom: 32px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        span {
+          font-size: 0.85rem;
+          color: #95a5a6;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          font-weight: 600;
+        }
+
         strong {
-          display: block;
-          color: #856404;
-          margin-bottom: 4px;
-        }
-        p {
-          margin: 0;
-          font-size: 0.9rem;
-          color: #856404;
-          opacity: 0.8;
+          font-size: 1.1rem;
+          color: #2c3e50;
+          word-break: break-all;
         }
       }
-    }
 
-    .actions {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
+      .status-box {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+        text-align: left;
+        padding: 20px;
+        background-color: #fff9db;
+        border: 1px solid #ffe066;
+        border-radius: 12px;
+        margin-bottom: 40px;
 
-    .btn-primary {
-      background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-      color: white;
-      padding: 16px;
-      border-radius: 12px;
-      text-decoration: none;
-      font-weight: 700;
-      transition: transform 0.2s;
+        .status-icon {
+          font-size: 24px;
+        }
 
-      &:hover {
-        transform: translateY(-2px);
+        .status-text {
+          strong {
+            display: block;
+            color: #856404;
+            margin-bottom: 4px;
+          }
+          p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #856404;
+            opacity: 0.8;
+          }
+        }
       }
-    }
 
-    .btn-secondary {
-      color: #7f8c8d;
-      padding: 12px;
-      text-decoration: none;
-      font-weight: 600;
-
-      &:hover {
-        color: #34495e;
+      .actions {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
       }
-    }
-  `]
+
+      .btn-primary {
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        color: white;
+        padding: 16px;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 700;
+        transition: transform 0.2s;
+
+        &:hover {
+          transform: translateY(-2px);
+        }
+      }
+
+      .btn-secondary {
+        color: #7f8c8d;
+        padding: 12px;
+        text-decoration: none;
+        font-weight: 600;
+
+        &:hover {
+          color: #34495e;
+        }
+      }
+    `
+  ]
 })
 export class OrderConfirmationPageComponent implements OnInit {
   orderId: string | null = null;

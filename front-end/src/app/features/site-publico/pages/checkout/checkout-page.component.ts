@@ -32,7 +32,7 @@ export class CheckoutPageComponent implements OnInit {
   ) {
     this.cartItems$ = this.cartService.items$;
     this.subtotal$ = this.cartService.getSubtotal();
-    
+
     this.checkoutForm = this.fb.group({
       customer: this.fb.group({
         name: ['', [Validators.required, Validators.maxLength(150)]],
@@ -56,9 +56,10 @@ export class CheckoutPageComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.checkoutForm.get('deliveryType')?.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(type => {
+    this.checkoutForm
+      .get('deliveryType')
+      ?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((type) => {
         this.updateAddressValidators(type);
       });
   }
@@ -81,36 +82,38 @@ export class CheckoutPageComponent implements OnInit {
 
     this.isSubmitting = true;
     const formValue = this.checkoutForm.value;
-    
-    this.cartService.items$.subscribe(items => {
-      const request: CreateOrderRequest = {
-        customer: formValue.customer,
-        deliveryType: formValue.deliveryType,
-        address: formValue.deliveryType === 'DELIVERY' ? formValue.address : undefined,
-        items: items.map(item => ({
-          productId: item.productId,
-          quantity: item.quantity,
-          observation: item.observation
-        })),
-        paymentMethod: formValue.paymentMethod
-      };
 
-      this.orderService.createOrder(request).subscribe({
-        next: (response) => {
-          this.cartService.clear();
-          
-          if (response.paymentMethod === 'ONLINE_PIX') {
-            this.router.navigate(['/pagamento', response.id]);
-          } else {
-            this.router.navigate(['/pedido-confirmado', response.id]);
+    this.cartService.items$
+      .subscribe((items) => {
+        const request: CreateOrderRequest = {
+          customer: formValue.customer,
+          deliveryType: formValue.deliveryType,
+          address: formValue.deliveryType === 'DELIVERY' ? formValue.address : undefined,
+          items: items.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            observation: item.observation
+          })),
+          paymentMethod: formValue.paymentMethod
+        };
+
+        this.orderService.createOrder(request).subscribe({
+          next: (response) => {
+            this.cartService.clear();
+
+            if (response.paymentMethod === 'ONLINE_PIX') {
+              this.router.navigate(['/pagamento', response.id]);
+            } else {
+              this.router.navigate(['/pedido-confirmado', response.id]);
+            }
+          },
+          error: (err) => {
+            this.isSubmitting = false;
+            console.error('Error creating order', err);
+            alert('Erro ao criar pedido. Por favor, tente novamente.');
           }
-        },
-        error: (err) => {
-          this.isSubmitting = false;
-          console.error('Error creating order', err);
-          alert('Erro ao criar pedido. Por favor, tente novamente.');
-        }
-      });
-    }).unsubscribe();
+        });
+      })
+      .unsubscribe();
   }
 }

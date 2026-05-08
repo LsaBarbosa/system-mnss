@@ -1,4 +1,12 @@
-export type RoleName = 'ADMIN' | 'GERENTE' | 'CAIXA' | 'ATENDENTE' | 'COZINHA' | 'ENTREGADOR' | 'EXPEDICAO' | 'CONSULTA';
+export type RoleName =
+  | 'ADMIN'
+  | 'GERENTE'
+  | 'CAIXA'
+  | 'ATENDENTE'
+  | 'COZINHA'
+  | 'ENTREGADOR'
+  | 'EXPEDICAO'
+  | 'CONSULTA';
 
 export interface AuthUser {
   id: string;

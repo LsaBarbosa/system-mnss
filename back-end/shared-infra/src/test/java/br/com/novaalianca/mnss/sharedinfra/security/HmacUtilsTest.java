@@ -71,4 +71,11 @@ class HmacUtilsTest {
         assertThatThrownBy(() -> HmacUtils.calculateHmac(null, SECRET))
                 .isInstanceOf(RuntimeException.class);
     }
+
+    @Test
+    void validateSecretStrengthThrowsWhenSecretIsTooShort() {
+        assertThatThrownBy(() -> HmacUtils.validateSecretStrength("short", "test.secret"))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("test.secret");
+    }
 }

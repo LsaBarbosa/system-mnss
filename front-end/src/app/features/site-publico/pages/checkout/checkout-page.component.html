@@ -1,9 +1,7 @@
 <div class="checkout-container">
   <header class="checkout-header">
     <div class="container">
-      <a routerLink="/cardapio" class="back-link">
-        <span class="icon">←</span> Voltar ao cardápio
-      </a>
+      <a routerLink="/cardapio" class="back-link"> <span class="icon">←</span> Voltar ao cardápio </a>
       <h1>Finalizar Pedido</h1>
     </div>
   </header>
@@ -20,21 +18,32 @@
           <div class="form-grid">
             <div class="form-group">
               <label for="name">Nome Completo *</label>
-              <input type="text" id="name" formControlName="name" placeholder="Como devemos te chamar?">
-              <div class="error" *ngIf="checkoutForm.get('customer.name')?.touched && checkoutForm.get('customer.name')?.invalid">
+              <input type="text" id="name" formControlName="name" placeholder="Como devemos te chamar?" />
+              <div
+                class="error"
+                *ngIf="checkoutForm.get('customer.name')?.touched && checkoutForm.get('customer.name')?.invalid"
+              >
                 Nome é obrigatório
               </div>
             </div>
             <div class="form-group">
               <label for="phone">Telefone / WhatsApp *</label>
-              <input type="text" id="phone" formControlName="phone" placeholder="(00) 00000-0000">
-              <div class="error" *ngIf="checkoutForm.get('customer.phone')?.touched && checkoutForm.get('customer.phone')?.invalid">
+              <input type="text" id="phone" formControlName="phone" placeholder="(00) 00000-0000" />
+              <div
+                class="error"
+                *ngIf="checkoutForm.get('customer.phone')?.touched && checkoutForm.get('customer.phone')?.invalid"
+              >
                 Telefone é obrigatório
               </div>
             </div>
             <div class="form-group full-width">
               <label for="email">E-mail (opcional)</label>
-              <input type="email" id="email" formControlName="email" placeholder="Para receber atualizações do pedido">
+              <input
+                type="email"
+                id="email"
+                formControlName="email"
+                placeholder="Para receber atualizações do pedido"
+              />
             </div>
           </div>
         </section>
@@ -47,7 +56,7 @@
           </div>
           <div class="delivery-options">
             <label class="delivery-card" [class.active]="checkoutForm.get('deliveryType')?.value === 'PICKUP'">
-              <input type="radio" formControlName="deliveryType" value="PICKUP">
+              <input type="radio" formControlName="deliveryType" value="PICKUP" />
               <div class="card-content">
                 <span class="icon">🛍️</span>
                 <div class="text">
@@ -57,7 +66,7 @@
               </div>
             </label>
             <label class="delivery-card" [class.active]="checkoutForm.get('deliveryType')?.value === 'DELIVERY'">
-              <input type="radio" formControlName="deliveryType" value="DELIVERY">
+              <input type="radio" formControlName="deliveryType" value="DELIVERY" />
               <div class="card-content">
                 <span class="icon">🛵</span>
                 <div class="text">
@@ -69,30 +78,37 @@
           </div>
 
           <!-- Campos de Endereço (Condicional) -->
-          <div class="address-form" *ngIf="checkoutForm.get('deliveryType')?.value === 'DELIVERY'" formGroupName="address">
+          <div
+            class="address-form"
+            *ngIf="checkoutForm.get('deliveryType')?.value === 'DELIVERY'"
+            formGroupName="address"
+          >
             <div class="form-grid">
               <div class="form-group full-width">
                 <label for="street">Rua *</label>
-                <input type="text" id="street" formControlName="street" placeholder="Nome da rua ou avenida">
-                <div class="error" *ngIf="checkoutForm.get('address.street')?.touched && checkoutForm.get('address.street')?.invalid">
+                <input type="text" id="street" formControlName="street" placeholder="Nome da rua ou avenida" />
+                <div
+                  class="error"
+                  *ngIf="checkoutForm.get('address.street')?.touched && checkoutForm.get('address.street')?.invalid"
+                >
                   Rua é obrigatória para entrega
                 </div>
               </div>
               <div class="form-group">
                 <label for="number">Número</label>
-                <input type="text" id="number" formControlName="number">
+                <input type="text" id="number" formControlName="number" />
               </div>
               <div class="form-group">
                 <label for="neighborhood">Bairro</label>
-                <input type="text" id="neighborhood" formControlName="neighborhood">
+                <input type="text" id="neighborhood" formControlName="neighborhood" />
               </div>
               <div class="form-group">
                 <label for="complement">Complemento</label>
-                <input type="text" id="complement" formControlName="complement" placeholder="Apt, Bloco, etc">
+                <input type="text" id="complement" formControlName="complement" placeholder="Apt, Bloco, etc" />
               </div>
               <div class="form-group">
                 <label for="reference">Ponto de Referência</label>
-                <input type="text" id="reference" formControlName="reference">
+                <input type="text" id="reference" formControlName="reference" />
               </div>
             </div>
           </div>
@@ -106,7 +122,7 @@
           </div>
           <div class="payment-options">
             <label class="payment-card" [class.active]="checkoutForm.get('paymentMethod')?.value === 'CASH'">
-              <input type="radio" formControlName="paymentMethod" value="CASH">
+              <input type="radio" formControlName="paymentMethod" value="CASH" />
               <div class="card-content">
                 <span class="icon">💵</span>
                 <div class="text">
@@ -116,7 +132,7 @@
               </div>
             </label>
             <label class="payment-card" [class.active]="checkoutForm.get('paymentMethod')?.value === 'ONLINE_PIX'">
-              <input type="radio" formControlName="paymentMethod" value="ONLINE_PIX">
+              <input type="radio" formControlName="paymentMethod" value="ONLINE_PIX" />
               <div class="card-content">
                 <span class="icon">⚡</span>
                 <div class="text">
@@ -148,14 +164,14 @@
                 <span class="quantity">{{ item.quantity }}x</span>
                 <span class="name">{{ item.name }}</span>
               </div>
-              <span class="price">{{ (item.price * item.quantity) | currency:'BRL' }}</span>
+              <span class="price">{{ item.price * item.quantity | currency: 'BRL' }}</span>
             </div>
           </div>
-          
+
           <div class="totals">
             <div class="total-row">
               <span>Subtotal</span>
-              <span>{{ subtotal$ | async | currency:'BRL' }}</span>
+              <span>{{ subtotal$ | async | currency: 'BRL' }}</span>
             </div>
             <div class="total-row" *ngIf="checkoutForm.get('deliveryType')?.value === 'DELIVERY'">
               <span>Taxa de Entrega</span>
@@ -163,7 +179,7 @@
             </div>
             <div class="total-row grand-total">
               <span>Total</span>
-              <span>{{ subtotal$ | async | currency:'BRL' }}</span>
+              <span>{{ subtotal$ | async | currency: 'BRL' }}</span>
             </div>
           </div>
 
@@ -171,8 +187,12 @@
             <span *ngIf="!isSubmitting">Confirmar Pedido</span>
             <span *ngIf="isSubmitting" class="loader">Processando...</span>
           </button>
-          <p class="payment-notice" *ngIf="checkoutForm.get('paymentMethod')?.value === 'CASH'">Pagamento será feito na entrega/retirada</p>
-          <p class="payment-notice" *ngIf="checkoutForm.get('paymentMethod')?.value === 'ONLINE_PIX'">Você será direcionado para o pagamento Pix</p>
+          <p class="payment-notice" *ngIf="checkoutForm.get('paymentMethod')?.value === 'CASH'">
+            Pagamento será feito na entrega/retirada
+          </p>
+          <p class="payment-notice" *ngIf="checkoutForm.get('paymentMethod')?.value === 'ONLINE_PIX'">
+            Você será direcionado para o pagamento Pix
+          </p>
         </div>
       </aside>
     </form>

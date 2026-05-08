@@ -132,18 +132,23 @@ class StockServiceTest {
     @Test
     void saleMovementSubtractsStock() {
         UUID productId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
         UUID actorUserId = UUID.randomUUID();
         ProductEntity product = product(productId);
         StockBalanceEntity balance = new StockBalanceEntity(product);
         balance.adjust(new BigDecimal("5.000"));
+
+        when(stockMovementRepository.findByIdempotencyKey("SALE:" + orderId + ":" + productId))
+            .thenReturn(Optional.empty());
         when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order(orderId)));
         when(stockBalanceRepository.findByProductIdForUpdate(productId)).thenReturn(Optional.of(balance));
         when(stockBalanceRepository.save(any(StockBalanceEntity.class))).thenAnswer(inv -> inv.getArgument(0));
         when(stockMovementRepository.save(any(StockMovementEntity.class))).thenAnswer(inv -> inv.getArgument(0));
         when(auditService.record(any(AuditLogRequest.class))).thenReturn(null);
 
         StockMovementResponse response = service().recordSaleMovement(
-                productId, new BigDecimal("2.000"), null, actorUserId);
+            productId, new BigDecimal("2.000"), orderId, actorUserId);
 
         ArgumentCaptor<BigDecimal> balanceCaptor = ArgumentCaptor.forClass(BigDecimal.class);
         ArgumentCaptor<StockMovementEntity> movementCaptor = ArgumentCaptor.forClass(StockMovementEntity.class);
@@ -193,20 +198,23 @@ class StockServiceTest {
     @Test
     void nonControlledProductDoesNotBlockOnInsufficientBalance() {
         UUID productId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
         UUID actorUserId = UUID.randomUUID();
         ProductEntity product = product(productId);
-        // stockControlled defaults to false — no block on negative balance
         StockBalanceEntity balance = new StockBalanceEntity(product);
         balance.adjust(new BigDecimal("1.000"));
+
+        when(stockMovementRepository.findByIdempotencyKey("SALE:" + orderId + ":" + productId))
+            .thenReturn(Optional.empty());
         when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order(orderId)));
         when(stockBalanceRepository.findByProductIdForUpdate(productId)).thenReturn(Optional.of(balance));
         when(stockBalanceRepository.save(any(StockBalanceEntity.class))).thenAnswer(inv -> inv.getArgument(0));
         when(stockMovementRepository.save(any(StockMovementEntity.class))).thenAnswer(inv -> inv.getArgument(0));
         when(auditService.record(any(AuditLogRequest.class))).thenReturn(null);
 
-        // Sale of 5 on a balance of 1 — allowed because stockControlled=false
         StockMovementResponse response = service().recordSaleMovement(
-                productId, new BigDecimal("5.000"), null, actorUserId);
+            productId, new BigDecimal("5.000"), orderId, actorUserId);
 
         assertThat(response.type()).isEqualTo(StockMovementType.SALE);
     }
@@ -214,40 +222,55 @@ class StockServiceTest {
     @Test
     void controlledProductBlocksSaleWhenBalanceInsufficient() {
         UUID productId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
         ProductEntity product = product(productId);
         ReflectionTestUtils.setField(product, "stockControlled", true);
+
         StockBalanceEntity balance = new StockBalanceEntity(product);
         balance.adjust(new BigDecimal("2.000"));
+
+        when(stockMovementRepository.findByIdempotencyKey("SALE:" + orderId + ":" + productId))
+            .thenReturn(Optional.empty());
         when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order(orderId)));
         when(stockBalanceRepository.findByProductIdForUpdate(productId)).thenReturn(Optional.of(balance));
 
         assertThatThrownBy(() -> service().recordSaleMovement(
-                        productId, new BigDecimal("5.000"), null, UUID.randomUUID()))
-                .isInstanceOf(BusinessException.class)
-                .extracting("status").isEqualTo(HttpStatus.BAD_REQUEST);
+            productId, new BigDecimal("5.000"), orderId, UUID.randomUUID()))
+            .isInstanceOf(BusinessException.class)
+            .extracting("status").isEqualTo(HttpStatus.BAD_REQUEST);
+
         verify(stockMovementRepository, never()).save(any());
     }
 
     @Test
     void saleMovementRecordsPreviousAndResultingQuantity() {
         UUID productId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
         UUID actorUserId = UUID.randomUUID();
         ProductEntity product = product(productId);
+
         StockBalanceEntity balance = new StockBalanceEntity(product);
         balance.adjust(new BigDecimal("10.000"));
+
+        when(stockMovementRepository.findByIdempotencyKey("SALE:" + orderId + ":" + productId))
+            .thenReturn(Optional.empty());
         when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order(orderId)));
         when(stockBalanceRepository.findByProductIdForUpdate(productId)).thenReturn(Optional.of(balance));
         when(stockBalanceRepository.save(any(StockBalanceEntity.class))).thenAnswer(inv -> inv.getArgument(0));
         when(stockMovementRepository.save(any(StockMovementEntity.class))).thenAnswer(inv -> inv.getArgument(0));
         when(auditService.record(any(AuditLogRequest.class))).thenReturn(null);
 
-        service().recordSaleMovement(productId, new BigDecimal("3.000"), null, actorUserId);
+        service().recordSaleMovement(productId, new BigDecimal("3.000"), orderId, actorUserId);
 
         ArgumentCaptor<StockMovementEntity> captor = ArgumentCaptor.forClass(StockMovementEntity.class);
         verify(stockMovementRepository).save(captor.capture());
+
         StockMovementEntity saved = captor.getValue();
         assertThat(saved.getPreviousQuantity()).isEqualByComparingTo("10.000");
         assertThat(saved.getResultingQuantity()).isEqualByComparingTo("7.000");
+        assertThat(saved.getIdempotencyKey()).isEqualTo("SALE:" + orderId + ":" + productId);
     }
 
     @Test
@@ -376,19 +399,41 @@ class StockServiceTest {
     @Test
     void saleMovementGeneratesSyncEvent() {
         UUID productId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
         UUID actorUserId = UUID.randomUUID();
         ProductEntity product = product(productId);
+
         StockBalanceEntity balance = new StockBalanceEntity(product);
         balance.adjust(new BigDecimal("10.000"));
+
+        when(stockMovementRepository.findByIdempotencyKey("SALE:" + orderId + ":" + productId))
+            .thenReturn(Optional.empty());
         when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order(orderId)));
         when(stockBalanceRepository.findByProductIdForUpdate(productId)).thenReturn(Optional.of(balance));
         when(stockBalanceRepository.save(any(StockBalanceEntity.class))).thenAnswer(inv -> inv.getArgument(0));
         when(stockMovementRepository.save(any(StockMovementEntity.class))).thenAnswer(inv -> inv.getArgument(0));
         when(auditService.record(any(AuditLogRequest.class))).thenReturn(null);
 
-        service().recordSaleMovement(productId, new BigDecimal("3.000"), null, actorUserId);
+        service().recordSaleMovement(productId, new BigDecimal("3.000"), orderId, actorUserId);
 
         verify(syncEventService).recordStockMovementEvent(any(StockMovementEntity.class), any(BigDecimal.class));
+    }
+
+    @Test
+    void saleMovementRequiresOrderId() {
+        UUID productId = UUID.randomUUID();
+        UUID actorUserId = UUID.randomUUID();
+
+        assertThatThrownBy(() -> service().recordSaleMovement(
+            productId, new BigDecimal("1.000"), null, actorUserId))
+            .isInstanceOf(BusinessException.class)
+            .extracting("status").isEqualTo(HttpStatus.BAD_REQUEST);
+
+        verify(stockMovementRepository, never()).findByIdempotencyKey(any());
+        verify(productRepository, never()).findById(any());
+        verify(stockBalanceRepository, never()).findByProductIdForUpdate(any());
+        verify(stockMovementRepository, never()).save(any());
     }
 
     @Test

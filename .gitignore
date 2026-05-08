@@ -19,3 +19,10 @@ coverage/
 *.iml
 *.iws
 *.ipr
+
+# Build/test outputs accidentally generated as text
+*_log.txt
+*build_output.txt
+compile_errors.txt
+test_output.txt
+build_log.txt

@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Client } from '@stomp/stompjs';
+import { environment } from '../../../../environments/environment';
 import SockJS from 'sockjs-client';
 import { BehaviorSubject, Observable, Subject, map } from 'rxjs';
 
@@ -55,7 +56,7 @@ export class KdsService {
   private initWebSocket() {
     this.stompClient = new Client({
       webSocketFactory: () => new SockJS('/ws-kds') as unknown as WebSocket,
-      debug: (str) => console.log(str),
+      debug: (str) => this.debug(str),
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000
@@ -63,7 +64,7 @@ export class KdsService {
 
     this.stompClient.onConnect = (frame) => {
       this.connectionStatusSubject.next(true);
-      console.log('Connected: ' + frame);
+      this.debug('Connected: ' + frame);
       this.stompClient?.subscribe('/topic/kds/tickets', (message) => {
         const ticket: KdsTicket = JSON.parse(message.body);
         this.addOrUpdateTicket(ticket);
@@ -76,12 +77,13 @@ export class KdsService {
 
     this.stompClient.onDisconnect = () => {
       this.connectionStatusSubject.next(false);
-      console.log('Disconnected');
+      this.debug('Disconnected');
     };
 
     this.stompClient.onStompError = (frame) => {
-      console.error('Broker reported error: ' + frame.headers['message']);
-      console.error('Additional details: ' + frame.body);
+      this.connectionStatusSubject.next(false);
+      this.error('Broker reported error: ' + frame.headers['message']);
+      this.error('Additional details: ' + frame.body);
     };
 
     this.stompClient.activate();
@@ -129,4 +131,17 @@ export class KdsService {
   finishOrder(id: string): Observable<void> {
     return this.http.patch<void>(`/api/kds/orders/${id}/finish`, {});
   }
+
+  private debug(message: unknown): void {
+    if (!environment.production) {
+      console.log(message);
+    }
+  }
+
+  private error(message: unknown): void {
+    if (!environment.production) {
+      console.error(message);
+    }
+  }
 }
+

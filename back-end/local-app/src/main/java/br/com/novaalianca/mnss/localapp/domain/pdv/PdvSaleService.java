@@ -42,6 +42,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Service
 public class PdvSaleService {
@@ -154,7 +156,7 @@ public class PdvSaleService {
         OrderEntity sale = orderRepository
                 .findById(saleId)
                 .orElseThrow(() -> notFound("SALE_NOT_FOUND", "Venda nao encontrada."));
-        
+
         if (sale.getStatus() != OrderStatus.CREATED) {
             return response(sale);
         }
@@ -195,11 +197,20 @@ public class PdvSaleService {
         pdvSyncEventService.recordOrderFinishedEvent(sale);
         kdsService.createTicketsForOrder(sale, items);
 
-        if (payments.stream().anyMatch(p -> p.getMethod() == PaymentMethod.CASH)) {
-            hardwareAdapterService.openDrawer();
-        }
+        boolean shouldOpenDrawer = payments.stream().anyMatch(p -> p.getMethod() == PaymentMethod.CASH);
+        List<OrderItemEntity> receiptItems = List.copyOf(items);
+        List<PaymentEntity> receiptPayments = List.copyOf(payments);
 
-        hardwareAdapterService.printReceipt(sale, items, payments);
+        runAfterCommit(() -> {
+            try {
+                if (shouldOpenDrawer) {
+                    hardwareAdapterService.openDrawer();
+                }
+                hardwareAdapterService.printReceipt(sale, receiptItems, receiptPayments);
+            } catch (Exception ex) {
+                log.error("Failed to execute post-commit hardware actions for sale {}", sale.getId(), ex);
+            }
+        });
 
         return response(sale);
     }
@@ -209,10 +220,10 @@ public class PdvSaleService {
         OrderEntity sale = orderRepository
                 .findById(saleId)
                 .orElseThrow(() -> notFound("SALE_NOT_FOUND", "Venda nao encontrada."));
-        
+
         List<OrderItemEntity> items = orderItemRepository.findByOrderIdOrderByCreatedAtAsc(saleId);
         List<PaymentEntity> payments = paymentRepository.findByOrderIdOrderByCreatedAtAsc(saleId);
-        
+
         auditService.record(new AuditLogRequest(actorUserId, "RECEIPT_REPRINTED", "Order", saleId, Map.of(), null));
         hardwareAdapterService.printReceipt(sale, items, payments);
     }
@@ -269,7 +280,7 @@ public class PdvSaleService {
             if (payment.getStatus() == PaymentStatus.PAID) {
                 payment.markCanceled();
                 paymentRepository.save(payment);
-                
+
                 cashRegisterRepository.findFirstByOperatorIdAndStatusOrderByOpenedAtDesc(actorUserId, CashRegisterStatus.OPEN)
                         .ifPresent(cash -> cashRegisterService.recordRefundMovement(
                                 cash.getId(), payment.getMethod(), payment.getAmount(), saleId, actorUserId));
@@ -329,7 +340,7 @@ public class PdvSaleService {
                 .filter(p -> p.getStatus() == PaymentStatus.PAID)
                 .map(PdvSalePaymentResponse::from)
                 .toList();
-        
+
         SyncEventStatus syncStatus = syncEventRepository
                 .findFirstByAggregateIdOrderByCreatedAtDesc(order.getId())
                 .map(SyncEventEntity::getStatus)
@@ -417,5 +428,18 @@ public class PdvSaleService {
 
     private BusinessException notFound(String code, String message) {
         return new BusinessException(code, message, HttpStatus.NOT_FOUND);
+    }
+    private void runAfterCommit(Runnable action) {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    action.run();
+                }
+            });
+            return;
+        }
+
+        action.run();
     }
 }

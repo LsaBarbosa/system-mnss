@@ -62,15 +62,18 @@ services:
         BUILD_CONFIGURATION: online
     container_name: nova-alianca-frontend
     depends_on:
-      - nova-alianca-online-api
+      nova-alianca-online-api:
+        condition: service_healthy
     restart: unless-stopped
 
   nginx:
     image: nginx:stable
     container_name: nginx
     depends_on:
-      - nova-alianca-online-api
-      - nova-alianca-frontend
+      nova-alianca-online-api:
+        condition: service_healthy
+      nova-alianca-frontend:
+        condition: service_started
     ports:
       - "80:80"
       - "443:443"

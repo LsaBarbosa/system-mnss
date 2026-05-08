@@ -83,7 +83,7 @@ class OpenApiValidationTest {
     }
 
     @Test
-    @DisplayName("Online API should contain sync paths")
+    @DisplayName("Online API should contain all sync paths (S07-H02)")
     void onlineApiShouldContainSyncPaths() {
         OpenAPI openAPI = parseContract("docs/contracts/online-api.openapi.yml");
         List<String> paths = openAPI.getPaths().keySet().stream().toList();
@@ -91,8 +91,27 @@ class OpenApiValidationTest {
         assertThat(paths).contains(
                 "/api/sync/events",
                 "/api/sync/pending",
-                "/api/sync/events/{id}/ack"
+                "/api/sync/events/{id}/ack",
+                "/api/sync/events/{id}/reprocess",
+                "/api/sync/events/{id}/ignore",
+                "/api/sync/status"
         );
+    }
+
+    @Test
+    @DisplayName("Online sync endpoints declare X-Store-ID and X-Signature headers (S07-H02)")
+    void onlineSyncEndpointsDeclareHmacHeaders() {
+        OpenAPI openAPI = parseContract("docs/contracts/online-api.openapi.yml");
+
+        io.swagger.v3.oas.models.PathItem receiveEvent = openAPI.getPaths().get("/api/sync/events");
+        assertThat(receiveEvent).isNotNull();
+
+        if (receiveEvent.getPost() != null && receiveEvent.getPost().getParameters() != null) {
+            List<String> paramNames = receiveEvent.getPost().getParameters().stream()
+                    .map(p -> p.getName())
+                    .toList();
+            assertThat(paramNames).contains("X-Store-ID", "X-Signature");
+        }
     }
 
     @Test

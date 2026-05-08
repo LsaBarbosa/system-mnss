@@ -333,6 +333,107 @@ class SyncControllerTest {
         verify(repository, never()).save(any());
     }
 
+    // S04-H01: aggregateType / eventType validation
+    @Test
+    void receiveEvent_MissingAggregateType_ShouldReturn400() {
+        Map<String, Object> body = new HashMap<>();
+        body.put("eventType", "SALE_FINISHED");
+        String sig = HmacUtils.calculateHmac("key-no-agg" + ":{}", secret);
+
+        ResponseEntity<Void> response = controller.receiveEvent(storeId, sig, "key-no-agg", body);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void receiveEvent_BlankAggregateType_ShouldReturn400() {
+        Map<String, Object> body = new HashMap<>();
+        body.put("aggregateType", "   ");
+        body.put("eventType", "SALE_FINISHED");
+        String sig = HmacUtils.calculateHmac("key-blank-agg" + ":{}", secret);
+
+        ResponseEntity<Void> response = controller.receiveEvent(storeId, sig, "key-blank-agg", body);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void receiveEvent_MissingEventType_ShouldReturn400() {
+        Map<String, Object> body = new HashMap<>();
+        body.put("aggregateType", "Order");
+        String sig = HmacUtils.calculateHmac("key-no-evt" + ":{}", secret);
+
+        ResponseEntity<Void> response = controller.receiveEvent(storeId, sig, "key-no-evt", body);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void receiveEvent_BlankEventType_ShouldReturn400() {
+        Map<String, Object> body = new HashMap<>();
+        body.put("aggregateType", "Order");
+        body.put("eventType", "");
+        String sig = HmacUtils.calculateHmac("key-blank-evt" + ":{}", secret);
+
+        ResponseEntity<Void> response = controller.receiveEvent(storeId, sig, "key-blank-evt", body);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        verify(repository, never()).save(any());
+    }
+
+    // S04-H02: aggregateId validation
+    @Test
+    void receiveEvent_InvalidAggregateId_ShouldReturn400() {
+        Map<String, Object> body = new HashMap<>();
+        body.put("aggregateType", "Order");
+        body.put("eventType", "SALE_FINISHED");
+        body.put("aggregateId", "not-a-uuid");
+        String sig = HmacUtils.calculateHmac("key-bad-uuid" + ":{}", secret);
+
+        ResponseEntity<Void> response = controller.receiveEvent(storeId, sig, "key-bad-uuid", body);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void receiveEvent_NonStringAggregateId_ShouldReturn400() {
+        Map<String, Object> body = new HashMap<>();
+        body.put("aggregateType", "Order");
+        body.put("eventType", "SALE_FINISHED");
+        body.put("aggregateId", 12345);
+        String sig = HmacUtils.calculateHmac("key-int-uuid" + ":{}", secret);
+
+        ResponseEntity<Void> response = controller.receiveEvent(storeId, sig, "key-int-uuid", body);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void receiveEvent_ValidAggregateId_ShouldSaveAndReturn200() throws Exception {
+        String idempotencyKey = "key-valid-uuid";
+        Map<String, Object> payload = Map.of("orderId", "123");
+        Map<String, Object> body = new HashMap<>();
+        body.put("aggregateType", "Order");
+        body.put("eventType", "SALE_FINISHED");
+        body.put("aggregateId", UUID.randomUUID().toString());
+        body.put("payload", payload);
+        String payloadJson = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(payload);
+        String sig = HmacUtils.calculateHmac(idempotencyKey + ":" + payloadJson, secret);
+
+        when(repository.findByIdempotencyKey(idempotencyKey)).thenReturn(Optional.empty());
+        when(repository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        ResponseEntity<Void> response = controller.receiveEvent(storeId, sig, idempotencyKey, body);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(repository).save(any());
+    }
+
     private SyncEventEntity createPendingOnlineToLocalEvent(String ownerStoreId) {
         Map<String, Object> payload = new HashMap<>();
         payload.put("storeId", ownerStoreId);

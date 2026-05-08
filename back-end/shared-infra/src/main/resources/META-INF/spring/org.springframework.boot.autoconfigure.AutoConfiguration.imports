@@ -1,3 +1,4 @@
 br.com.novaalianca.mnss.sharedinfra.web.error.ErrorHandlingAutoConfiguration
 br.com.novaalianca.mnss.sharedinfra.health.HealthMonitoringAutoConfiguration
 br.com.novaalianca.mnss.sharedinfra.backup.BackupMetadataAutoConfiguration
+br.com.novaalianca.mnss.sharedinfra.security.CorsAutoConfiguration

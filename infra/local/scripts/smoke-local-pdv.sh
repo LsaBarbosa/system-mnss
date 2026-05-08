@@ -29,22 +29,53 @@ PRODUCTS=$(curl -fsS "$BASE_URL/api/pdv/products" -b "$COOKIE_FILE" 2>/dev/null 
 PRODUCT_ID=$(echo "$PRODUCTS" | python3 -c "
 import sys, json
 prods = json.load(sys.stdin)
-if not prods: sys.exit(1)
-print(prods[0]['id'])
-" 2>/dev/null) || fail "Nenhum produto disponível no PDV."
+for entry in prods:
+    if isinstance(entry, dict) and entry.get('products'):
+        print(entry['products'][0]['id'])
+        sys.exit(0)
+    if isinstance(entry, dict) and entry.get('id'):
+        print(entry['id'])
+        sys.exit(0)
+sys.exit(1)
+" 2>/dev/null) || true
+if [ -z "${PRODUCT_ID:-}" ]; then
+  log "   Nenhum produto disponível; criando categoria/produto de smoke..."
+  CATEGORY=$(curl -fsS -X POST "$BASE_URL/api/categories" \
+    -H "Content-Type: application/json" \
+    -d '{"name":"Smoke PDV","description":"Categoria criada pelo smoke local","displayOrder":999,"active":true,"showOnline":false,"showOnPdv":true,"showOnWhatsapp":false}' \
+    -b "$COOKIE_FILE")
+  CATEGORY_ID=$(echo "$CATEGORY" | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])" 2>/dev/null) \
+    || fail "Não foi possível criar categoria para o smoke."
+  PRODUCT=$(curl -fsS -X POST "$BASE_URL/api/products" \
+    -H "Content-Type: application/json" \
+    -d "{\"categoryId\":\"$CATEGORY_ID\",\"name\":\"Produto Smoke PDV\",\"description\":\"Produto criado pelo smoke local\",\"price\":\"1.00\",\"unitType\":\"UNIT\",\"preparationSector\":\"SEM_PREPARO\",\"active\":true,\"available\":true,\"sellOnPdv\":true,\"sellOnline\":false,\"sellOnWhatsapp\":false,\"stockControlled\":false}" \
+    -b "$COOKIE_FILE")
+  PRODUCT_ID=$(echo "$PRODUCT" | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])" 2>/dev/null) \
+    || fail "Não foi possível criar produto para o smoke."
+  PRODUCT_PRICE=$(echo "$PRODUCT" | python3 -c "import sys,json; print(json.load(sys.stdin)['price'])" 2>/dev/null) \
+    || fail "Não foi possível obter preço do produto criado."
+else
 PRODUCT_PRICE=$(echo "$PRODUCTS" | python3 -c "
 import sys, json
 prods = json.load(sys.stdin)
-print(prods[0]['price'])
+for entry in prods:
+    if isinstance(entry, dict) and entry.get('products'):
+        print(entry['products'][0]['price'])
+        sys.exit(0)
+    if isinstance(entry, dict) and entry.get('price'):
+        print(entry['price'])
+        sys.exit(0)
+sys.exit(1)
 " 2>/dev/null)
+fi
 log "   Produto selecionado: $PRODUCT_ID (preço: $PRODUCT_PRICE)"
 
 # 3. Abrir caixa (tenta abrir; ignora 409 Conflict se já aberto)
 log "3/8 — Abrindo caixa..."
-CASH_STATUS=$(curl -fsS -o /dev/null -w "%{http_code}" \
-  -X POST "$BASE_URL/api/cash-registers/open" \
+CASH_STATUS=$(curl -sS -o /dev/null -w "%{http_code}" \
+  -X POST "$BASE_URL/api/cash-register/open" \
   -H "Content-Type: application/json" \
-  -d '{"initialAmount":"0.00"}' \
+  -d '{"openingAmount":"0.00"}' \
   -b "$COOKIE_FILE")
 if [ "$CASH_STATUS" = "200" ] || [ "$CASH_STATUS" = "201" ] || [ "$CASH_STATUS" = "409" ]; then
   log "   Caixa OK (HTTP $CASH_STATUS)."

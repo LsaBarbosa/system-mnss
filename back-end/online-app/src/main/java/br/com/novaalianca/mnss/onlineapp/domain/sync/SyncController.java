@@ -53,12 +53,24 @@ public class SyncController {
         }
 
         // 2. Validate Signature
+        Map<String, Object> rawPayload;
         try {
             Object payload = body.get("payload");
             if (!(payload instanceof Map<?, ?>)) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
             }
-            String payloadJson = objectMapper.writeValueAsString(payload);
+            rawPayload = ((Map<?, ?>) payload).entrySet().stream()
+                    .collect(Collectors.toMap(
+                            entry -> String.valueOf(entry.getKey()),
+                            Map.Entry::getValue,
+                            (left, right) -> right,
+                            LinkedHashMap::new));
+            ResponseEntity<Void> storeValidation = validatePayloadStoreId(rawPayload, storeId);
+            if (storeValidation != null) {
+                return storeValidation;
+            }
+
+            String payloadJson = objectMapper.writeValueAsString(rawPayload);
             String dataToSign = idempotencyKey + ":" + payloadJson;
             
             if (!HmacUtils.verifyHmac(dataToSign, signature, secret)) {
@@ -103,16 +115,6 @@ public class SyncController {
 
         // 6. Save Event
         try {
-            Object payload = body.get("payload");
-            Map<String, Object> rawPayload = payload == null
-                    ? Map.of()
-                    : ((Map<?, ?>) payload).entrySet().stream()
-                        .collect(Collectors.toMap(
-                            entry -> String.valueOf(entry.getKey()),
-                            Map.Entry::getValue,
-                            (left, right) -> right,
-                            LinkedHashMap::new
-                        ));
             Map<String, Object> eventPayload = new LinkedHashMap<>(rawPayload);
             eventPayload.putIfAbsent(STORE_ID_FIELD, storeId);
 
@@ -250,5 +252,19 @@ public class SyncController {
     private boolean belongsToStore(SyncEventEntity event, String storeId) {
         Object payloadStoreId = event.getPayload().get(STORE_ID_FIELD);
         return payloadStoreId != null && storeId.equals(payloadStoreId.toString());
+    }
+
+    private ResponseEntity<Void> validatePayloadStoreId(Map<String, Object> rawPayload, String storeId) {
+        Object payloadStoreId = rawPayload.get(STORE_ID_FIELD);
+        if (payloadStoreId == null) {
+            return null;
+        }
+        if (!(payloadStoreId instanceof String payloadStoreIdText) || payloadStoreIdText.isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        if (!storeId.equals(payloadStoreIdText)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return null;
     }
 }

@@ -37,6 +37,7 @@ public class SecurityConfiguration {
                 .frameOptions(frameOptions -> frameOptions.sameOrigin())
                 .contentTypeOptions(config -> {})
                 .referrerPolicy(referrerPolicy -> referrerPolicy.policy(org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.SAME_ORIGIN))
+                .httpStrictTransportSecurity(hsts -> hsts.disable())
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth

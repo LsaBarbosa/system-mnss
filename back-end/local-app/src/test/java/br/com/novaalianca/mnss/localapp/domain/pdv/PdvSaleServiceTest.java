@@ -4,7 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -340,6 +342,93 @@ class PdvSaleServiceTest {
         verify(hardwareAdapterService).openDrawer();
         verify(hardwareAdapterService).printReceipt(eq(sale), eq(items), any());
         verify(pdvSyncEventService).recordOrderFinishedEvent(sale);
+    }
+
+    @Test
+    void finishSaleCanBeCalledTwiceWithoutDuplicatingEffects() {
+        UUID saleId = UUID.randomUUID();
+        UUID actorId = UUID.randomUUID();
+        ProductEntity product = product(UUID.randomUUID());
+        OrderEntity sale = sale(saleId);
+        sale.updateTotals(BigDecimal.TEN, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.TEN);
+        List<OrderItemEntity> items = List.of(item(sale, product, UUID.randomUUID(), BigDecimal.ONE));
+        PaymentEntity payment = new PaymentEntity(sale, PaymentMethod.CASH, PaymentStatus.PAID, BigDecimal.TEN);
+
+        when(orderRepository.findById(saleId)).thenReturn(Optional.of(sale));
+        when(orderItemRepository.findByOrderIdOrderByCreatedAtAsc(saleId)).thenReturn(items);
+        when(paymentRepository.findByOrderIdOrderByCreatedAtAsc(saleId)).thenReturn(List.of(payment));
+        when(orderRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        PdvSaleResponse first = service().finishSale(saleId, actorId);
+        PdvSaleResponse second = service().finishSale(saleId, actorId);
+
+        assertThat(first.status()).isEqualTo(OrderStatus.FINISHED);
+        assertThat(second.status()).isEqualTo(OrderStatus.FINISHED);
+        verify(stockService, times(1)).recordSaleMovement(product.getId(), BigDecimal.ONE, saleId, actorId);
+        verify(orderRepository, times(1)).save(sale);
+        verify(pdvSyncEventService, times(1)).recordOrderFinishedEvent(sale);
+        verify(kdsService, times(1)).createTicketsForOrder(sale, items);
+        verify(hardwareAdapterService, times(1)).openDrawer();
+        verify(hardwareAdapterService, times(1)).printReceipt(eq(sale), eq(items), any());
+    }
+
+    @Test
+    void finishSaleDoesNotSwallowBusinessStockFailure() {
+        UUID saleId = UUID.randomUUID();
+        UUID actorId = UUID.randomUUID();
+        ProductEntity product = product(UUID.randomUUID());
+        OrderEntity sale = sale(saleId);
+        sale.updateTotals(BigDecimal.TEN, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.TEN);
+        List<OrderItemEntity> items = List.of(item(sale, product, UUID.randomUUID(), BigDecimal.ONE));
+        PaymentEntity payment = new PaymentEntity(sale, PaymentMethod.PIX, PaymentStatus.PAID, BigDecimal.TEN);
+        BusinessException stockFailure = new BusinessException(
+                "INSUFFICIENT_STOCK",
+                "Estoque insuficiente para a movimentacao.",
+                HttpStatus.BAD_REQUEST);
+
+        when(orderRepository.findById(saleId)).thenReturn(Optional.of(sale));
+        when(orderItemRepository.findByOrderIdOrderByCreatedAtAsc(saleId)).thenReturn(items);
+        when(paymentRepository.findByOrderIdOrderByCreatedAtAsc(saleId)).thenReturn(List.of(payment));
+        doThrow(stockFailure).when(stockService)
+                .recordSaleMovement(product.getId(), BigDecimal.ONE, saleId, actorId);
+
+        assertThatThrownBy(() -> service().finishSale(saleId, actorId))
+                .isSameAs(stockFailure);
+        assertThat(sale.getStatus()).isEqualTo(OrderStatus.CREATED);
+        verify(orderRepository, never()).save(any());
+        verify(pdvSyncEventService, never()).recordOrderFinishedEvent(any());
+        verify(kdsService, never()).createTicketsForOrder(any(), any());
+        verify(hardwareAdapterService, never()).openDrawer();
+        verify(hardwareAdapterService, never()).printReceipt(any(), any(), any());
+    }
+
+    @Test
+    void finishSaleConvertsUnexpectedStockFailureAndKeepsSaleOpen() {
+        UUID saleId = UUID.randomUUID();
+        UUID actorId = UUID.randomUUID();
+        ProductEntity product = product(UUID.randomUUID());
+        OrderEntity sale = sale(saleId);
+        sale.updateTotals(BigDecimal.TEN, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.TEN);
+        List<OrderItemEntity> items = List.of(item(sale, product, UUID.randomUUID(), BigDecimal.ONE));
+        PaymentEntity payment = new PaymentEntity(sale, PaymentMethod.PIX, PaymentStatus.PAID, BigDecimal.TEN);
+
+        when(orderRepository.findById(saleId)).thenReturn(Optional.of(sale));
+        when(orderItemRepository.findByOrderIdOrderByCreatedAtAsc(saleId)).thenReturn(items);
+        when(paymentRepository.findByOrderIdOrderByCreatedAtAsc(saleId)).thenReturn(List.of(payment));
+        doThrow(new IllegalStateException("database unavailable")).when(stockService)
+                .recordSaleMovement(product.getId(), BigDecimal.ONE, saleId, actorId);
+
+        assertThatThrownBy(() -> service().finishSale(saleId, actorId))
+                .isInstanceOfSatisfying(BusinessException.class, ex -> {
+                    assertThat(ex.code()).isEqualTo("STOCK_MOVEMENT_FAILED");
+                    assertThat(ex.status()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+                });
+        assertThat(sale.getStatus()).isEqualTo(OrderStatus.CREATED);
+        verify(orderRepository, never()).save(any());
+        verify(pdvSyncEventService, never()).recordOrderFinishedEvent(any());
+        verify(kdsService, never()).createTicketsForOrder(any(), any());
+        verify(hardwareAdapterService, never()).openDrawer();
+        verify(hardwareAdapterService, never()).printReceipt(any(), any(), any());
     }
 
     @Test

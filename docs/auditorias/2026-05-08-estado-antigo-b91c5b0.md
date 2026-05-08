@@ -1,5 +1,8 @@
 # Auditoria técnica completa — Sistema MNSS / Nova Aliança
 
+> **Documento histórico. Esta auditoria foi feita sobre HEAD `b91c5b0` e não representa a `main` atual.**
+> Valide sempre o estado atual da branch antes de usar qualquer achado abaixo como pendência real.
+
 **Data:** 2026-05-08
 **Branch auditada:** `main` (HEAD `b91c5b0`)
 **Escopo:** repositório completo (back-end Java, front-end Angular, infra Docker, docs)

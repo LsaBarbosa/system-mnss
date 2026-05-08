@@ -38,6 +38,8 @@ mnss:
   environment: online
   cors:
     allowed-origins: ${MNSS_CORS_ALLOWED_ORIGINS:https://padarianovaalianca.com.br,https://admin.padarianovaalianca.com.br}
+  security:
+    hsts-enabled: ${MNSS_HSTS_ENABLED:true}
   online:
     sync-master-secret: ${SYNC_MASTER_SECRET:}
   sync:

@@ -124,15 +124,18 @@ public class StockService {
     public StockMovementResponse recordSaleMovement(UUID productId, BigDecimal quantity, UUID orderId, UUID actorUserId) {
         UUID pid = requireProductId(productId);
         BigDecimal qty = requirePositiveQuantity(quantity);
-        String idempotencyKey = saleMovementIdempotencyKey(orderId, pid);
+        UUID oid = requireSaleOrderId(orderId);
+        String idempotencyKey = saleMovementIdempotencyKey(oid, pid);
+
         Optional<StockMovementEntity> existingMovement = findExistingSaleMovement(idempotencyKey);
         if (existingMovement.isPresent()) {
             return StockMovementResponse.from(existingMovement.get());
         }
 
         ProductEntity product = productRepository.findById(pid)
-                .orElseThrow(() -> notFound("PRODUCT_NOT_FOUND", "Produto nao encontrado."));
-        OrderEntity order = findOrder(orderId);
+            .orElseThrow(() -> notFound("PRODUCT_NOT_FOUND", "Produto nao encontrado."));
+        OrderEntity order = findOrder(oid);
+
         BigDecimal delta = qty.negate();
 
         StockBalanceEntity balance = stockBalanceRepository.findByProductIdForUpdate(pid)
@@ -205,6 +208,7 @@ public class StockService {
                 .orElse(BigDecimal.ZERO);
     }
 
+
     private Map<String, Object> movementDetails(
             StockMovementEntity movement,
             BigDecimal balanceBefore,
@@ -274,6 +278,16 @@ public class StockService {
         }
     }
 
+    private UUID requireSaleOrderId(UUID orderId) {
+        if (orderId == null) {
+            throw new BusinessException(
+                "SALE_ORDER_REQUIRED",
+                "Pedido obrigatorio para baixa de estoque de venda.",
+                HttpStatus.BAD_REQUEST);
+        }
+        return orderId;
+    }
+
     private OrderEntity findOrder(UUID orderId) {
         if (orderId == null) {
             return null;
@@ -288,7 +302,7 @@ public class StockService {
     }
 
     private String saleMovementIdempotencyKey(UUID orderId, UUID productId) {
-        return orderId == null ? null : "SALE:" + orderId + ":" + productId;
+        return "SALE:" + orderId + ":" + productId;
     }
 
     private Optional<StockMovementEntity> findExistingSaleMovement(String idempotencyKey) {

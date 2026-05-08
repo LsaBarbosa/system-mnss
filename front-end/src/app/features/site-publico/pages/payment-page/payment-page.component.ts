@@ -1,10 +1,11 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { OnlinePaymentService, PaymentResponse } from '../../data-access/online-payment.service';
 import { OrderService, OrderResponse } from '../../data-access/order.service';
 import { ErrorMessageService } from '../../../../core/errors/error-message.service';
-import { interval, Subscription, switchMap, takeWhile } from 'rxjs';
+import { interval, switchMap, takeWhile } from 'rxjs';
 
 @Component({
   selector: 'app-payment-page',
@@ -13,13 +14,14 @@ import { interval, Subscription, switchMap, takeWhile } from 'rxjs';
   templateUrl: './payment-page.component.html',
   styleUrls: ['./payment-page.component.scss']
 })
-export class PaymentPageComponent implements OnInit, OnDestroy {
+export class PaymentPageComponent implements OnInit {
   orderId: string | null = null;
   payment: PaymentResponse | null = null;
   order: OrderResponse | null = null;
   loading = true;
   error: string | null = null;
-  statusSubscription: Subscription | null = null;
+
+  private readonly destroyRef = inject(DestroyRef);
 
   constructor(
     private route: ActivatedRoute,
@@ -39,36 +41,39 @@ export class PaymentPageComponent implements OnInit, OnDestroy {
     }
   }
 
-  ngOnDestroy() {
-    this.statusSubscription?.unsubscribe();
-  }
-
   private initPayment(orderId: string) {
-    this.paymentService.createPayment({ orderId, method: 'ONLINE_PIX' }).subscribe({
-      next: (response) => {
-        this.payment = response;
-        this.loading = false;
-        this.startStatusPolling(orderId);
-      },
-      error: (err) => {
-        console.error('Error creating payment', err);
-        this.error = 'Erro ao gerar cobrança. Por favor, tente novamente.';
-        this.loading = false;
-      }
-    });
+    this.paymentService
+      .createPayment({ orderId, method: 'ONLINE_PIX' })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response) => {
+          this.payment = response;
+          this.loading = false;
+          this.startStatusPolling(orderId);
+        },
+        error: () => {
+          this.error = 'Erro ao gerar cobrança. Por favor, tente novamente.';
+          this.loading = false;
+        }
+      });
   }
 
   private startStatusPolling(orderId: string) {
-    // Poll every 5 seconds until status is PAID
-    this.statusSubscription = interval(5000)
+    interval(5000)
       .pipe(
         switchMap(() => this.orderService.getOrder(orderId)),
-        takeWhile((order) => order.status !== 'SENT_TO_STORE' && order.status !== 'ACCEPTED', true)
+        takeWhile((order) => order.status !== 'SENT_TO_STORE' && order.status !== 'ACCEPTED', true),
+        takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe((order) => {
-        this.order = order;
-        if (order.status === 'SENT_TO_STORE' || order.status === 'ACCEPTED') {
-          this.router.navigate(['/pedido-confirmado', orderId]);
+      .subscribe({
+        next: (order) => {
+          this.order = order;
+          if (order.status === 'SENT_TO_STORE' || order.status === 'ACCEPTED') {
+            this.router.navigate(['/pedido-confirmado', orderId]);
+          }
+        },
+        error: () => {
+          this.error = 'Erro ao consultar status do pedido.';
         }
       });
   }

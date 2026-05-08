@@ -182,6 +182,134 @@ class StockServiceTest {
         assertThat(result).isEqualByComparingTo("15.000");
     }
 
+    // S05-H01: stockControlled flag
+    @Test
+    void nonControlledProductDoesNotBlockOnInsufficientBalance() {
+        UUID productId = UUID.randomUUID();
+        UUID actorUserId = UUID.randomUUID();
+        ProductEntity product = product(productId);
+        // stockControlled defaults to false — no block on negative balance
+        StockBalanceEntity balance = new StockBalanceEntity(product);
+        balance.adjust(new BigDecimal("1.000"));
+        when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+        when(stockBalanceRepository.findByProductIdForUpdate(productId)).thenReturn(Optional.of(balance));
+        when(stockBalanceRepository.save(any(StockBalanceEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(stockMovementRepository.save(any(StockMovementEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(auditService.record(any(AuditLogRequest.class))).thenReturn(null);
+
+        // Sale of 5 on a balance of 1 — allowed because stockControlled=false
+        StockMovementResponse response = service().recordSaleMovement(
+                productId, new BigDecimal("5.000"), null, actorUserId);
+
+        assertThat(response.type()).isEqualTo(StockMovementType.SALE);
+    }
+
+    @Test
+    void controlledProductBlocksSaleWhenBalanceInsufficient() {
+        UUID productId = UUID.randomUUID();
+        ProductEntity product = product(productId);
+        ReflectionTestUtils.setField(product, "stockControlled", true);
+        StockBalanceEntity balance = new StockBalanceEntity(product);
+        balance.adjust(new BigDecimal("2.000"));
+        when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+        when(stockBalanceRepository.findByProductIdForUpdate(productId)).thenReturn(Optional.of(balance));
+
+        assertThatThrownBy(() -> service().recordSaleMovement(
+                        productId, new BigDecimal("5.000"), null, UUID.randomUUID()))
+                .isInstanceOf(BusinessException.class)
+                .extracting("status").isEqualTo(HttpStatus.BAD_REQUEST);
+        verify(stockMovementRepository, never()).save(any());
+    }
+
+    @Test
+    void saleMovementRecordsPreviousAndResultingQuantity() {
+        UUID productId = UUID.randomUUID();
+        UUID actorUserId = UUID.randomUUID();
+        ProductEntity product = product(productId);
+        StockBalanceEntity balance = new StockBalanceEntity(product);
+        balance.adjust(new BigDecimal("10.000"));
+        when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+        when(stockBalanceRepository.findByProductIdForUpdate(productId)).thenReturn(Optional.of(balance));
+        when(stockBalanceRepository.save(any(StockBalanceEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(stockMovementRepository.save(any(StockMovementEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(auditService.record(any(AuditLogRequest.class))).thenReturn(null);
+
+        service().recordSaleMovement(productId, new BigDecimal("3.000"), null, actorUserId);
+
+        ArgumentCaptor<StockMovementEntity> captor = ArgumentCaptor.forClass(StockMovementEntity.class);
+        verify(stockMovementRepository).save(captor.capture());
+        StockMovementEntity saved = captor.getValue();
+        assertThat(saved.getPreviousQuantity()).isEqualByComparingTo("10.000");
+        assertThat(saved.getResultingQuantity()).isEqualByComparingTo("7.000");
+    }
+
+    // S05-H03: ajuste manual auditável
+    @Test
+    void adjustmentRequiresReason() {
+        UUID productId = UUID.randomUUID();
+        assertThatThrownBy(() -> service().createMovement(new CreateStockMovementRequest(
+                        productId, StockMovementType.ADJUSTMENT, new BigDecimal("1.000"), null, null),
+                UUID.randomUUID()))
+                .isInstanceOf(BusinessException.class)
+                .extracting("status").isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void adjustmentWithReasonSavesMovementAndRecordsAudit() {
+        UUID productId = UUID.randomUUID();
+        UUID actorUserId = UUID.randomUUID();
+        ProductEntity product = product(productId);
+        when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+        when(stockBalanceRepository.findByProductIdForUpdate(productId)).thenReturn(Optional.empty());
+        when(stockBalanceRepository.save(any(StockBalanceEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(stockMovementRepository.save(any(StockMovementEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(auditService.record(any(AuditLogRequest.class))).thenReturn(null);
+
+        StockMovementResponse response = service().createMovement(
+                new CreateStockMovementRequest(productId, StockMovementType.ADJUSTMENT,
+                        new BigDecimal("5.000"), "Contagem física", null),
+                actorUserId);
+
+        assertThat(response.type()).isEqualTo(StockMovementType.ADJUSTMENT);
+        verify(auditService).record(any(AuditLogRequest.class));
+    }
+
+    // S05-H04: sync event is generated on every movement
+    @Test
+    void saleMovementGeneratesSyncEvent() {
+        UUID productId = UUID.randomUUID();
+        UUID actorUserId = UUID.randomUUID();
+        ProductEntity product = product(productId);
+        StockBalanceEntity balance = new StockBalanceEntity(product);
+        balance.adjust(new BigDecimal("10.000"));
+        when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+        when(stockBalanceRepository.findByProductIdForUpdate(productId)).thenReturn(Optional.of(balance));
+        when(stockBalanceRepository.save(any(StockBalanceEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(stockMovementRepository.save(any(StockMovementEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(auditService.record(any(AuditLogRequest.class))).thenReturn(null);
+
+        service().recordSaleMovement(productId, new BigDecimal("3.000"), null, actorUserId);
+
+        verify(syncEventService).recordStockMovementEvent(any(StockMovementEntity.class), any(BigDecimal.class));
+    }
+
+    @Test
+    void entryMovementGeneratesSyncEvent() {
+        UUID productId = UUID.randomUUID();
+        UUID actorUserId = UUID.randomUUID();
+        ProductEntity product = product(productId);
+        when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+        when(stockBalanceRepository.findByProductIdForUpdate(productId)).thenReturn(Optional.empty());
+        when(stockBalanceRepository.save(any(StockBalanceEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(stockMovementRepository.save(any(StockMovementEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(auditService.record(any(AuditLogRequest.class))).thenReturn(null);
+
+        service().createMovement(new CreateStockMovementRequest(
+                productId, StockMovementType.IN, new BigDecimal("10.000"), null, null), actorUserId);
+
+        verify(syncEventService).recordStockMovementEvent(any(StockMovementEntity.class), any(BigDecimal.class));
+    }
+
     private StockService service() {
         return new StockService(
                 productRepository,

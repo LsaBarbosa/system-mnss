@@ -1,5 +1,6 @@
 package br.com.novaalianca.mnss.sharedinfra.security;
 
+import java.security.MessageDigest;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
@@ -22,8 +23,21 @@ public final class HmacUtils {
         }
     }
 
+    public static void validateSecretStrength(String secret, String propertyName) {
+        if (secret == null || secret.getBytes(StandardCharsets.UTF_8).length < 32) {
+            throw new IllegalStateException(
+                    propertyName + " must have at least 32 bytes for HMAC-SHA256. "
+                    + "Current length: " + (secret == null ? 0 : secret.getBytes(StandardCharsets.UTF_8).length));
+        }
+    }
+
     public static boolean verifyHmac(String data, String hmac, String secret) {
+        if (data == null || hmac == null || secret == null) {
+            return false;
+        }
         String calculatedHmac = calculateHmac(data, secret);
-        return calculatedHmac.equals(hmac);
+        return MessageDigest.isEqual(
+                calculatedHmac.getBytes(StandardCharsets.UTF_8),
+                hmac.getBytes(StandardCharsets.UTF_8));
     }
 }

@@ -76,7 +76,32 @@ public class SyncController {
             return ResponseEntity.ok().build();
         }
 
-        // 4. Save Event
+        // 4. Validate required string fields
+        Object aggregateTypeValue = body.get("aggregateType");
+        if (!(aggregateTypeValue instanceof String aggregateType) || aggregateType.isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+
+        Object eventTypeValue = body.get("eventType");
+        if (!(eventTypeValue instanceof String eventType) || eventType.isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+
+        // 5. Validate optional aggregateId
+        UUID aggregateId = null;
+        Object aggregateIdValue = body.get("aggregateId");
+        if (aggregateIdValue != null) {
+            if (!(aggregateIdValue instanceof String aggregateIdStr) || aggregateIdStr.isBlank()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            }
+            try {
+                aggregateId = UUID.fromString(aggregateIdStr);
+            } catch (IllegalArgumentException ex) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            }
+        }
+
+        // 6. Save Event
         try {
             Object payload = body.get("payload");
             Map<String, Object> rawPayload = payload == null
@@ -96,17 +121,16 @@ public class SyncController {
                     SyncDirection.LOCAL_TO_ONLINE,
                     SyncEnvironment.LOCAL,
                     SyncEnvironment.ONLINE,
-                    (String) body.get("aggregateType"),
-                    (String) body.get("eventType"),
+                    aggregateType,
+                    eventType,
                     eventPayload,
                     SyncEventStatus.PENDING
             );
-            
-            String aggregateIdStr = (String) body.get("aggregateId");
-            if (aggregateIdStr != null) {
-                event.assignAggregateId(UUID.fromString(aggregateIdStr));
+
+            if (aggregateId != null) {
+                event.assignAggregateId(aggregateId);
             }
-            
+
             repository.save(event);
             log.info("Event saved successfully: {}", idempotencyKey);
             return ResponseEntity.ok().build();

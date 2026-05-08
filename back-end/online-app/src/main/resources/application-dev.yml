@@ -13,5 +13,7 @@ mnss:
   sync:
     stores:
       store-001: ${MNSS_STORE_001_SECRET:change_me}
+  payment:
+    webhook-secret: ${MNSS_PAYMENT_WEBHOOK_SECRET:change_me_payment_webhook_secret_dev_only}
   whatsapp:
-    verify-token: change_me
+    verify-token: ${WHATSAPP_VERIFY_TOKEN:change_me}

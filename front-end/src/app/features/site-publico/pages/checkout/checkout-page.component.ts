@@ -6,6 +6,7 @@ import { Router, RouterModule } from '@angular/router';
 import { CartService, CartItem } from '../../data-access/cart.service';
 import { OrderService, CreateOrderRequest } from '../../data-access/order.service';
 import { OnlinePaymentService } from '../../data-access/online-payment.service';
+import { ErrorMessageService } from '../../../../core/errors/error-message.service';
 import { Observable } from 'rxjs';
 
 @Component({
@@ -28,7 +29,8 @@ export class CheckoutPageComponent implements OnInit {
     private cartService: CartService,
     private orderService: OrderService,
     private paymentService: OnlinePaymentService,
-    private router: Router
+    private router: Router,
+    private errorMessageService: ErrorMessageService
   ) {
     this.cartItems$ = this.cartService.items$;
     this.subtotal$ = this.cartService.getSubtotal();
@@ -110,7 +112,7 @@ export class CheckoutPageComponent implements OnInit {
           error: (err) => {
             this.isSubmitting = false;
             console.error('Error creating order', err);
-            alert('Erro ao criar pedido. Por favor, tente novamente.');
+            this.errorMessageService.showMessage('Erro ao criar pedido. Por favor, tente novamente.');
           }
         });
       })

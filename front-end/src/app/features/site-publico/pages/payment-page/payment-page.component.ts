@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { OnlinePaymentService, PaymentResponse } from '../../data-access/online-payment.service';
 import { OrderService, OrderResponse } from '../../data-access/order.service';
+import { ErrorMessageService } from '../../../../core/errors/error-message.service';
 import { interval, Subscription, switchMap, takeWhile } from 'rxjs';
 
 @Component({
@@ -24,7 +25,8 @@ export class PaymentPageComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private paymentService: OnlinePaymentService,
-    private orderService: OrderService
+    private orderService: OrderService,
+    private errorMessageService: ErrorMessageService
   ) {}
 
   ngOnInit() {
@@ -74,7 +76,7 @@ export class PaymentPageComponent implements OnInit, OnDestroy {
   copyPixKey() {
     if (this.payment?.qrCodeCopyPaste) {
       navigator.clipboard.writeText(this.payment.qrCodeCopyPaste);
-      alert('Chave Pix copiada!');
+      this.errorMessageService.showMessage('Chave Pix copiada!');
     }
   }
 }

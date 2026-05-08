@@ -36,6 +36,8 @@ management:
 
 mnss:
   environment: local
+  cors:
+    allowed-origins: ${MNSS_CORS_ALLOWED_ORIGINS:http://localhost,http://127.0.0.1}
   security:
     enabled: ${MNSS_SECURITY_ENABLED:true}
     cookie:

@@ -140,6 +140,7 @@ Segredos obrigatórios (mínimo 32 caracteres):
 | `MNSS_STORE_001_SECRET` | Segredo HMAC da loja física |
 | `MNSS_PAYMENT_WEBHOOK_SECRET` | Segredo do webhook de pagamento |
 | `WHATSAPP_VERIFY_TOKEN` | Token de verificação do WhatsApp Business |
+| `MNSS_CORS_ALLOWED_ORIGINS` | Origins CORS permitidas (separadas por vírgula). Default: `https://padarianovaalianca.com.br,https://admin.padarianovaalianca.com.br` |
 
 ## 8. Docker Compose online
 
@@ -511,19 +512,41 @@ POST /api/sync/events/{id}/ignore
 
 Medidas obrigatórias:
 
-- HTTPS
-- Firewall
+- HTTPS com certificado válido (Let's Encrypt)
+- Firewall restritivo (porta 22 SSH, porta 80/443 HTTP/HTTPS)
+- CORS configurável por `MNSS_CORS_ALLOWED_ORIGINS`
+- Headers de segurança (X-Frame-Options, X-Content-Type-Options, HSTS, Referrer-Policy)
 - Assinatura HMAC e segredos técnicos para sync/webhooks
 - HTTP Basic e/ou Bearer JWT nos endpoints internos de `/api/**` que não são públicos
 - JWT para painéis administrativos quando o módulo de autenticação online estiver habilitado
-- Rate limit
+- Rate limit (recomendado via Nginx ou WAF)
 - Validação de webhook
-- Banco privado
-- Redis privado
-- RabbitMQ privado
-- Backups
+- Banco privado (não expor 5432)
+- Redis privado (não expor 6379)
+- RabbitMQ privado (não expor 5672 ou 15672 publicamente)
+- Backups automáticos e verificados
 - Logs de auditoria
-- Monitoramento
+- Monitoramento de performance e segurança
+
+### Headers de segurança
+
+A API online inclui automaticamente:
+
+```
+X-Frame-Options: DENY
+X-Content-Type-Options: nosniff
+Referrer-Policy: strict-origin-when-cross-origin
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+```
+
+Nginx também pode adicionar headers complementares:
+
+```nginx
+add_header X-Frame-Options "DENY" always;
+add_header X-Content-Type-Options "nosniff" always;
+add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+add_header Permissions-Policy "geolocation=(), microphone=(), camera=()" always;
+```
 
 ## 21. Processo inicial de deploy
 

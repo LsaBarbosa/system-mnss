@@ -1,15 +1,25 @@
-(window as any).global = window;
+(window as unknown as Record<string, unknown>)['global'] = window;
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KdsPageComponent } from './kds-page.component';
-import { KdsService, KdsTicketStatus } from '../data-access/kds.service';
-import { of, Subject } from 'rxjs';
+import { KdsService } from '../data-access/kds.service';
+import { Observable, of, Subject } from 'rxjs';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 describe('KdsPageComponent', () => {
   let component: KdsPageComponent;
   let fixture: ComponentFixture<KdsPageComponent>;
-  let kdsServiceMock: any;
+  let kdsServiceMock: {
+    loadTickets: jasmine.Spy;
+    getTicketsByStatus: jasmine.Spy;
+    connectionStatus$: Observable<boolean>;
+    readyOrders$: Subject<string>;
+    startTicket: jasmine.Spy;
+    readyTicket: jasmine.Spy;
+    readyItem: jasmine.Spy;
+    finishTicket: jasmine.Spy;
+    finishOrder: jasmine.Spy;
+  };
 
   beforeEach(async () => {
     kdsServiceMock = {
@@ -26,11 +36,7 @@ describe('KdsPageComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [KdsPageComponent],
-      providers: [
-        { provide: KdsService, useValue: kdsServiceMock },
-        provideHttpClient(),
-        provideHttpClientTesting()
-      ]
+      providers: [{ provide: KdsService, useValue: kdsServiceMock }, provideHttpClient(), provideHttpClientTesting()]
     }).compileComponents();
 
     fixture = TestBed.createComponent(KdsPageComponent);

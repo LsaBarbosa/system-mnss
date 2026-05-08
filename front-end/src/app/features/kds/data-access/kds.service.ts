@@ -41,10 +41,10 @@ export class KdsService {
   private stompClient: Client | null = null;
   private ticketsSubject = new BehaviorSubject<KdsTicket[]>([]);
   tickets$ = this.ticketsSubject.asObservable();
-  
+
   private readyOrdersSubject = new Subject<string>();
   readyOrders$ = this.readyOrdersSubject.asObservable();
-  
+
   private connectionStatusSubject = new BehaviorSubject<boolean>(false);
   connectionStatus$ = this.connectionStatusSubject.asObservable();
 
@@ -54,11 +54,11 @@ export class KdsService {
 
   private initWebSocket() {
     this.stompClient = new Client({
-      webSocketFactory: () => new (SockJS as any)('/ws-kds'),
+      webSocketFactory: () => new SockJS('/ws-kds') as unknown as WebSocket,
       debug: (str) => console.log(str),
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
-      heartbeatOutgoing: 4000,
+      heartbeatOutgoing: 4000
     });
 
     this.stompClient.onConnect = (frame) => {
@@ -89,14 +89,14 @@ export class KdsService {
 
   loadTickets(sector?: string): void {
     const url = sector ? `/api/kds/tickets?sector=${sector}` : '/api/kds/tickets';
-    this.http.get<KdsTicket[]>(url).subscribe(tickets => {
+    this.http.get<KdsTicket[]>(url).subscribe((tickets) => {
       this.ticketsSubject.next(tickets);
     });
   }
 
   private addOrUpdateTicket(ticket: KdsTicket) {
     const current = this.ticketsSubject.value;
-    const index = current.findIndex(t => t.id === ticket.id);
+    const index = current.findIndex((t) => t.id === ticket.id);
     if (index > -1) {
       const updated = [...current];
       updated[index] = ticket;
@@ -107,9 +107,7 @@ export class KdsService {
   }
 
   getTicketsByStatus(status: KdsTicketStatus): Observable<KdsTicket[]> {
-    return this.tickets$.pipe(
-      map(tickets => tickets.filter(t => t.status === status))
-    );
+    return this.tickets$.pipe(map((tickets) => tickets.filter((t) => t.status === status)));
   }
 
   startTicket(id: string): Observable<KdsTicket> {

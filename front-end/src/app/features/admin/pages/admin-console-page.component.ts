@@ -34,20 +34,20 @@ export class AdminConsolePageComponent implements OnInit {
   healthStatus?: HealthStatus;
 
   readonly navigation: NavItem[] = [
-    { label: 'PDV',      route: '/pdv',            roles: ['GERENTE', 'CAIXA', 'ATENDENTE'] },
-    { label: 'KDS',      route: '/kds',            roles: ['ADMIN', 'GERENTE', 'COZINHA', 'EXPEDICAO'] },
-    { label: 'Catalogo', route: '/catalog',        roles: ['ADMIN', 'GERENTE'] },
-    { label: 'Estoque',  route: '/stock',          roles: ['ADMIN', 'GERENTE'] },
-    { label: 'Usuarios', route: '/users',          roles: ['ADMIN'] },
-    { label: 'Sync',     route: '/admin/sync',     roles: ['ADMIN', 'GERENTE'] },
+    { label: 'PDV', route: '/pdv', roles: ['GERENTE', 'CAIXA', 'ATENDENTE'] },
+    { label: 'KDS', route: '/kds', roles: ['ADMIN', 'GERENTE', 'COZINHA', 'EXPEDICAO'] },
+    { label: 'Catalogo', route: '/catalog', roles: ['ADMIN', 'GERENTE'] },
+    { label: 'Estoque', route: '/stock', roles: ['ADMIN', 'GERENTE'] },
+    { label: 'Usuarios', route: '/users', roles: ['ADMIN'] },
+    { label: 'Sync', route: '/admin/sync', roles: ['ADMIN', 'GERENTE'] },
     { label: 'WhatsApp', route: '/admin/whatsapp', roles: ['ADMIN', 'GERENTE', 'ATENDENTE'] }
   ];
 
   readonly operationTiles: OperationTile[] = [
-    { label: 'PDV local',     status: 'Ativo',        tone: 'ready' },
+    { label: 'PDV local', status: 'Ativo', tone: 'ready' },
     { label: 'Infra tecnica', status: 'Health ativo', tone: 'ready' },
-    { label: 'KDS',           status: 'Ativo',        tone: 'ready' },
-    { label: 'Sincronizacao', status: 'Ativo',        tone: 'ready' }
+    { label: 'KDS', status: 'Ativo', tone: 'ready' },
+    { label: 'Sincronizacao', status: 'Ativo', tone: 'ready' }
   ];
 
   constructor(

@@ -10,12 +10,7 @@ import { Subscription, interval, startWith, switchMap } from 'rxjs';
 @Component({
   selector: 'app-whatsapp-panel',
   standalone: true,
-  imports: [
-    CommonModule,
-    ConversationListComponent,
-    ChatViewComponent,
-    AssistedCartComponent
-  ],
+  imports: [CommonModule, ConversationListComponent, ChatViewComponent, AssistedCartComponent],
   templateUrl: './whatsapp-panel.component.html',
   styleUrl: './whatsapp-panel.component.scss'
 })
@@ -25,18 +20,21 @@ export class WhatsAppPanelComponent implements OnInit, OnDestroy {
   messages: MessageResponse[] = [];
   isLoading = false;
   showCart = false;
-  
+
   private pollingSubscription?: Subscription;
 
   constructor(private whatsappService: WhatsAppService) {}
 
   ngOnInit(): void {
     this.loadConversations();
-    
+
     // Auto-refresh conversations every 10 seconds
     this.pollingSubscription = interval(10000)
-      .pipe(startWith(0), switchMap(() => this.whatsappService.getConversations()))
-      .subscribe(data => this.conversations = data);
+      .pipe(
+        startWith(0),
+        switchMap(() => this.whatsappService.getConversations())
+      )
+      .subscribe((data) => (this.conversations = data));
   }
 
   ngOnDestroy(): void {
@@ -50,7 +48,7 @@ export class WhatsAppPanelComponent implements OnInit, OnDestroy {
         this.conversations = data;
         this.isLoading = false;
       },
-      error: () => this.isLoading = false
+      error: () => (this.isLoading = false)
     });
   }
 
@@ -60,14 +58,14 @@ export class WhatsAppPanelComponent implements OnInit, OnDestroy {
   }
 
   loadMessages(conversationId: string): void {
-    this.whatsappService.getMessages(conversationId).subscribe(data => {
+    this.whatsappService.getMessages(conversationId).subscribe((data) => {
       this.messages = data;
     });
   }
 
   onSendMessage(content: string): void {
     if (!this.selectedConversation) return;
-    
+
     this.whatsappService.sendMessage(this.selectedConversation.id, content).subscribe(() => {
       this.loadMessages(this.selectedConversation!.id);
     });

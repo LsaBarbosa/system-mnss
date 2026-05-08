@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { KdsService, KdsTicket, KdsTicketStatus } from '../data-access/kds.service';
+import { KdsService, KdsTicketStatus } from '../data-access/kds.service';
 import { interval, map, startWith } from 'rxjs';
 
 @Component({
@@ -12,17 +12,17 @@ import { interval, map, startWith } from 'rxjs';
 })
 export class KdsPageComponent implements OnInit {
   private kdsService = inject(KdsService);
-  
+
   ticketsWaiting$ = this.kdsService.getTicketsByStatus(KdsTicketStatus.WAITING);
   ticketsPrep$ = this.kdsService.getTicketsByStatus(KdsTicketStatus.IN_PREPARATION);
   ticketsReady$ = this.kdsService.getTicketsByStatus(KdsTicketStatus.READY);
-  
+
   connectionStatus$ = this.kdsService.connectionStatus$;
   currentTime$ = interval(1000).pipe(
     startWith(0),
     map(() => new Date())
   );
-  
+
   selectedSector: string = '';
   sectors = ['CHAPA', 'BEBIDAS', 'CONFEITARIA', 'BALCAO', 'EXPEDICAO', 'DELIVERY'];
 

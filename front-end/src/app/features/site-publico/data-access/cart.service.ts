@@ -39,25 +39,22 @@ export class CartService {
 
   addItem(item: CartItem) {
     const current = this.itemsSubject.value;
-    const existing = current.find(i => i.productId === item.productId && i.observation === item.observation);
-    
+    const existing = current.find((i) => i.productId === item.productId && i.observation === item.observation);
+
     let updated: CartItem[];
     if (existing) {
-      updated = current.map(i => i === existing 
-        ? { ...i, quantity: i.quantity + item.quantity }
-        : i
-      );
+      updated = current.map((i) => (i === existing ? { ...i, quantity: i.quantity + item.quantity } : i));
     } else {
       updated = [...current, item];
     }
-    
+
     this.itemsSubject.next(updated);
     this.saveToStorage(updated);
   }
 
   removeItem(productId: string, observation?: string) {
-    const updated = this.itemsSubject.value.filter(i => 
-      !(i.productId === productId && i.observation === observation)
+    const updated = this.itemsSubject.value.filter(
+      (i) => !(i.productId === productId && i.observation === observation)
     );
     this.itemsSubject.next(updated);
     this.saveToStorage(updated);
@@ -68,11 +65,9 @@ export class CartService {
       this.removeItem(productId, observation);
       return;
     }
-    
-    const updated = this.itemsSubject.value.map(i => 
-      (i.productId === productId && i.observation === observation)
-        ? { ...i, quantity }
-        : i
+
+    const updated = this.itemsSubject.value.map((i) =>
+      i.productId === productId && i.observation === observation ? { ...i, quantity } : i
     );
     this.itemsSubject.next(updated);
     this.saveToStorage(updated);
@@ -84,14 +79,10 @@ export class CartService {
   }
 
   getSubtotal(): Observable<number> {
-    return this.items$.pipe(
-      map(items => items.reduce((acc, item) => acc + (item.price * item.quantity), 0))
-    );
+    return this.items$.pipe(map((items) => items.reduce((acc, item) => acc + item.price * item.quantity, 0)));
   }
 
   getItemCount(): Observable<number> {
-    return this.items$.pipe(
-      map(items => items.reduce((acc, item) => acc + item.quantity, 0))
-    );
+    return this.items$.pipe(map((items) => items.reduce((acc, item) => acc + item.quantity, 0)));
   }
 }

@@ -3,13 +3,7 @@
 declare const self: ServiceWorkerGlobalScope;
 
 const CACHE_NAME = 'nova-alianca-v1';
-const URLS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/assets/favicon.ico',
-  '/styles.css',
-  '/main.js'
-];
+const URLS_TO_CACHE = ['/', '/index.html', '/assets/favicon.ico', '/styles.css', '/main.js'];
 
 // Install event - cache resources
 self.addEventListener('install', (event: ExtendableEvent) => {
@@ -28,9 +22,7 @@ self.addEventListener('activate', (event: ExtendableEvent) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames
-          .filter((cacheName) => cacheName !== CACHE_NAME)
-          .map((cacheName) => caches.delete(cacheName))
+        cacheNames.filter((cacheName) => cacheName !== CACHE_NAME).map((cacheName) => caches.delete(cacheName))
       );
     })
   );
@@ -60,9 +52,7 @@ self.addEventListener('fetch', (event: FetchEvent) => {
           return response;
         })
         .catch(() => {
-          return caches
-            .match(event.request)
-            .then((response) => response || createOfflineResponse());
+          return caches.match(event.request).then((response) => response || createOfflineResponse());
         })
     );
   } else {
@@ -82,14 +72,14 @@ function createOfflineResponse(): Response {
   return new Response(
     JSON.stringify({
       error: 'Offline - Resource not available',
-      message: 'You are offline. Some features may not be available.',
+      message: 'You are offline. Some features may not be available.'
     }),
     {
       status: 503,
       statusText: 'Service Unavailable',
       headers: new Headers({
-        'Content-Type': 'application/json',
-      }),
+        'Content-Type': 'application/json'
+      })
     }
   );
 }

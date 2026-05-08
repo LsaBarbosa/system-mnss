@@ -4,9 +4,7 @@
       <h1>Painel de Sincronização</h1>
       <p>Monitoramento de eventos Local ⟷ Online</p>
     </div>
-    <button class="btn btn-primary" (click)="loadData()">
-      <span class="icon">🔄</span> Atualizar
-    </button>
+    <button class="btn btn-primary" (click)="loadData()"><span class="icon">🔄</span> Atualizar</button>
   </header>
 
   <div class="stats-grid">
@@ -39,7 +37,7 @@
       </thead>
       <tbody>
         <tr *ngFor="let event of events">
-          <td>{{ event.createdAt | date:'short' }}</td>
+          <td>{{ event.createdAt | date: 'short' }}</td>
           <td>
             <div class="event-info">
               <span class="event-type">{{ event.eventType }}</span>
@@ -59,8 +57,22 @@
           <td class="actions-cell">
             <div class="button-group">
               <button class="btn-icon" (click)="viewPayload(event)" title="Ver Payload">👁️</button>
-              <button class="btn-icon btn-reprocess" *ngIf="event.status === 'FAILED'" (click)="reprocess(event)" title="Reprocessar">🔄</button>
-              <button class="btn-icon btn-ignore" *ngIf="event.status === 'FAILED'" (click)="openIgnoreModal(event)" title="Ignorar">🚫</button>
+              <button
+                class="btn-icon btn-reprocess"
+                *ngIf="event.status === 'FAILED'"
+                (click)="reprocess(event)"
+                title="Reprocessar"
+              >
+                🔄
+              </button>
+              <button
+                class="btn-icon btn-ignore"
+                *ngIf="event.status === 'FAILED'"
+                (click)="openIgnoreModal(event)"
+                title="Ignorar"
+              >
+                🚫
+              </button>
             </div>
           </td>
         </tr>

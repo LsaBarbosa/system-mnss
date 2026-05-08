@@ -12,11 +12,13 @@ import { OrderConfirmationPageComponent } from './features/site-publico/pages/or
 export const routes: Routes = [
   {
     path: '',
-    loadComponent: () => import('./features/site-publico/pages/site-home/site-home.component').then(m => m.SiteHomeComponent)
+    loadComponent: () =>
+      import('./features/site-publico/pages/site-home/site-home.component').then((m) => m.SiteHomeComponent)
   },
   {
     path: 'cardapio',
-    loadComponent: () => import('./features/site-publico/pages/public-menu/public-menu.component').then(m => m.PublicMenuComponent)
+    loadComponent: () =>
+      import('./features/site-publico/pages/public-menu/public-menu.component').then((m) => m.PublicMenuComponent)
   },
   {
     path: 'login',
@@ -29,7 +31,8 @@ export const routes: Routes = [
   },
   {
     path: 'admin/sync',
-    loadComponent: () => import('./features/admin/pages/sync-dashboard/sync-dashboard.component').then(m => m.SyncDashboardComponent),
+    loadComponent: () =>
+      import('./features/admin/pages/sync-dashboard/sync-dashboard.component').then((m) => m.SyncDashboardComponent),
     canActivate: [authGuard, roleGuard],
     data: {
       roles: ['ADMIN', 'GERENTE']
@@ -37,7 +40,8 @@ export const routes: Routes = [
   },
   {
     path: 'admin/whatsapp',
-    loadComponent: () => import('./features/whatsapp/pages/whatsapp-panel/whatsapp-panel.component').then(m => m.WhatsAppPanelComponent),
+    loadComponent: () =>
+      import('./features/whatsapp/pages/whatsapp-panel/whatsapp-panel.component').then((m) => m.WhatsAppPanelComponent),
     canActivate: [authGuard, roleGuard],
     data: {
       roles: ['ADMIN', 'GERENTE', 'ATENDENTE']
@@ -77,7 +81,7 @@ export const routes: Routes = [
   },
   {
     path: 'kds',
-    loadComponent: () => import('./features/kds/pages/kds-page.component').then(m => m.KdsPageComponent),
+    loadComponent: () => import('./features/kds/pages/kds-page.component').then((m) => m.KdsPageComponent),
     canActivate: [authGuard, roleGuard],
     data: {
       roles: ['ADMIN', 'GERENTE', 'COZINHA', 'EXPEDICAO']
@@ -93,7 +97,8 @@ export const routes: Routes = [
   },
   {
     path: 'pagamento/:orderId',
-    loadComponent: () => import('./features/site-publico/pages/payment-page/payment-page.component').then(m => m.PaymentPageComponent)
+    loadComponent: () =>
+      import('./features/site-publico/pages/payment-page/payment-page.component').then((m) => m.PaymentPageComponent)
   },
   {
     path: '**',

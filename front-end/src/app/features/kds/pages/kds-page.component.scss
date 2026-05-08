@@ -7,13 +7,13 @@
   overflow: hidden;
 
   --kds-waiting: #3b82f6;
-  --kds-prep:    #f59e0b;
-  --kds-ready:   #10b981;
-  --kds-danger:  #ef4444;
+  --kds-prep: #f59e0b;
+  --kds-ready: #10b981;
+  --kds-danger: #ef4444;
   --kds-surface: #1e293b;
-  --kds-muted:   #334155;
-  --kds-border:  #334155;
-  --kds-text:    #94a3b8;
+  --kds-muted: #334155;
+  --kds-border: #334155;
+  --kds-text: #94a3b8;
 }
 
 .kds-header {
@@ -153,19 +153,28 @@
   &.waiting .column-header {
     border-bottom-color: var(--kds-waiting);
     color: var(--kds-waiting);
-    .count { background: rgba(59, 130, 246, 0.2); color: var(--kds-waiting); }
+    .count {
+      background: rgba(59, 130, 246, 0.2);
+      color: var(--kds-waiting);
+    }
   }
 
   &.prep .column-header {
     border-bottom-color: var(--kds-prep);
     color: var(--kds-prep);
-    .count { background: rgba(245, 158, 11, 0.2); color: var(--kds-prep); }
+    .count {
+      background: rgba(245, 158, 11, 0.2);
+      color: var(--kds-prep);
+    }
   }
 
   &.ready .column-header {
     border-bottom-color: var(--kds-ready);
     color: var(--kds-ready);
-    .count { background: rgba(16, 185, 129, 0.2); color: var(--kds-ready); }
+    .count {
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--kds-ready);
+    }
   }
 
   .column-content {
@@ -176,8 +185,12 @@
     flex-direction: column;
     gap: 0.875rem;
 
-    &::-webkit-scrollbar { width: 4px; }
-    &::-webkit-scrollbar-track { background: transparent; }
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
     &::-webkit-scrollbar-thumb {
       background: #475569;
       border-radius: var(--radius-full);
@@ -223,9 +236,15 @@
       background: #475569;
       color: white;
 
-      &.SITE      { background: #8b5cf6; }
-      &.WHATSAPP  { background: #10b981; }
-      &.PDV       { background: #3b82f6; }
+      &.SITE {
+        background: #8b5cf6;
+      }
+      &.WHATSAPP {
+        background: #10b981;
+      }
+      &.PDV {
+        background: #3b82f6;
+      }
     }
 
     .wait-time {
@@ -253,12 +272,23 @@
         align-items: baseline;
         gap: var(--space-2);
 
-        .qty  { font-weight: var(--font-weight-extrabold); color: #38bdf8; }
-        .name { font-weight: var(--font-weight-semibold);  color: #f8fafc; }
+        .qty {
+          font-weight: var(--font-weight-extrabold);
+          color: #38bdf8;
+        }
+        .name {
+          font-weight: var(--font-weight-semibold);
+          color: #f8fafc;
+        }
 
         &.is-ready {
-          .name { text-decoration: line-through; color: var(--kds-text); }
-          .qty  { color: var(--kds-text); }
+          .name {
+            text-decoration: line-through;
+            color: var(--kds-text);
+          }
+          .qty {
+            color: var(--kds-text);
+          }
         }
 
         .btn-item-ready {
@@ -274,7 +304,9 @@
           cursor: pointer;
           font-size: 14px;
           margin-left: auto;
-          transition: background var(--transition-base), color var(--transition-base);
+          transition:
+            background var(--transition-base),
+            color var(--transition-base);
 
           &:hover {
             background: var(--kds-ready);
@@ -309,18 +341,33 @@
         opacity var(--transition-base),
         transform var(--duration-fast) var(--ease-spring);
 
-      &:hover   { opacity: 0.88; }
-      &:active  { transform: scale(0.97); }
+      &:hover {
+        opacity: 0.88;
+      }
+      &:active {
+        transform: scale(0.97);
+      }
     }
 
-    .btn-start  { background-color: var(--kds-waiting); color: white; }
-    .btn-ready  { background-color: var(--kds-prep);    color: #0f172a; }
-    .btn-finish { background-color: var(--kds-ready);   color: white; }
+    .btn-start {
+      background-color: var(--kds-waiting);
+      color: white;
+    }
+    .btn-ready {
+      background-color: var(--kds-prep);
+      color: #0f172a;
+    }
+    .btn-finish {
+      background-color: var(--kds-ready);
+      color: white;
+    }
   }
 
   &.in-prep {
     border-left-color: var(--kds-prep);
-    box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.15), 0 4px 6px -1px rgba(0,0,0,0.3);
+    box-shadow:
+      0 0 0 1px rgba(245, 158, 11, 0.15),
+      0 4px 6px -1px rgba(0, 0, 0, 0.3);
   }
 
   &.is-ready {

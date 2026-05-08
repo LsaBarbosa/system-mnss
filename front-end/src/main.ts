@@ -3,10 +3,12 @@ import { appConfig } from './app/app.config';
 import { AppComponent } from './app/app.component';
 import { registerServiceWorker } from './register-service-worker';
 
-(window as any).global = window;
+(window as unknown as Record<string, unknown>)['global'] = window;
 
-bootstrapApplication(AppComponent, appConfig).then(() => {
-  registerServiceWorker();
-}).catch((error: unknown) => {
-  console.error(error);
-});
+bootstrapApplication(AppComponent, appConfig)
+  .then(() => {
+    registerServiceWorker();
+  })
+  .catch((error: unknown) => {
+    console.error(error);
+  });

@@ -277,7 +277,9 @@ describe('PdvProductsPageComponent', () => {
 
     fixture.componentInstance.applyDiscount();
 
-    expect(pdvSaleService.applyDiscount).toHaveBeenCalledWith('44444444-4444-4444-4444-444444444444', { amount: '0.10' });
+    expect(pdvSaleService.applyDiscount).toHaveBeenCalledWith('44444444-4444-4444-4444-444444444444', {
+      amount: '0.10'
+    });
     expect(fixture.componentInstance.saleSuccess).toBe('Desconto aplicado.');
   });
 
@@ -287,7 +289,9 @@ describe('PdvProductsPageComponent', () => {
 
     fixture.componentInstance.confirmCancelSale();
 
-    expect(pdvSaleService.cancelSale).toHaveBeenCalledWith('44444444-4444-4444-4444-444444444444', { reason: 'Teste cancelamento' });
+    expect(pdvSaleService.cancelSale).toHaveBeenCalledWith('44444444-4444-4444-4444-444444444444', {
+      reason: 'Teste cancelamento'
+    });
     expect(fixture.componentInstance.saleSuccess).toContain('Venda cancelada');
   });
 

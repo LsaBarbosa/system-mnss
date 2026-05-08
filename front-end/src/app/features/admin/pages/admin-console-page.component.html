@@ -10,9 +10,7 @@
 
     <nav>
       <ng-container *ngFor="let item of navigation">
-        <a class="nav-button"
-           *mnssHasRole="item.roles"
-           [routerLink]="item.route">
+        <a class="nav-button" *mnssHasRole="item.roles" [routerLink]="item.route">
           <span aria-hidden="true"></span>
           {{ item.label }}
         </a>

@@ -99,7 +99,7 @@ export class PdvProductsPageComponent implements OnInit {
   }
 
   private subscribeToKds(): void {
-    this.kdsService.readyOrders$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(orderId => {
+    this.kdsService.readyOrders$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((orderId) => {
       this.saleSuccess = `Pedido pronto para entrega! ID: ${orderId.substring(0, 8)}`;
     });
   }
@@ -128,8 +128,8 @@ export class PdvProductsPageComponent implements OnInit {
     if (!this.currentSale || this.discountForm.invalid) return null;
     const subtotal = Number(this.currentSale.subtotal);
     const amount = Number(this.discountForm.value.amount);
-    let discount = 0;
-    
+    let discount: number;
+
     if (this.discountForm.value.type === 'PERCENT') {
       discount = (subtotal * amount) / 100;
     } else {
@@ -372,7 +372,7 @@ export class PdvProductsPageComponent implements OnInit {
       .subscribe({
         next: (payment) => {
           this.changeAmount = Number(payment.changeAmount) > 0 ? payment.changeAmount : null;
-          
+
           if (payment.remainingAmount === '0.00') {
             this.saleSuccess = 'Pagamento concluído. Finalize a venda.';
             this.paymentForm.reset({ method: 'CASH', amount: '', transactionId: '' });
@@ -430,14 +430,14 @@ export class PdvProductsPageComponent implements OnInit {
         this.saleSuccess = 'Venda finalizada com sucesso.';
         this.loadSales();
         this.currentSale = null;
-        
-        if (sale.payments.some(p => p.method === 'CASH')) {
+
+        if (sale.payments.some((p) => p.method === 'CASH')) {
           this.hardwareService.openDrawer().subscribe({
-            next: () => this.hardwareSuccess = 'Gaveta acionada automaticamente.',
+            next: () => (this.hardwareSuccess = 'Gaveta acionada automaticamente.'),
             error: () => {}
           });
         }
-        
+
         const cashRegisterId = this.currentCash.cashRegister?.id;
         if (cashRegisterId) {
           this.loadSummary(cashRegisterId);
@@ -454,19 +454,17 @@ export class PdvProductsPageComponent implements OnInit {
     const preview = this.discountPreview;
     if (!preview) return;
 
-    this.pdvSaleService
-      .applyDiscount(this.currentSale.id, { amount: preview.discount.toFixed(2) })
-      .subscribe({
-        next: (sale) => {
-          this.setCurrentSale(sale);
-          this.showDiscountModal = false;
-          this.saleSuccess = 'Desconto aplicado.';
-          setTimeout(() => (this.saleSuccess = null), 3000);
-        },
-        error: (err) => {
-          this.saleError = err.error?.message || 'Erro ao aplicar desconto.';
-        }
-      });
+    this.pdvSaleService.applyDiscount(this.currentSale.id, { amount: preview.discount.toFixed(2) }).subscribe({
+      next: (sale) => {
+        this.setCurrentSale(sale);
+        this.showDiscountModal = false;
+        this.saleSuccess = 'Desconto aplicado.';
+        setTimeout(() => (this.saleSuccess = null), 3000);
+      },
+      error: (err) => {
+        this.saleError = err.error?.message || 'Erro ao aplicar desconto.';
+      }
+    });
   }
 
   confirmCancelSale(): void {
@@ -479,7 +477,7 @@ export class PdvProductsPageComponent implements OnInit {
         this.saleToCancel = null;
         this.cancelForm.reset();
         this.loadSales();
-        
+
         const cashRegisterId = this.currentCash.cashRegister?.id;
         if (cashRegisterId) {
           this.loadSummary(cashRegisterId);
@@ -496,10 +494,10 @@ export class PdvProductsPageComponent implements OnInit {
     this.showCancelModal = true;
   }
 
-  printReceipt(saleId: string): void {
+  printReceipt(_saleId: string): void {
     // A simulação será com toast visual
     this.hardwareSuccess = 'Comprovante enviado para impressão (simulado).';
-    setTimeout(() => this.hardwareSuccess = null, 3000);
+    setTimeout(() => (this.hardwareSuccess = null), 3000);
   }
 
   private loadCash(): void {

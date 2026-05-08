@@ -115,7 +115,7 @@ class OnlineRepositoryTest {
 
         assertThat(paymentColumns).contains("webhook_payload", "version");
         assertThat(stockBalanceColumns)
-                .contains("product_id", "quantity", "version", "created_at", "updated_at");
+                .contains("product_id", "quantity", "reserved_quantity", "version", "created_at", "updated_at");
         assertThat(whatsappConversationColumns).contains("assigned_to", "version");
         assertThat(whatsappMessageColumns).contains("external_message_id", "version");
         assertThat(assignedToFkCount).isEqualTo(1);

@@ -3,17 +3,17 @@ spring:
     activate:
       on-profile: dev
   datasource:
-    username: ${MNSS_ONLINE_DB_USER:change_me}
-    password: ${MNSS_ONLINE_DB_PASSWORD:change_me}
+    username: ${MNSS_ONLINE_DB_USER:dev_user}
+    password: ${MNSS_ONLINE_DB_PASSWORD:dev_password}
   rabbitmq:
-    username: ${MNSS_ONLINE_RABBITMQ_USER:change_me}
-    password: ${MNSS_ONLINE_RABBITMQ_PASSWORD:change_me}
+    username: ${MNSS_ONLINE_RABBITMQ_USER:dev_user}
+    password: ${MNSS_ONLINE_RABBITMQ_PASSWORD:dev_password}
 
 mnss:
   sync:
     stores:
-      store-001: ${MNSS_STORE_001_SECRET:change_me}
+      store-001: ${MNSS_STORE_001_SECRET:dev_only_store_secret_not_for_production}
   payment:
-    webhook-secret: ${MNSS_PAYMENT_WEBHOOK_SECRET:change_me_payment_webhook_secret_dev_only}
+    webhook-secret: ${MNSS_PAYMENT_WEBHOOK_SECRET:dev_only_payment_webhook_secret_not_for_production}
   whatsapp:
-    verify-token: ${WHATSAPP_VERIFY_TOKEN:change_me}
+    verify-token: ${WHATSAPP_VERIFY_TOKEN:dev_only_whatsapp_verify_token}

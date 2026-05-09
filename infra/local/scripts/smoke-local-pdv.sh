@@ -3,9 +3,24 @@
 # Autentica, abre caixa (se necessário), cria uma venda, paga e finaliza.
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+COMPOSE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+if [ -f "$COMPOSE_DIR/.env" ]; then
+  set -a
+  # shellcheck disable=SC1091
+  . "$COMPOSE_DIR/.env"
+  set +a
+fi
+
 BASE_URL="${BASE_URL:-http://localhost}"
-USERNAME="${MNSS_SMOKE_USERNAME:-admin}"
-PASSWORD="${MNSS_SMOKE_PASSWORD:-change_me}"
+USERNAME="${MNSS_SMOKE_USERNAME:-${MNSS_INITIAL_ADMIN_USERNAME:-admin}}"
+PASSWORD="${MNSS_SMOKE_PASSWORD:-${MNSS_INITIAL_ADMIN_PASSWORD:-}}"
+
+if [ -z "$PASSWORD" ]; then
+  echo "[PDV-SMOKE] FAIL: defina MNSS_SMOKE_PASSWORD ou MNSS_INITIAL_ADMIN_PASSWORD no .env" >&2
+  exit 1
+fi
 
 COOKIE_FILE=$(mktemp)
 trap 'rm -f "$COOKIE_FILE"' EXIT

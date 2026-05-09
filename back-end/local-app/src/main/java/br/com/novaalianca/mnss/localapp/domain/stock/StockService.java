@@ -306,10 +306,9 @@ public class StockService {
     }
 
     private Optional<StockMovementEntity> findExistingSaleMovement(String idempotencyKey) {
-        return idempotencyKey == null
-                ? Optional.empty()
-                : stockMovementRepository.findByIdempotencyKey(idempotencyKey);
+        return stockMovementRepository.findByIdempotencyKey(idempotencyKey);
     }
+
 
     private BusinessException notFound(String code, String message) {
         return new BusinessException(code, message, HttpStatus.NOT_FOUND);

@@ -26,7 +26,7 @@ Use este checklist antes de liberar uma nova versão para o ambiente online (pro
   docker exec postgres-online pg_dump -U nova_alianca nova_alianca_online \
     -F c -f /backup/pre_release_$(date +%Y%m%d_%H%M%S).dump
   ```
-- [ ] `cd infra/online && docker compose up -d --build`
+- [ ] `cd infra/online && docker compose --profile edge up -d --build`
 - [ ] `docker compose ps` — todos os serviços `Up (healthy)`
 
 ## Smoke técnico
@@ -99,5 +99,5 @@ bash infra/online/scripts/restore-postgres.sh postgres/backup/pre_release_YYYYMM
 
 # Subir versão anterior
 git checkout <tag-anterior>
-docker compose up -d --build
+docker compose --profile edge up -d --build
 ```

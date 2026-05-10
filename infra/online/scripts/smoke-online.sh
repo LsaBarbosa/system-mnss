@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BASE_URL="${BASE_URL:-https://api.padarianovaalianca.com.br}"
+BASE_URL="${BASE_URL:-http://localhost:8081}"
 
 check() {
   local url="$BASE_URL$1"

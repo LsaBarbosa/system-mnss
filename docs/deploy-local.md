@@ -134,6 +134,19 @@ Variáveis obrigatórias (o Docker Compose injeta as corretas no container da AP
 > (`MNSS_LOCAL_DB_URL`, `MNSS_LOCAL_RABBITMQ_HOST`, etc.). Não altere os nomes
 > das variáveis no `docker-compose.yml`.
 
+### Simulação local + online no mesmo host
+
+Para homologação completa local/online, o compose local agora usa por padrão:
+
+- `MNSS_ONLINE_URL=http://nova-alianca-online-api:8081`
+- rede Docker compartilhada `mnss-shared`
+
+Fluxo recomendado:
+
+```bash
+bash infra/local/scripts/up-local-online-sim.sh
+```
+
 ## 7. Docker Compose local
 
 Exemplo inicial:

@@ -75,10 +75,6 @@
               ]
             },
             "online-local": {
-              "optimization": false,
-              "extractLicenses": false,
-              "sourceMap": true,
-              "baseHref": "/",
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
@@ -103,9 +99,6 @@
             },
             "online": {
               "buildTarget": "mnss-nova-alianca:build:online"
-            },
-            "online-local": {
-              "buildTarget": "mnss-nova-alianca:build:online-local"
             }
           },
           "defaultConfiguration": "development"
@@ -130,14 +123,6 @@
                 {
                   "replace": "src/environments/environment.ts",
                   "with": "src/environments/environment.online.ts"
-                }
-              ]
-            },
-            "online-local": {
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.online-local.ts"
                 }
               ]
             }

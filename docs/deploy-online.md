@@ -140,8 +140,30 @@ Segredos obrigatórios (mínimo 32 caracteres):
 | `MNSS_STORE_001_SECRET` | Segredo HMAC da loja física |
 | `MNSS_PAYMENT_WEBHOOK_SECRET` | Segredo do webhook de pagamento |
 | `WHATSAPP_VERIFY_TOKEN` | Token de verificação do WhatsApp Business |
-| `MNSS_CORS_ALLOWED_ORIGINS` | Origins CORS permitidas (separadas por vírgula). Default: `https://padarianovaalianca.com.br,https://admin.padarianovaalianca.com.br` |
-| `MNSS_HSTS_ENABLED` | Default `true`. Use `true` somente quando HTTPS/TLS estiver pronto no domínio final; use `false` em homologação HTTP. |
+| `MNSS_CORS_ALLOWED_ORIGINS` | Origins CORS permitidas (separadas por vírgula). Em simulação local, inclua `localhost` e portas `4201/8081`. |
+| `MNSS_HSTS_ENABLED` | Use `false` em simulação local HTTP e `true` somente quando HTTPS/TLS estiver pronto no domínio final. |
+
+### Modo simulação local (local + online no mesmo host)
+
+Para rodar junto com `infra/local` sem conflito de portas:
+
+- API online: `http://localhost:8081`
+- Front online: `http://localhost:4201`
+- Nginx/Certbot online ficam desativados por padrão e só sobem com profile `edge`.
+
+Subida da stack online em simulação local:
+
+```bash
+cd infra/online
+cp .env.example .env
+docker compose up -d --build
+```
+
+Subida da borda online (Nginx + Certbot), quando necessário:
+
+```bash
+docker compose --profile edge up -d
+```
 
 ## 8. Docker Compose online
 
@@ -224,8 +246,8 @@ services:
       - nova-alianca-online-api
       - nova-alianca-frontend
     ports:
-      - "80:80"
-      - "443:443"
+      - "8088:80"
+      - "8443:443"
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ./certbot/www:/var/www/certbot
@@ -384,8 +406,8 @@ Script:
 
 cd /opt/nova-alianca-online
 
-docker compose pull
-docker compose up -d
+docker compose --profile edge pull
+docker compose --profile edge up -d
 docker image prune -f
 ```
 
@@ -412,9 +434,9 @@ Push no registry
 ↓
 SSH na VPS
 ↓
-docker compose pull
+docker compose --profile edge pull
 ↓
-docker compose up -d
+docker compose --profile edge up -d
 ```
 
 ## 16. Health checks e smoke test

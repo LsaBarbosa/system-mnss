@@ -37,10 +37,10 @@ services:
       MNSS_INITIAL_ADMIN_PASSWORD: ${MNSS_INITIAL_ADMIN_PASSWORD:?MNSS_INITIAL_ADMIN_PASSWORD obrigatório — configure no .env}
       MNSS_INITIAL_ADMIN_EMAIL: ${MNSS_INITIAL_ADMIN_EMAIL:-admin@novaalianca.local}
 
-      MNSS_ONLINE_URL: ${MNSS_ONLINE_URL:-https://api.padarianovaalianca.com.br}
+      MNSS_ONLINE_URL: ${MNSS_ONLINE_URL:-http://nova-alianca-online-api:8081}
       MNSS_STORE_ID: ${MNSS_STORE_ID:-store-001}
       MNSS_STORE_SECRET: ${MNSS_STORE_SECRET:?MNSS_STORE_SECRET obrigatório — mínimo 32 bytes, configure no .env}
-      MNSS_SYNC_REQUIRE_HTTPS: ${MNSS_SYNC_REQUIRE_HTTPS:-true}
+      MNSS_SYNC_REQUIRE_HTTPS: ${MNSS_SYNC_REQUIRE_HTTPS:-false}
     ports:
       - "127.0.0.1:${LOCAL_API_PORT:-8080}:8080"
     healthcheck:
@@ -50,6 +50,9 @@ services:
       retries: 3
       start_period: 60s
     restart: unless-stopped
+    networks:
+      - default
+      - mnss-shared
 
   nova-alianca-local-front:
     build:
@@ -139,3 +142,7 @@ volumes:
   postgres_local_data:
   rabbitmq_local_data:
   redis_local_data:
+
+networks:
+  mnss-shared:
+    name: mnss-shared

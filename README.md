@@ -75,8 +75,32 @@ O ambiente online centraliza os pedidos do site e webhooks.
 ```bash
 cd infra/online
 docker compose up -d
+# Opcional: habilitar borda (Nginx + Certbot)
+# docker compose --profile edge up -d
 # Verificar saúde
 curl http://localhost:8081/api/health
+```
+
+### Simulação Local Completa (local + online ao mesmo tempo)
+Para homologar o fluxo híbrido completo sem conflitar portas no mesmo host:
+
+```bash
+bash infra/local/scripts/up-local-online-sim.sh
+
+# Healths principais
+curl http://localhost:8080/api/health   # local API
+curl http://localhost:8081/api/health   # online API
+```
+
+Endereços úteis:
+- Local (PDV/Admin/KDS): `http://localhost`
+- Online front (simulação): `http://localhost:4201`
+- Online API (simulação): `http://localhost:8081`
+
+Para derrubar os dois ambientes:
+
+```bash
+bash infra/local/scripts/down-local-online-sim.sh
 ```
 
 ## Monitoramento de Saúde

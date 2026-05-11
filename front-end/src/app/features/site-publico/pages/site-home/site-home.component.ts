@@ -11,7 +11,9 @@ import { StoreInfoResponse } from '../../domain/public-menu.model';
   template: `
     <header class="public-header">
       <div class="brand">{{ storeInfo?.name || 'Padaria Nova Aliança' }}</div>
+
       <div class="spacer"></div>
+
       <nav class="nav-links">
         <a routerLink="/cardapio" class="nav-link">Ver Cardápio</a>
         <a routerLink="/login" class="nav-link nav-btn">Login</a>
@@ -24,23 +26,31 @@ import { StoreInfoResponse } from '../../domain/public-menu.model';
           Bem-vindo à <br />
           <span class="highlight">{{ storeInfo?.name || 'Nova Aliança' }}</span>
         </h1>
+
         <p class="subtitle">
           {{ storeInfo?.description || 'A melhor padaria da região, com pães frescos a toda hora.' }}
         </p>
 
         <div class="cta-group">
-          <a class="main-cta" routerLink="/cardapio"> Ver Nosso Cardápio </a>
+          <a class="main-cta" routerLink="/cardapio">Ver Nosso Cardápio</a>
         </div>
       </div>
     </div>
 
     <div class="info-section">
       <div class="info-grid" *ngIf="storeInfo">
-        <div class="info-card">
+        <a
+          class="info-card info-card-link"
+          [href]="googleMapsUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Abrir localização da Padaria e Lanchonete Nova Aliança no Google Maps"
+        >
           <div class="icon">📍</div>
           <h3>Onde Estamos</h3>
-          <p>{{ storeInfo.address }}</p>
-        </div>
+          <p>{{ storeAddress }}</p>
+          <span class="maps-link">Abrir no Google Maps</span>
+        </a>
 
         <div class="info-card">
           <div class="icon">⏰</div>
@@ -48,11 +58,18 @@ import { StoreInfoResponse } from '../../domain/public-menu.model';
           <p>{{ storeInfo.hours }}</p>
         </div>
 
-        <div class="info-card">
+        <a
+          class="info-card info-card-link"
+          [href]="whatsappUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Abrir conversa com a Padaria Nova Aliança no WhatsApp"
+        >
           <div class="icon">📞</div>
           <h3>Contato</h3>
           <p>{{ storeInfo.phone }}</p>
-        </div>
+          <span class="whatsapp-link">Chamar no WhatsApp</span>
+        </a>
       </div>
 
       <div class="loading-state" *ngIf="loading">
@@ -181,6 +198,8 @@ import { StoreInfoResponse } from '../../domain/public-menu.model';
         text-align: center;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         transition: transform 0.3s ease;
+        color: inherit;
+        text-decoration: none;
 
         &:hover {
           transform: translateY(-8px);
@@ -204,6 +223,37 @@ import { StoreInfoResponse } from '../../domain/public-menu.model';
           line-height: 1.6;
           margin: 0;
         }
+      }
+
+      .info-card-link {
+        display: block;
+        cursor: pointer;
+      }
+
+      .info-card-link:focus-visible {
+        outline: 3px solid #f39c12;
+        outline-offset: 4px;
+      }
+
+      .maps-link {
+        display: inline-block;
+        margin-top: 12px;
+        color: #1e3c72;
+        font-weight: 700;
+        font-size: 0.95rem;
+      }
+
+      .whatsapp-link {
+        display: inline-block;
+        margin-top: 12px;
+        color: #1e7e34;
+        font-weight: 700;
+        font-size: 0.95rem;
+      }
+
+      .info-card-link:hover .maps-link,
+      .info-card-link:hover .whatsapp-link {
+        text-decoration: underline;
       }
 
       .loading-state {
@@ -244,6 +294,27 @@ import { StoreInfoResponse } from '../../domain/public-menu.model';
 export class SiteHomeComponent implements OnInit {
   storeInfo: StoreInfoResponse | null = null;
   loading = true;
+
+  readonly storeAddress = 'Estr. Mineira, 703 - Parque Veneza, Magé - RJ, 25930-790';
+
+  get googleMapsUrl(): string {
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(this.storeAddress)}`;
+  }
+
+  get whatsappUrl(): string {
+    const phone = this.storeInfo?.phone ?? '';
+    const digitsOnly = phone.replace(/\D/g, '');
+
+    const phoneWithCountryCode = digitsOnly.startsWith('55')
+      ? digitsOnly
+      : `55${digitsOnly}`;
+
+    const message = encodeURIComponent(
+      'Olá! Vim pelo site da Padaria Nova Aliança e gostaria de fazer um pedido.'
+    );
+
+    return `https://wa.me/${phoneWithCountryCode}?text=${message}`;
+  }
 
   constructor(private readonly menuService: PublicMenuService) {}
 

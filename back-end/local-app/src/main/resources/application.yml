@@ -60,7 +60,7 @@ mnss:
     require-https: ${MNSS_SYNC_REQUIRE_HTTPS:true}
   store:
     name: "Padaria e Lanchonete Nova Aliança"
-    address: "Rua Exemplo, 123 - Centro"
-    hours: "Segunda a Sábado: 06:00 as 22:00, Domingo: 06:00 as 12:00"
-    phone: "(11) 99999-9999"
+    address: "Estr. Mineira, 703 - Parque Veneza"
+    hours: "Segunda a Sábado: 05:30 as 21:00, Domingo: 05:30 as 14:00"
+    phone: "(21) 96582-4610"
     description: "A melhor padaria da região, com pães frescos a toda hora e um cardápio completo para o seu dia a dia."

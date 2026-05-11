@@ -1,0 +1,63 @@
+<svg viewBox="0 0 480 360" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fundo gradiente -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fff7e8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f5e6d3;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="breadGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#d4a574;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8b6f47;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="donut" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f5a623;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e67e22;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Fundo -->
+  <rect width="480" height="360" fill="url(#bgGradient)" />
+
+  <!-- Pão à esquerda (inferior) -->
+  <ellipse cx="100" cy="260" rx="70" ry="50" fill="url(#breadGradient)" />
+  <path d="M 40 220 Q 40 180 100 160 Q 160 180 160 220" fill="#d4a574" opacity="0.8" />
+  <ellipse cx="70" cy="190" rx="8" ry="12" fill="#6b3f1d" opacity="0.3" />
+  <ellipse cx="100" cy="180" rx="8" ry="12" fill="#6b3f1d" opacity="0.3" />
+  <ellipse cx="130" cy="190" rx="8" ry="12" fill="#6b3f1d" opacity="0.3" />
+
+  <!-- Bolo no centro (superior) -->
+  <rect x="180" y="100" width="120" height="140" rx="12" fill="#d4a574" />
+  <ellipse cx="240" cy="100" rx="60" ry="30" fill="#c9945c" />
+  <!-- Camadas do bolo -->
+  <rect x="185" y="115" width="110" height="25" fill="#e8a868" />
+  <rect x="185" y="150" width="110" height="25" fill="#c9945c" />
+  <!-- Cobertura do bolo -->
+  <ellipse cx="240" cy="95" rx="62" ry="20" fill="#e67e22" opacity="0.7" />
+  <!-- Decoração do bolo -->
+  <circle cx="220" cy="85" r="5" fill="#f5a623" />
+  <circle cx="240" cy="80" r="5" fill="#f5a623" />
+  <circle cx="260" cy="85" r="5" fill="#f5a623" />
+
+  <!-- Croissant à direita (superior) -->
+  <ellipse cx="360" cy="150" rx="50" ry="35" fill="url(#breadGradient)" transform="rotate(-30 360 150)" />
+  <path d="M 310 140 Q 330 100 360 90 Q 390 100 410 140" fill="#d4a574" />
+  <!-- Camadas -->
+  <path d="M 320 130 Q 340 105 360 100" stroke="#c9945c" stroke-width="3" fill="none" stroke-linecap="round" />
+  <path d="M 325 140 Q 345 115 365 110" stroke="#c9945c" stroke-width="3" fill="none" stroke-linecap="round" />
+
+  <!-- Donut/Rosquinha (direita inferior) -->
+  <circle cx="360" cy="270" r="40" fill="url(#donut)" />
+  <circle cx="360" cy="270" r="18" fill="url(#bgGradient)" />
+  <!-- Cobertura -->
+  <ellipse cx="360" cy="250" rx="42" ry="15" fill="#f5a623" opacity="0.6" />
+
+  <!-- Decoração: pequenos elementos -->
+  <circle cx="80" cy="100" r="15" fill="#e67e22" opacity="0.3" />
+  <circle cx="420" cy="280" r="20" fill="#f5a623" opacity="0.2" />
+  <circle cx="50" cy="320" r="12" fill="#d4a574" opacity="0.4" />
+
+  <!-- Texto sugestivo (pequeno, discreto) -->
+  <text x="240" y="330" font-family="Arial, sans-serif" font-size="14" fill="#6b3f1d" text-anchor="middle" opacity="0.6">
+    Pães frescos todos os dias
+  </text>
+</svg>

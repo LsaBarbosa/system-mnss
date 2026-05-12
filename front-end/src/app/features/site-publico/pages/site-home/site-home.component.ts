@@ -1,41 +1,71 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { Title, Meta } from '@angular/platform-browser';
 import { PublicMenuService } from '../../data-access/public-menu.service';
 import { StoreInfoResponse } from '../../domain/public-menu.model';
+import {
+  FeaturedProduct,
+  OrderCategory,
+  BenefitItem,
+  featuredProducts,
+  orderCategories,
+  benefits
+} from './site-home-content';
 
 @Component({
   selector: 'app-site-home',
   standalone: true,
   imports: [CommonModule, RouterLink],
   template: `
-    <header class="public-header">
-      <div class="brand">{{ storeInfo?.name || 'Padaria Nova Aliança' }}</div>
+    <header class="public-header" id="topo">
+      <a
+        class="brand-logo"
+        href="#topo"
+        aria-label="Voltar ao início da página da Padaria Nova Aliança"
+      >
+        <img
+          [src]="logoImageUrl"
+          alt="Padaria e Lanchonete Nova Aliança"
+          decoding="async"
+        />
+      </a>
 
       <div class="spacer"></div>
 
-      <nav class="nav-links">
-        <a routerLink="/cardapio" class="nav-link">Ver Cardápio</a>
-        <a routerLink="/login" class="nav-link nav-btn">Login</a>
+      <nav class="nav-links" aria-label="Navegação principal da home">
+        <a href="#cardapio-online" class="nav-link">Cardápio</a>
+        <a href="#encomendas" class="nav-link hidden-on-mobile">Encomendas</a>
+        <a href="#localizacao" class="nav-link hidden-on-mobile">Como chegar</a>
+        <a
+          class="nav-link whatsapp-header-btn"
+          [href]="whatsappDoubtUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Tirar dúvidas pelo WhatsApp da Padaria Nova Aliança"
+        >
+          Dúvidas
+        </a>
       </nav>
     </header>
 
     <div class="hero-section">
-      <div class="hero-content">
-        <h1>
-          Bem-vindo à <br />
-          <span class="highlight">{{ storeInfo?.name || 'Nova Aliança' }}</span>
-        </h1>
+      <div class="hero-layout">
+        <div class="hero-content hero-content-centered">
+          <h1>{{ heroTitle }}</h1>
 
-        <p class="subtitle">
-          {{ storeInfo?.description || 'A melhor padaria da região, com pães frescos a toda hora.' }}
-        </p>
+          <p class="subtitle">
+            {{ heroSubtitle }}
+          </p>
 
-        <div class="cta-group">
-          <a class="main-cta" routerLink="/cardapio">Ver Nosso Cardápio</a>
+          <div class="cta-group">
+            <a class="main-cta" routerLink="/cardapio">Ver Cardápio</a>
+          </div>
         </div>
       </div>
     </div>
+
+    <div class="future-anchor-section"></div>
 
     <div class="info-section">
       <div class="info-grid" *ngIf="storeInfo">
@@ -46,26 +76,41 @@ import { StoreInfoResponse } from '../../domain/public-menu.model';
           rel="noopener noreferrer"
           aria-label="Abrir localização da Padaria e Lanchonete Nova Aliança no Google Maps"
         >
-          <div class="icon">📍</div>
+          <div class="icon" aria-hidden="true">📍</div>
           <h3>Onde Estamos</h3>
-          <p>{{ storeAddress }}</p>
+          <p>{{ displayAddress }}</p>
           <span class="maps-link">Abrir no Google Maps</span>
         </a>
 
-        <div class="info-card">
-          <div class="icon">⏰</div>
+        <div class="info-card hours-card">
+          <div class="icon" aria-hidden="true">⏰</div>
           <h3>Horário de Funcionamento</h3>
-          <p>{{ storeInfo.hours }}</p>
+
+          <div class="hours-content">
+            <span class="hours-days">{{ displayOpeningDays }}</span>
+            <strong class="hours-time">{{ displayOpeningHours }}</strong>
+            <span class="hours-note" *ngIf="openingHoursNote">{{ openingHoursNote }}</span>
+
+            <div class="store-status" [class.store-status-open]="isOpenNow" [class.store-status-closed]="!isOpenNow">
+              <span class="store-status-dot"></span>
+
+              <div class="store-status-text">
+                <strong>{{ storeStatusLabel }}</strong>
+                <span>{{ storeStatusDetail }}</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         <a
+          id="contato"
           class="info-card info-card-link"
-          [href]="whatsappUrl"
+          [href]="whatsappDoubtUrl"
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Abrir conversa com a Padaria Nova Aliança no WhatsApp"
         >
-          <div class="icon">📞</div>
+          <div class="icon" aria-hidden="true">📞</div>
           <h3>Contato</h3>
           <p>{{ storeInfo.phone }}</p>
           <span class="whatsapp-link">Chamar no WhatsApp</span>
@@ -77,20 +122,287 @@ import { StoreInfoResponse } from '../../domain/public-menu.model';
         <p>Carregando informações...</p>
       </div>
     </div>
+
+    <div id="cardapio" class="featured-products-section">
+      <div class="featured-products-container">
+        <h2>Mais Pedidos da Nova Aliança</h2>
+        <p class="featured-products-subtitle">
+          Conheça os produtos mais populares entre nossos clientes
+        </p>
+
+        <div class="featured-products-grid">
+          <div class="featured-product-card" *ngFor="let product of featuredProducts">
+            <div class="product-icon" aria-hidden="true">{{ product.icon }}</div>
+            <h3>{{ product.name }}</h3>
+            <p>{{ product.description }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section class="delivery-section" id="delivery">
+      <div class="delivery-content">
+        <div class="delivery-text">
+          <span class="section-eyebrow">Delivery</span>
+          <h2>Delivery todos os dias</h2>
+          <p>
+            Receba pães, lanches, bolos, salgados e bebidas no conforto da sua casa.
+            Escolha seus produtos pelo cardápio online e consulte disponibilidade de entrega para sua região.
+          </p>
+          <span class="delivery-note">
+            Consulte taxa de entrega e disponibilidade para o seu endereço.
+          </span>
+        </div>
+
+        <div class="delivery-card">
+          <div class="delivery-icon" aria-hidden="true">🛵</div>
+          <strong>Peça sem sair de casa</strong>
+          <span>
+            Escolha seus produtos no cardápio online e receba no conforto da sua casa.
+          </span>
+          <a
+            class="delivery-cardapio-btn"
+            routerLink="/cardapio"
+            aria-label="Ver cardápio online da Padaria Nova Aliança"
+          >
+            Ver Cardápio
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="orders-section" id="encomendas">
+      <div class="orders-content">
+        <div class="section-header">
+          <span class="section-eyebrow">Encomendas</span>
+          <h2>Encomendas para festas, cafés e momentos especiais</h2>
+          <p>
+            Faça sua encomenda de tortas, bolos, salgados, rocamboles e kits de café com antecedência pelo WhatsApp.
+          </p>
+        </div>
+
+        <div class="orders-categories-grid">
+          <article class="order-category-card" *ngFor="let category of orderCategories">
+            <div class="order-category-emoji" aria-hidden="true">{{ category.emoji }}</div>
+            <h3>{{ category.name }}</h3>
+            <p>{{ category.description }}</p>
+          </article>
+        </div>
+
+        <div class="orders-actions">
+          <a
+            class="orders-route-btn"
+            routerLink="/encomendas"
+            aria-label="Fazer encomenda"
+          >
+            Fazer encomenda
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="benefits-section">
+      <div class="section-header">
+        <span class="section-eyebrow">Diferenciais</span>
+        <h2>Por que escolher a Nova Aliança?</h2>
+        <p>
+          Uma padaria feita para o dia a dia da sua família, com atendimento próximo,
+          produtos frescos e opções para café, lanche e encomendas.
+        </p>
+      </div>
+
+      <div class="benefits-grid">
+        <article class="benefit-card" *ngFor="let benefit of benefits">
+          <div class="benefit-icon" aria-hidden="true">{{ benefit.icon }}</div>
+          <h3>{{ benefit.title }}</h3>
+          <p>{{ benefit.description }}</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="location-section" id="localizacao">
+      <div class="location-content">
+        <div class="location-text">
+          <span class="section-eyebrow">Localização</span>
+          <h2>Estamos em Parque Veneza, Magé</h2>
+          <p>
+            Passe na Padaria e Lanchonete Nova Aliança ou trace sua rota pelo Google Maps.
+          </p>
+        </div>
+
+        <div class="location-card">
+          <div class="location-icon" aria-hidden="true">📍</div>
+          <div class="location-address">
+            <span>Endereço</span>
+            <strong>{{ displayAddress }}</strong>
+          </div>
+          <a
+            class="location-maps-btn"
+            [href]="googleMapsUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Traçar rota para a Padaria Nova Aliança no Google Maps"
+          >
+            Traçar rota no Google Maps
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="online-order-section" id="cardapio-online">
+      <div class="online-order-card">
+        <span class="section-eyebrow">Pedidos</span>
+
+        <h2>Faça seu pedido pelo cardápio online</h2>
+
+        <p>
+          Escolha seus produtos no cardápio online da Nova Aliança. Para pedidos comuns,
+          use o cardápio. Para encomendas, acesse a área de encomendas.
+        </p>
+
+        <div class="online-order-actions">
+          <a class="main-cta" routerLink="/cardapio">Ver Cardápio</a>
+          <a class="orders-cta" routerLink="/encomendas">Fazer encomenda</a>
+        </div>
+      </div>
+    </section>
+
+    <footer class="public-footer">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <h2>Padaria e Lanchonete Nova Aliança</h2>
+          <p>Produtos frescos, lanches, encomendas e atendimento pelo WhatsApp.</p>
+        </div>
+
+        <div class="footer-info">
+          <p><strong>Endereço:</strong> Estr. Mineira, 703 - Parque Veneza, Magé - RJ</p>
+          <p><strong>Horário:</strong> Segunda a Domingo: 05:30 às 21:00</p>
+          <p><strong>WhatsApp:</strong> {{ storeInfo?.phone || '(21) 99999-9999' }}</p>
+        </div>
+
+        <nav class="footer-links" aria-label="Links úteis do rodapé">
+          <a routerLink="/cardapio">Cardápio</a>
+          <a
+            [href]="whatsappDoubtUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Abrir conversa com a Padaria Nova Aliança no WhatsApp"
+          >
+            WhatsApp
+          </a>
+          <a
+            [href]="googleMapsUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Traçar rota para a Padaria Nova Aliança no Google Maps"
+          >
+            Como chegar
+          </a>
+          <a routerLink="/login" class="internal-area-link">Área interna</a>
+        </nav>
+      </div>
+
+      <div class="footer-bottom">
+        © {{ currentYear }} Padaria e Lanchonete Nova Aliança. Todos os direitos reservados.
+      </div>
+    </footer>
+
+    <a
+      class="back-to-top"
+      href="#topo"
+      aria-label="Voltar para o topo da página"
+    >
+      ↑ Topo
+    </a>
+
+    <nav class="mobile-bottom-nav" aria-label="Navegação principal mobile">
+      <a href="#topo" class="mobile-bottom-nav-item" aria-label="Voltar para o início">
+        <span aria-hidden="true">🏠</span>
+        <strong>Início</strong>
+      </a>
+
+      <a routerLink="/cardapio" class="mobile-bottom-nav-item" aria-label="Ver cardápio">
+        <span aria-hidden="true">🥖</span>
+        <strong>Cardápio</strong>
+      </a>
+
+      <a
+        [href]="whatsappDoubtUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="mobile-bottom-nav-item"
+        aria-label="Pedir pelo WhatsApp da Padaria Nova Aliança"
+      >
+        <span aria-hidden="true">💬</span>
+        <strong>WhatsApp</strong>
+      </a>
+
+      <a
+        [href]="googleMapsUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="mobile-bottom-nav-item"
+        aria-label="Traçar rota para a Padaria Nova Aliança no Google Maps"
+      >
+        <span aria-hidden="true">📍</span>
+        <strong>Rota</strong>
+      </a>
+    </nav>
+
+    <a
+      class="floating-whatsapp"
+      [href]="whatsappDoubtUrl"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Pedir pelo WhatsApp da Padaria Nova Aliança"
+    >
+      💬 Pedir pelo WhatsApp
+    </a>
   `,
   styles: [
     `
+      html {
+        scroll-behavior: smooth;
+      }
+
+      #topo,
+      #cardapio,
+      #encomendas,
+      #contato,
+      #localizacao {
+        scroll-margin-top: 96px;
+      }
+
       .public-header {
         display: flex;
         align-items: center;
-        padding: 16px 24px;
-        background-color: #1e3c72;
+        padding: 12px 24px;
+        background-color: #6b3f1d;
         color: white;
+        flex-wrap: wrap;
+        gap: 12px;
       }
 
-      .brand {
-        font-size: 1.25rem;
-        font-weight: 700;
+      .brand-logo {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        flex: 0 0 auto;
+      }
+
+      .brand-logo img {
+        display: block;
+        width: auto;
+        height: 80px;
+        max-width: 240px;
+        object-fit: contain;
+      }
+
+      .brand-logo:focus-visible {
+        outline: 3px solid #f5a623;
+        outline-offset: 4px;
+        border-radius: 8px;
       }
 
       .spacer {
@@ -101,6 +413,7 @@ import { StoreInfoResponse } from '../../domain/public-menu.model';
         display: flex;
         gap: 16px;
         align-items: center;
+        flex-wrap: wrap;
       }
 
       .nav-link {
@@ -116,29 +429,89 @@ import { StoreInfoResponse } from '../../domain/public-menu.model';
         background-color: rgba(255, 255, 255, 0.1);
       }
 
-      .nav-btn {
-        background-color: white;
-        color: #1e3c72;
+      .nav-link:focus-visible {
+        outline: 3px solid #f5a623;
+        outline-offset: 4px;
       }
 
-      .nav-btn:hover {
-        background-color: #f5f5f5;
+      .whatsapp-header-btn {
+        background-color: #25d366;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+      }
+
+      .whatsapp-header-btn:hover {
+        background-color: #1ead4f;
+        transform: translateY(-2px);
+      }
+
+      .whatsapp-header-btn:focus-visible {
+        outline: 2px solid white;
+        outline-offset: 2px;
+      }
+
+      .hidden-on-mobile {
+        display: none;
+      }
+
+      @media (min-width: 769px) {
+        .hidden-on-mobile {
+          display: inline-block !important;
+        }
       }
 
       .hero-section {
-        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        background: linear-gradient(135deg, #6b3f1d 0%, #9c6b3f 55%, #e67e22 100%);
         color: white;
-        padding: 80px 24px;
-        text-align: center;
-        min-height: 400px;
+        padding: 72px 24px;
+        min-height: 480px;
         display: flex;
         align-items: center;
-        justify-content: center;
       }
 
-      .hero-content {
-        max-width: 800px;
+      .hero-layout {
+        width: 100%;
+        max-width: 860px;
         margin: 0 auto;
+        display: block;
+      }
+
+      .hero-content,
+      .hero-content-centered {
+        width: 100%;
+        max-width: 860px;
+        margin: 0 auto;
+        text-align: center;
+
+        h1 {
+          font-size: 3.5rem;
+          font-weight: 800;
+          margin-bottom: 24px;
+          line-height: 1.2;
+          text-align: center;
+
+          .highlight {
+            color: #f5a623;
+          }
+        }
+
+        .subtitle {
+          font-size: 1.25rem;
+          opacity: 1;
+          margin-bottom: 40px;
+          line-height: 1.6;
+          color: #fff7e8;
+          max-width: 760px;
+          margin-left: auto;
+          margin-right: auto;
+          text-align: center;
+        }
+      }
+
+      .hero-text {
+        text-align: left;
 
         h1 {
           font-size: 3.5rem;
@@ -147,16 +520,39 @@ import { StoreInfoResponse } from '../../domain/public-menu.model';
           line-height: 1.2;
 
           .highlight {
-            color: #f39c12;
+            color: #f5a623;
           }
         }
 
         .subtitle {
           font-size: 1.25rem;
-          opacity: 0.9;
+          opacity: 1;
           margin-bottom: 40px;
           line-height: 1.6;
+          color: #fff7e8;
         }
+      }
+
+      .hero-image {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .hero-image img {
+        display: block;
+        width: clamp(300px, 32vw, 460px);
+        max-width: 100%;
+        height: auto;
+        object-fit: contain;
+      }
+
+      .cta-group {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
       }
 
       .main-cta {
@@ -164,8 +560,8 @@ import { StoreInfoResponse } from '../../domain/public-menu.model';
         padding: 12px 32px;
         font-size: 1.1rem;
         border-radius: 30px;
-        background-color: #f39c12;
-        color: white;
+        background-color: #f5a623;
+        color: #3d2b1f;
         text-decoration: none;
         font-weight: 600;
         transition:
@@ -175,12 +571,47 @@ import { StoreInfoResponse } from '../../domain/public-menu.model';
 
       .main-cta:hover {
         background-color: #e67e22;
+        color: white;
         transform: translateY(-2px);
+      }
+
+      .main-cta:focus-visible {
+        outline: 3px solid #3d2b1f;
+        outline-offset: 4px;
+      }
+
+      .secondary-cta {
+        display: inline-block;
+        padding: 12px 32px;
+        font-size: 1.1rem;
+        border-radius: 30px;
+        background-color: #1e7e34;
+        color: white;
+        text-decoration: none;
+        font-weight: 600;
+        transition:
+          background-color 0.2s,
+          transform 0.2s;
+      }
+
+      .secondary-cta:hover {
+        background-color: #16662a;
+        transform: translateY(-2px);
+      }
+
+      .secondary-cta:focus-visible {
+        outline: 3px solid white;
+        outline-offset: 4px;
+      }
+
+      .future-anchor-section {
+        padding: 1px;
+        visibility: hidden;
       }
 
       .info-section {
         padding: 64px 24px;
-        background-color: #f8f9fa;
+        background-color: #fff7e8;
       }
 
       .info-grid {
@@ -213,13 +644,13 @@ import { StoreInfoResponse } from '../../domain/public-menu.model';
 
         h3 {
           font-size: 1.25rem;
-          color: #2c3e50;
+          color: #3d2b1f;
           margin-bottom: 12px;
           font-weight: 600;
         }
 
         p {
-          color: #7f8c8d;
+          color: #6b3f1d;
           line-height: 1.6;
           margin: 0;
         }
@@ -231,14 +662,14 @@ import { StoreInfoResponse } from '../../domain/public-menu.model';
       }
 
       .info-card-link:focus-visible {
-        outline: 3px solid #f39c12;
+        outline: 3px solid #f5a623;
         outline-offset: 4px;
       }
 
       .maps-link {
         display: inline-block;
         margin-top: 12px;
-        color: #1e3c72;
+        color: #e67e22;
         font-weight: 700;
         font-size: 0.95rem;
       }
@@ -256,6 +687,80 @@ import { StoreInfoResponse } from '../../domain/public-menu.model';
         text-decoration: underline;
       }
 
+      .hours-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .hours-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        margin-top: 4px;
+      }
+
+      .hours-days {
+        color: #6b3f1d;
+        font-weight: 600;
+        font-size: 1rem;
+      }
+
+      .hours-time {
+        color: #3d2b1f;
+        font-size: 1.45rem;
+        font-weight: 800;
+        line-height: 1.2;
+      }
+
+      .hours-note {
+        margin-top: 4px;
+        color: #9c6b3f;
+        font-size: 0.9rem;
+        line-height: 1.4;
+      }
+
+      .store-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 16px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        font-weight: 600;
+      }
+
+      .store-status-open {
+        background-color: rgba(30, 126, 52, 0.12);
+        color: #1e7e34;
+      }
+
+      .store-status-closed {
+        background-color: rgba(107, 63, 29, 0.1);
+        color: #6b3f1d;
+      }
+
+      .store-status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background-color: currentColor;
+        flex: 0 0 auto;
+      }
+
+      .store-status-text {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        line-height: 1.2;
+      }
+
+      .store-status-text span {
+        font-size: 0.85rem;
+        font-weight: 500;
+      }
+
       .loading-state {
         text-align: center;
         color: #95a5a6;
@@ -268,7 +773,7 @@ import { StoreInfoResponse } from '../../domain/public-menu.model';
         height: 40px;
         border: 4px solid rgba(0, 0, 0, 0.1);
         border-radius: 50%;
-        border-top-color: #1e3c72;
+        border-top-color: #6b3f1d;
         animation: spin 1s ease-in-out infinite;
         margin-bottom: 16px;
       }
@@ -279,13 +784,1199 @@ import { StoreInfoResponse } from '../../domain/public-menu.model';
         }
       }
 
+      .public-footer {
+        background-color: #3d2b1f;
+        color: #fff7e8;
+        padding: 48px 24px 24px;
+      }
+
+      .footer-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1.2fr 1fr auto;
+        gap: 32px;
+        align-items: start;
+      }
+
+      .footer-brand h2 {
+        margin: 0 0 12px 0;
+        font-size: 1.4rem;
+        color: #ffffff;
+        font-weight: 700;
+      }
+
+      .footer-brand p,
+      .footer-info p {
+        margin: 0 0 10px 0;
+        color: #fff7e8;
+        line-height: 1.6;
+        font-size: 0.95rem;
+      }
+
+      .footer-links {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .footer-links a {
+        color: #fff7e8;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 0.95rem;
+        transition: color 0.2s;
+      }
+
+      .footer-links a:hover {
+        color: #f5a623;
+        text-decoration: underline;
+      }
+
+      .footer-links a:focus-visible {
+        outline: 3px solid #f5a623;
+        outline-offset: 4px;
+      }
+
+      .internal-area-link {
+        opacity: 0.75;
+        font-size: 0.95rem;
+      }
+
+      .footer-bottom {
+        max-width: 1200px;
+        margin: 32px auto 0;
+        padding-top: 20px;
+        border-top: 1px solid rgba(255, 247, 232, 0.18);
+        color: rgba(255, 247, 232, 0.8);
+        font-size: 0.9rem;
+        text-align: center;
+      }
+
+      .floating-whatsapp {
+        position: fixed;
+        right: 24px;
+        bottom: 24px;
+        z-index: 1000;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 52px;
+        padding: 14px 22px;
+        border-radius: 999px;
+        background-color: #1e7e34;
+        color: #ffffff;
+        text-decoration: none;
+        font-weight: 800;
+        box-shadow: 0 14px 36px rgba(30, 126, 52, 0.3);
+        transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      }
+
+      .floating-whatsapp:hover {
+        background-color: #16662a;
+        transform: translateY(-2px);
+        box-shadow: 0 18px 42px rgba(30, 126, 52, 0.36);
+      }
+
+      .floating-whatsapp:focus-visible {
+        outline: 3px solid #f5a623;
+        outline-offset: 4px;
+      }
+
+      .back-to-top {
+        position: fixed;
+        left: 24px;
+        bottom: 24px;
+        z-index: 999;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        padding: 10px 16px;
+        border-radius: 999px;
+        background-color: #6b3f1d;
+        color: #ffffff;
+        text-decoration: none;
+        font-weight: 800;
+        box-shadow: 0 10px 28px rgba(61, 43, 31, 0.22);
+        transition:
+          background-color 0.2s,
+          transform 0.2s,
+          box-shadow 0.2s;
+      }
+
+      .back-to-top:hover {
+        background-color: #3d2b1f;
+        transform: translateY(-2px);
+        box-shadow: 0 14px 34px rgba(61, 43, 31, 0.28);
+      }
+
+      .back-to-top:focus-visible {
+        outline: 3px solid #f5a623;
+        outline-offset: 4px;
+      }
+
+      .mobile-bottom-nav {
+        display: none;
+      }
+
+      .mobile-bottom-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: inherit;
+      }
+
+      .delivery-section {
+        padding: 72px 24px;
+        background: linear-gradient(135deg, #fff7e8 0%, #ffffff 100%);
+      }
+
+      .delivery-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr);
+        gap: 32px;
+        align-items: center;
+      }
+
+      .delivery-text {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .section-eyebrow {
+        color: #e67e22;
+        font-weight: 700;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .delivery-text h2 {
+        margin: 0;
+        color: #3d2b1f;
+        font-size: 2.3rem;
+        line-height: 1.15;
+      }
+
+      .delivery-text p {
+        margin: 0;
+        color: #6b3f1d;
+        font-size: 1.1rem;
+        line-height: 1.7;
+      }
+
+      .delivery-note {
+        display: inline-flex;
+        padding: 10px 14px;
+        border-radius: 999px;
+        background-color: rgba(245, 166, 35, 0.16);
+        color: #6b3f1d;
+        font-weight: 700;
+        font-size: 0.95rem;
+        align-self: flex-start;
+      }
+
+      .delivery-card {
+        background-color: #6b3f1d;
+        color: #ffffff;
+        border-radius: 24px;
+        padding: 32px;
+        box-shadow: 0 18px 48px rgba(61, 43, 31, 0.18);
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .delivery-icon {
+        font-size: 3rem;
+      }
+
+      .delivery-card strong {
+        font-size: 1.4rem;
+        line-height: 1.2;
+        margin: 0;
+      }
+
+      .delivery-card span {
+        color: #fff7e8;
+        line-height: 1.6;
+        margin: 0;
+      }
+
+      .delivery-cardapio-btn {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 46px;
+        margin-top: 8px;
+        padding: 12px 22px;
+        border-radius: 999px;
+        background-color: #f5a623;
+        color: #3d2b1f;
+        text-decoration: none;
+        font-weight: 800;
+        transition: background-color 0.2s, color 0.2s, transform 0.2s;
+      }
+
+      .delivery-cardapio-btn:hover {
+        background-color: #e67e22;
+        color: #ffffff;
+        transform: translateY(-2px);
+      }
+
+      .delivery-cardapio-btn:focus-visible {
+        outline: 3px solid #ffffff;
+        outline-offset: 4px;
+      }
+
+      .orders-section {
+        padding: 72px 24px;
+        background-color: #ffffff;
+      }
+
+      .orders-content {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .orders-content > .section-header h2 {
+        font-size: 2.3rem;
+        color: #3d2b1f;
+        margin: 0 0 16px 0;
+        font-weight: 700;
+      }
+
+      .orders-content > .section-header p {
+        font-size: 1.1rem;
+        color: #6b3f1d;
+        line-height: 1.7;
+        margin: 0 0 40px 0;
+      }
+
+      .orders-categories-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 24px;
+        margin-top: 0;
+      }
+
+      .order-category-card {
+        background-color: #fff7e8;
+        border: 1px solid rgba(156, 107, 63, 0.18);
+        border-radius: 20px;
+        padding: 26px;
+        text-align: center;
+        box-shadow: 0 10px 28px rgba(61, 43, 31, 0.08);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .order-category-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 16px 38px rgba(61, 43, 31, 0.14);
+      }
+
+      .order-category-emoji {
+        font-size: 2.4rem;
+        margin-bottom: 14px;
+      }
+
+      .order-category-card h3 {
+        margin: 0 0 10px 0;
+        color: #3d2b1f;
+        font-size: 1.25rem;
+        font-weight: 600;
+      }
+
+      .order-category-card p {
+        margin: 0;
+        color: #6b3f1d;
+        line-height: 1.6;
+        font-size: 0.95rem;
+      }
+
+      .orders-actions {
+        margin-top: 36px;
+        display: flex;
+        justify-content: center;
+      }
+
+      .orders-whatsapp-btn {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 48px;
+        padding: 14px 28px;
+        border-radius: 999px;
+        background-color: #1e7e34;
+        color: #ffffff;
+        text-decoration: none;
+        font-weight: 800;
+        box-shadow: 0 10px 24px rgba(30, 126, 52, 0.2);
+        transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      }
+
+      .orders-whatsapp-btn:hover {
+        background-color: #16662a;
+        transform: translateY(-2px);
+        box-shadow: 0 14px 30px rgba(30, 126, 52, 0.26);
+      }
+
+      .orders-whatsapp-btn:focus-visible {
+        outline: 3px solid #f5a623;
+        outline-offset: 4px;
+      }
+
+      .benefits-section {
+        padding: 72px 24px;
+        background-color: #fff7e8;
+      }
+
+      .benefits-section > .section-header {
+        max-width: 1200px;
+        margin: 0 auto 40px;
+      }
+
+      .benefits-section > .section-header h2 {
+        font-size: 2.5rem;
+        color: #3d2b1f;
+        margin: 0 0 16px 0;
+        font-weight: 700;
+      }
+
+      .benefits-section > .section-header p {
+        font-size: 1.1rem;
+        color: #6b3f1d;
+        line-height: 1.7;
+        margin: 0;
+      }
+
+      .benefits-grid {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 18px;
+      }
+
+      .benefit-card {
+        background-color: #ffffff;
+        border-radius: 20px;
+        padding: 24px;
+        text-align: center;
+        border: 1px solid rgba(156, 107, 63, 0.16);
+        box-shadow: 0 10px 28px rgba(61, 43, 31, 0.08);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .benefit-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 16px 36px rgba(61, 43, 31, 0.14);
+      }
+
+      .benefit-icon {
+        font-size: 2.2rem;
+        margin-bottom: 14px;
+      }
+
+      .benefit-card h3 {
+        margin: 0 0 10px 0;
+        color: #3d2b1f;
+        font-size: 1.05rem;
+        line-height: 1.25;
+        font-weight: 600;
+      }
+
+      .benefit-card p {
+        margin: 0;
+        color: #6b3f1d;
+        font-size: 0.94rem;
+        line-height: 1.55;
+      }
+
+      .location-section {
+        padding: 72px 24px;
+        background-color: #fff7e8;
+      }
+
+      .location-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(320px, 460px);
+        gap: 32px;
+        align-items: center;
+      }
+
+      .location-text {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .location-text h2 {
+        margin: 0;
+        color: #3d2b1f;
+        font-size: 2.3rem;
+        line-height: 1.15;
+        font-weight: 700;
+      }
+
+      .location-text p {
+        margin: 0;
+        color: #6b3f1d;
+        font-size: 1.1rem;
+        line-height: 1.7;
+      }
+
+      .location-card {
+        background-color: #ffffff;
+        border: 1px solid rgba(156, 107, 63, 0.18);
+        border-radius: 24px;
+        padding: 32px;
+        box-shadow: 0 14px 36px rgba(61, 43, 31, 0.12);
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      .location-icon {
+        font-size: 3rem;
+      }
+
+      .location-address {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .location-address span {
+        color: #e67e22;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-size: 0.8rem;
+      }
+
+      .location-address strong {
+        color: #3d2b1f;
+        font-size: 1.15rem;
+        line-height: 1.5;
+        font-weight: 700;
+      }
+
+      .location-maps-btn {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 48px;
+        padding: 14px 24px;
+        border-radius: 999px;
+        background-color: #f5a623;
+        color: #3d2b1f;
+        text-decoration: none;
+        font-weight: 800;
+        transition: background-color 0.2s, color 0.2s, transform 0.2s;
+      }
+
+      .location-maps-btn:hover {
+        background-color: #e67e22;
+        color: #ffffff;
+        transform: translateY(-2px);
+      }
+
+      .location-maps-btn:focus-visible {
+        outline: 3px solid #6b3f1d;
+        outline-offset: 4px;
+      }
+
+      @media (max-width: 1100px) {
+        .benefits-grid {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+      }
+
+      .featured-products-section {
+        background-color: white;
+        padding: 64px 24px;
+      }
+
+      .featured-products-container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .featured-products-section h2 {
+        font-size: 2.5rem;
+        color: #3d2b1f;
+        text-align: center;
+        margin: 0 0 12px 0;
+        font-weight: 700;
+      }
+
+      .featured-products-subtitle {
+        font-size: 1.1rem;
+        color: #6b3f1d;
+        text-align: center;
+        margin: 0 0 48px 0;
+        opacity: 0.9;
+      }
+
+      .featured-products-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 32px;
+      }
+
+      .featured-product-card {
+        background: #fff7e8;
+        padding: 32px 24px;
+        border-radius: 16px;
+        text-align: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        cursor: pointer;
+      }
+
+      .featured-product-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 32px rgba(107, 63, 29, 0.15);
+      }
+
+      .product-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+      }
+
+      .featured-product-card h3 {
+        font-size: 1.25rem;
+        color: #3d2b1f;
+        margin: 0 0 12px 0;
+        font-weight: 600;
+      }
+
+      .featured-product-card p {
+        color: #6b3f1d;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin: 0;
+      }
+
+      .online-order-section {
+        padding: 72px 24px;
+        background-color: #fff7e8;
+      }
+
+      .online-order-card {
+        max-width: 820px;
+        margin: 0 auto;
+        padding: 40px;
+        border-radius: 28px;
+        background-color: #ffffff;
+        text-align: center;
+        border: 1px solid rgba(156, 107, 63, 0.18);
+        box-shadow: 0 18px 48px rgba(61, 43, 31, 0.12);
+      }
+
+      .online-order-card h2 {
+        margin: 0 0 16px;
+        color: #3d2b1f;
+        font-size: 2.2rem;
+        line-height: 1.15;
+      }
+
+      .online-order-card p {
+        max-width: 680px;
+        margin: 0 auto 28px;
+        color: #6b3f1d;
+        font-size: 1.08rem;
+        line-height: 1.7;
+      }
+
+      .online-order-actions {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+
+      .orders-cta {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 48px;
+        padding: 14px 28px;
+        border-radius: 999px;
+        background-color: #6b3f1d;
+        color: #ffffff;
+        text-decoration: none;
+        font-weight: 800;
+        transition: background-color 0.2s, transform 0.2s;
+      }
+
+      .orders-cta:hover {
+        background-color: #3d2b1f;
+        transform: translateY(-2px);
+      }
+
+      .orders-cta:focus-visible {
+        outline: 3px solid #f5a623;
+        outline-offset: 4px;
+      }
+
+      .orders-route-btn {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 48px;
+        padding: 14px 28px;
+        border-radius: 999px;
+        background-color: #1e7e34;
+        color: #ffffff;
+        text-decoration: none;
+        font-weight: 800;
+        box-shadow: 0 10px 24px rgba(30, 126, 52, 0.2);
+        transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      }
+
+      .orders-route-btn:hover {
+        background-color: #16662a;
+        transform: translateY(-2px);
+        box-shadow: 0 14px 30px rgba(30, 126, 52, 0.26);
+      }
+
+      .orders-route-btn:focus-visible {
+        outline: 3px solid #f5a623;
+        outline-offset: 4px;
+      }
+
       @media (max-width: 768px) {
-        .hero-section {
-          padding: 48px 16px;
+        .public-header {
+          position: sticky;
+          top: 0;
+          z-index: 900;
+          padding: 10px 16px;
+          gap: 8px;
+          align-items: center;
+          min-height: 56px;
+          box-shadow: 0 8px 24px rgba(61, 43, 31, 0.18);
         }
 
-        .hero-content h1 {
+        .brand-logo img {
+          height: 60px;
+          max-width: 180px;
+        }
+
+        .spacer {
+          display: none;
+        }
+
+        .nav-links {
+          display: none;
+        }
+
+        .nav-link {
+          padding: 8px 12px;
+          font-size: 0.85rem;
+          white-space: nowrap;
+        }
+
+        .hidden-on-mobile {
+          display: none !important;
+        }
+
+        .whatsapp-header-btn {
+          padding: 10px 14px;
+          font-size: 0.85rem;
+          flex-shrink: 0;
+          margin-left: auto;
+        }
+
+        .hero-section {
+          padding: 40px 16px;
+          min-height: auto;
+        }
+
+        .hero-layout {
+          max-width: 100%;
+        }
+
+        .hero-content,
+        .hero-content-centered {
+          max-width: 100%;
+        }
+
+        .hero-content h1,
+        .hero-content-centered h1 {
+          font-size: clamp(2rem, 9vw, 2.6rem);
+          line-height: 1.08;
+          margin-bottom: 12px;
+        }
+
+        .hero-content .subtitle,
+        .hero-content-centered .subtitle {
+          font-size: 1rem;
+          line-height: 1.55;
+          margin-bottom: 20px;
+          color: #fff7e8;
+        }
+
+        .cta-group {
+          flex-direction: column;
+          align-items: stretch;
+          width: 100%;
+          gap: 12px;
+        }
+
+        .main-cta,
+        .secondary-cta {
+          width: 100%;
+          max-width: 320px;
+          margin-left: auto;
+          margin-right: auto;
+          min-height: 50px;
+          padding: 14px 20px;
+          text-align: center;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          -webkit-tap-highlight-color: transparent;
+        }
+
+        .hours-time {
+          font-size: 1.3rem;
+        }
+
+        .hours-note {
+          font-size: 0.85rem;
+        }
+
+        .store-status {
+          max-width: 100%;
+        }
+
+        .store-status-text {
+          align-items: center;
+        }
+
+        .info-section {
+          padding: 32px 16px;
+        }
+
+        .info-grid {
+          grid-template-columns: 1fr;
+          gap: 16px;
+        }
+
+        .info-card {
+          border-radius: 22px;
+          padding: 22px;
+          box-shadow: 0 8px 20px rgba(61, 43, 31, 0.12);
+        }
+
+        .info-card .icon {
+          font-size: 40px;
+          margin-bottom: 12px;
+        }
+
+        .info-card h3 {
+          font-size: 1.15rem;
+        }
+
+        .delivery-section {
+          padding: 32px 16px;
+        }
+
+        .delivery-content {
+          grid-template-columns: 1fr;
+        }
+
+        .delivery-text {
+          text-align: center;
+        }
+
+        .delivery-text h2 {
+          font-size: 1.9rem;
+        }
+
+        .delivery-note {
+          border-radius: 16px;
+          align-self: center;
+        }
+
+        .delivery-card {
+          padding: 28px 24px;
+          text-align: center;
+          align-items: center;
+        }
+
+        .delivery-cardapio-btn {
+          width: 100%;
+        }
+
+        .featured-products-section {
+          padding: 28px 16px;
+        }
+
+        .featured-products-section h2 {
+          font-size: 1.6rem;
+          margin-bottom: 12px;
+        }
+
+        .featured-products-subtitle {
+          font-size: 0.95rem;
+          margin-bottom: 24px;
+        }
+
+        .featured-products-grid {
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+
+        .featured-product-card {
+          padding: 18px 16px;
+          border-radius: 20px;
+          box-shadow: 0 6px 16px rgba(61, 43, 31, 0.1);
+          min-height: auto;
+        }
+
+        .product-icon {
+          font-size: 36px;
+          margin-bottom: 10px;
+        }
+
+        .featured-product-card h3 {
+          font-size: 1.05rem;
+          margin-bottom: 8px;
+        }
+
+        .featured-product-card p {
+          font-size: 0.9rem;
+        }
+
+        .orders-section {
+          padding: 28px 16px;
+        }
+
+        .orders-content > .section-header h2 {
+          font-size: 1.6rem;
+          margin-bottom: 12px;
+        }
+
+        .orders-content > .section-header p {
+          font-size: 0.95rem;
+          margin-bottom: 24px;
+        }
+
+        .orders-categories-grid {
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+
+        .order-category-card {
+          padding: 18px 16px;
+          border-radius: 20px;
+          box-shadow: 0 6px 16px rgba(61, 43, 31, 0.1);
+        }
+
+        .order-category-emoji {
+          font-size: 2rem;
+          margin-bottom: 10px;
+        }
+
+        .order-category-card h3 {
+          font-size: 1.05rem;
+          margin-bottom: 8px;
+        }
+
+        .orders-whatsapp-btn {
+          width: 100%;
+          min-height: 50px;
+          margin-top: 20px;
+        }
+
+        .benefits-section {
+          padding: 28px 16px;
+        }
+
+        .benefits-section > .section-header h2 {
+          font-size: 1.6rem;
+          margin-bottom: 12px;
+        }
+
+        .benefits-section > .section-header p {
+          font-size: 0.95rem;
+          margin-bottom: 24px;
+        }
+
+        .benefits-grid {
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+
+        .benefit-card {
+          padding: 18px 16px;
+          border-radius: 20px;
+          box-shadow: 0 6px 16px rgba(61, 43, 31, 0.1);
+        }
+
+        .benefit-icon {
+          font-size: 2rem;
+          margin-bottom: 10px;
+        }
+
+        .benefit-card h3 {
+          font-size: 1.05rem;
+          margin-bottom: 8px;
+        }
+
+        .benefit-card p {
+          font-size: 0.9rem;
+        }
+
+        .location-section {
+          padding: 28px 16px;
+        }
+
+        .location-content {
+          grid-template-columns: 1fr;
+          gap: 20px;
+        }
+
+        .location-text {
+          text-align: center;
+        }
+
+        .location-text h2 {
+          font-size: 1.6rem;
+          margin-bottom: 12px;
+        }
+
+        .location-text p {
+          font-size: 0.95rem;
+        }
+
+        .location-card {
+          padding: 20px 16px;
+          border-radius: 22px;
+          text-align: center;
+          align-items: center;
+          box-shadow: 0 8px 20px rgba(61, 43, 31, 0.12);
+        }
+
+        .location-icon {
           font-size: 2.5rem;
+          margin-bottom: 12px;
+        }
+
+        .location-address strong {
+          font-size: 1.05rem;
+        }
+
+        .location-maps-btn {
+          width: 100%;
+          min-height: 50px;
+          margin-top: 16px;
+        }
+
+        .footer-content {
+          grid-template-columns: 1fr;
+          text-align: center;
+        }
+
+        .footer-links {
+          align-items: center;
+        }
+
+        .floating-whatsapp {
+          display: none;
+        }
+
+        .back-to-top {
+          display: none;
+        }
+
+        .mobile-bottom-nav {
+          position: fixed;
+          left: 12px;
+          right: 12px;
+          bottom: 12px;
+          z-index: 1100;
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 4px;
+          padding: 8px;
+          border-radius: 24px;
+          background-color: rgba(255, 255, 255, 0.96);
+          border: 1px solid rgba(156, 107, 63, 0.18);
+          box-shadow: 0 16px 42px rgba(61, 43, 31, 0.22);
+          backdrop-filter: blur(10px);
+        }
+
+        .mobile-bottom-nav-item {
+          min-height: 56px;
+          border-radius: 18px;
+          color: #6b3f1d;
+          text-decoration: none;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 4px;
+          font-size: 0.75rem;
+          font-weight: 800;
+          transition:
+            background-color 0.2s,
+            transform 0.2s;
+          -webkit-tap-highlight-color: transparent;
+        }
+
+        .mobile-bottom-nav-item span {
+          font-size: 1.2rem;
+          line-height: 1;
+        }
+
+        .mobile-bottom-nav-item strong {
+          font-size: 0.72rem;
+          line-height: 1;
+        }
+
+        .mobile-bottom-nav-item:hover,
+        .mobile-bottom-nav-item:active {
+          background-color: #fff7e8;
+          color: #3d2b1f;
+          transform: scale(0.98);
+        }
+
+        .mobile-bottom-nav-item:focus-visible {
+          outline: 3px solid #f5a623;
+          outline-offset: 3px;
+        }
+
+        .public-footer {
+          padding-bottom: 120px;
+        }
+
+        :host {
+          display: block;
+          padding-bottom: 96px;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .orders-categories-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .featured-products-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 390px) {
+        .public-header {
+          padding: 12px 16px;
+        }
+
+        .brand {
+          font-size: 1rem;
+          width: 100%;
+        }
+
+        .spacer {
+          display: none;
+        }
+
+        .nav-links {
+          width: 100%;
+          justify-content: center;
+          gap: 8px;
+        }
+
+        .nav-link {
+          padding: 6px 10px;
+          font-size: 0.8rem;
+        }
+
+        .whatsapp-header-btn {
+          padding: 8px 12px;
+          font-size: 0.8rem;
+        }
+
+        .hero-text h1 {
+          font-size: 2rem;
+        }
+
+        .featured-products-grid {
+          gap: 16px;
+        }
+
+        .featured-product-card {
+          padding: 16px 12px;
+        }
+
+        .product-icon {
+          font-size: 32px;
+          margin-bottom: 12px;
+        }
+
+        .featured-product-card h3 {
+          font-size: 1rem;
+        }
+
+        .featured-product-card p {
+          font-size: 0.85rem;
+        }
+
+        .benefits-grid {
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+
+        .benefit-card {
+          padding: 16px;
+        }
+
+        .benefit-icon {
+          font-size: 1.8rem;
+        }
+
+        .benefit-card h3 {
+          font-size: 0.95rem;
+        }
+
+        .benefit-card p {
+          font-size: 0.85rem;
+        }
+
+        .online-order-section {
+          padding: 56px 16px;
+        }
+
+        .online-order-card {
+          padding: 28px 22px;
+          border-radius: 24px;
+        }
+
+        .online-order-card h2 {
+          font-size: 1.8rem;
+        }
+
+        .online-order-actions {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .online-order-actions .main-cta,
+        .online-order-actions .orders-cta {
+          width: 100%;
         }
       }
     `
@@ -295,30 +1986,165 @@ export class SiteHomeComponent implements OnInit {
   storeInfo: StoreInfoResponse | null = null;
   loading = true;
 
+  readonly pageTitle = 'Padaria Nova Aliança | Pães, Lanches e Encomendas em Magé';
+
+  readonly pageDescription = 'Padaria e Lanchonete Nova Aliança em Parque Veneza, Magé. Pães frescos, lanches, bolos, salgados, delivery e encomendas pelo WhatsApp.';
+
   readonly storeAddress = 'Estr. Mineira, 703 - Parque Veneza, Magé - RJ, 25930-790';
 
-  get googleMapsUrl(): string {
-    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(this.storeAddress)}`;
+  readonly fallbackStoreAddress = 'Estr. Mineira, 703 - Parque Veneza, Magé - RJ, 25930-790';
+
+  readonly fallbackStorePhone = '(21) 96582-4610';
+
+  readonly fallbackOpeningDays = 'Segunda a Domingo';
+
+  readonly fallbackOpeningHours = '05:30 às 21:00';
+
+  readonly openingTime = '05:30';
+
+  readonly closingTime = '21:00';
+
+  readonly heroTitle = 'Pães quentinhos, lanches e bolos frescos todos os dias';
+
+  readonly heroSubtitle =
+    'A Padaria e Lanchonete Nova Aliança prepara seu café, lanche e encomendas com qualidade e carinho em Parque Veneza, Magé.';
+
+  readonly logoImageUrl = 'assets/images/site/logo.png';
+
+  readonly featuredProducts = featuredProducts;
+
+  readonly orderCategories = orderCategories;
+
+  readonly benefits = benefits;
+
+  readonly currentYear = new Date().getFullYear();
+
+  get displayAddress(): string {
+    const apiAddress = this.storeInfo?.address?.trim();
+
+    return apiAddress && apiAddress.length > 0
+      ? apiAddress
+      : this.fallbackStoreAddress;
   }
 
-  get whatsappUrl(): string {
-    const phone = this.storeInfo?.phone ?? '';
-    const digitsOnly = phone.replace(/\D/g, '');
+  get displayPhone(): string {
+    const apiPhone = this.storeInfo?.phone?.trim();
+
+    return apiPhone && apiPhone.length > 0
+      ? apiPhone
+      : this.fallbackStorePhone;
+  }
+
+  get googleMapsUrl(): string {
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(this.displayAddress)}`;
+  }
+
+  get displayOpeningDays(): string {
+    return this.fallbackOpeningDays;
+  }
+
+  get displayOpeningHours(): string {
+    const apiHours = this.storeInfo?.hours?.trim();
+
+    if (!apiHours) {
+      return this.fallbackOpeningHours;
+    }
+
+    if (apiHours.includes('05:30') && apiHours.includes('21:00')) {
+      return this.fallbackOpeningHours;
+    }
+
+    return this.fallbackOpeningHours;
+  }
+
+  get openingHoursNote(): string | null {
+    const apiHours = this.storeInfo?.hours?.trim();
+
+    if (!apiHours) {
+      return null;
+    }
+
+    const normalized = apiHours.toLowerCase();
+
+    if (
+      normalized.includes('segunda') &&
+      normalized.includes('domingo') &&
+      normalized.includes('05:30') &&
+      normalized.includes('21:00')
+    ) {
+      return null;
+    }
+
+    return apiHours;
+  }
+
+  // MVP: Cálculo simples baseado no horário padrão (Segunda a Domingo, 05:30-21:00)
+  // TODO: Feriados, horários especiais e exceções devem ser tratados futuramente
+  // por configuração estruturada vinda do back-end
+  get isOpenNow(): boolean {
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const openingMinutes = this.timeToMinutes(this.openingTime);
+    const closingMinutes = this.timeToMinutes(this.closingTime);
+
+    return currentMinutes >= openingMinutes && currentMinutes < closingMinutes;
+  }
+
+  get storeStatusLabel(): string {
+    return this.isOpenNow ? 'Aberto agora' : 'Fechado agora';
+  }
+
+  get storeStatusDetail(): string {
+    if (this.isOpenNow) {
+      return `Fecha às ${this.closingTime}`;
+    }
+
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const openingMinutes = this.timeToMinutes(this.openingTime);
+
+    return currentMinutes < openingMinutes
+      ? `Abre às ${this.openingTime}`
+      : `Abre amanhã às ${this.openingTime}`;
+  }
+
+  private timeToMinutes(time: string): number {
+    const [hours, minutes] = time.split(':').map(Number);
+    return hours * 60 + minutes;
+  }
+
+  get whatsappDoubtUrl(): string {
+    return this.buildWhatsappUrl(
+      'Olá! Vim pelo site da Padaria Nova Aliança e tenho uma dúvida.'
+    );
+  }
+
+  private buildWhatsappUrl(message: string): string {
+    const digitsOnly = this.displayPhone.replace(/\D/g, '');
 
     const phoneWithCountryCode = digitsOnly.startsWith('55')
       ? digitsOnly
       : `55${digitsOnly}`;
 
-    const message = encodeURIComponent(
-      'Olá! Vim pelo site da Padaria Nova Aliança e gostaria de fazer um pedido.'
-    );
-
-    return `https://wa.me/${phoneWithCountryCode}?text=${message}`;
+    return `https://wa.me/${phoneWithCountryCode}?text=${encodeURIComponent(message)}`;
   }
 
-  constructor(private readonly menuService: PublicMenuService) {}
+  private setSeoMetadata(): void {
+    this.title.setTitle(this.pageTitle);
+    this.meta.updateTag({ name: 'description', content: this.pageDescription });
+    this.meta.updateTag({ property: 'og:title', content: this.pageTitle });
+    this.meta.updateTag({ property: 'og:description', content: this.pageDescription });
+    this.meta.updateTag({ property: 'og:type', content: 'business.business' });
+  }
+
+  constructor(
+    private readonly menuService: PublicMenuService,
+    private readonly title: Title,
+    private readonly meta: Meta
+  ) {}
 
   ngOnInit(): void {
+    this.setSeoMetadata();
     this.menuService.getStoreInfo().subscribe({
       next: (info) => {
         this.storeInfo = info;

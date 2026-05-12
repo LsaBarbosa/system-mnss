@@ -50,10 +50,10 @@ mnss:
     webhook-secret: ${MNSS_PAYMENT_WEBHOOK_SECRET}
   store:
     name: "Padaria e Lanchonete Nova Aliança"
-    address: "Rua Exemplo, 123 - Centro"
-    hours: "Segunda a Sábado: 06:00 as 22:00, Domingo: 06:00 as 12:00"
-    phone: "(11) 99999-9999"
-    description: "A melhor padaria da região, com pães frescos a toda hora e um cardápio completo para o seu dia a dia."
+    address: "Estr. Mineira, 703 - Parque Veneza, Magé - RJ, 25930-790"
+    hours: "Segunda a Domingo: 05:30 às 21:00"
+    phone: "(21) 96582-4610"
+    description: "Pães, lanches, bolos, salgados e encomendas preparados com carinho em Parque Veneza, Magé."
   whatsapp:
     provider: ${WHATSAPP_PROVIDER:mock}
     verify-token: ${WHATSAPP_VERIFY_TOKEN}

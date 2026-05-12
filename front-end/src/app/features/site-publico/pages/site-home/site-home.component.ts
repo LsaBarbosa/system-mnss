@@ -19,30 +19,39 @@ import {
   imports: [CommonModule, RouterLink],
   template: `
     <header class="public-header" id="topo">
-      <div class="brand">{{ storeInfo?.name || 'Padaria Nova Aliança' }}</div>
+      <a
+        class="brand-logo"
+        href="#topo"
+        aria-label="Voltar ao início da página da Padaria Nova Aliança"
+      >
+        <img
+          [src]="logoImageUrl"
+          alt="Padaria e Lanchonete Nova Aliança"
+          decoding="async"
+        />
+      </a>
 
       <div class="spacer"></div>
 
       <nav class="nav-links" aria-label="Navegação principal da home">
-        <a href="#cardapio" class="nav-link">Cardápio</a>
+        <a href="#cardapio-online" class="nav-link">Cardápio</a>
         <a href="#encomendas" class="nav-link hidden-on-mobile">Encomendas</a>
-        <a href="#contato" class="nav-link hidden-on-mobile">WhatsApp</a>
         <a href="#localizacao" class="nav-link hidden-on-mobile">Como chegar</a>
         <a
           class="nav-link whatsapp-header-btn"
-          [href]="whatsappUrl"
+          [href]="whatsappDoubtUrl"
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="Pedir pelo WhatsApp da Padaria Nova Aliança"
+          aria-label="Tirar dúvidas pelo WhatsApp da Padaria Nova Aliança"
         >
-          Pedir pelo WhatsApp
+          Dúvidas
         </a>
       </nav>
     </header>
 
     <div class="hero-section">
       <div class="hero-layout">
-        <div class="hero-text">
+        <div class="hero-content hero-content-centered">
           <h1>{{ heroTitle }}</h1>
 
           <p class="subtitle">
@@ -51,25 +60,7 @@ import {
 
           <div class="cta-group">
             <a class="main-cta" routerLink="/cardapio">Ver Cardápio</a>
-            <a
-              class="secondary-cta"
-              [href]="whatsappUrl"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Pedir pelo WhatsApp da Padaria Nova Aliança"
-            >
-              Pedir pelo WhatsApp
-            </a>
           </div>
-        </div>
-
-        <div class="hero-image">
-          <img
-            [src]="heroImageUrl"
-            alt="Pães, lanches e bolos frescos da Padaria Nova Aliança"
-            loading="eager"
-            decoding="async"
-          />
         </div>
       </div>
     </div>
@@ -114,7 +105,7 @@ import {
         <a
           id="contato"
           class="info-card info-card-link"
-          [href]="whatsappUrl"
+          [href]="whatsappDoubtUrl"
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Abrir conversa com a Padaria Nova Aliança no WhatsApp"
@@ -156,7 +147,7 @@ import {
           <h2>Delivery todos os dias</h2>
           <p>
             Receba pães, lanches, bolos, salgados e bebidas no conforto da sua casa.
-            Chame no WhatsApp e consulte a disponibilidade para sua região.
+            Escolha seus produtos pelo cardápio online e consulte disponibilidade de entrega para sua região.
           </p>
           <span class="delivery-note">
             Consulte taxa de entrega e disponibilidade para o seu endereço.
@@ -167,16 +158,14 @@ import {
           <div class="delivery-icon" aria-hidden="true">🛵</div>
           <strong>Peça sem sair de casa</strong>
           <span>
-            Atendimento rápido pelo WhatsApp para consultar produtos, taxa e região de entrega.
+            Escolha seus produtos no cardápio online e receba no conforto da sua casa.
           </span>
           <a
-            class="delivery-whatsapp-btn"
-            [href]="whatsappUrl"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Pedir delivery pelo WhatsApp da Padaria Nova Aliança"
+            class="delivery-cardapio-btn"
+            routerLink="/cardapio"
+            aria-label="Ver cardápio online da Padaria Nova Aliança"
           >
-            Pedir pelo WhatsApp
+            Ver Cardápio
           </a>
         </div>
       </div>
@@ -202,13 +191,11 @@ import {
 
         <div class="orders-actions">
           <a
-            class="orders-whatsapp-btn"
-            [href]="whatsappOrderUrl"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Fazer encomenda pelo WhatsApp da Padaria Nova Aliança"
+            class="orders-route-btn"
+            routerLink="/encomendas"
+            aria-label="Fazer encomenda"
           >
-            Fazer encomenda pelo WhatsApp
+            Fazer encomenda
           </a>
         </div>
       </div>
@@ -262,6 +249,24 @@ import {
       </div>
     </section>
 
+    <section class="online-order-section" id="cardapio-online">
+      <div class="online-order-card">
+        <span class="section-eyebrow">Pedidos</span>
+
+        <h2>Faça seu pedido pelo cardápio online</h2>
+
+        <p>
+          Escolha seus produtos no cardápio online da Nova Aliança. Para pedidos comuns,
+          use o cardápio. Para encomendas, acesse a área de encomendas.
+        </p>
+
+        <div class="online-order-actions">
+          <a class="main-cta" routerLink="/cardapio">Ver Cardápio</a>
+          <a class="orders-cta" routerLink="/encomendas">Fazer encomenda</a>
+        </div>
+      </div>
+    </section>
+
     <footer class="public-footer">
       <div class="footer-content">
         <div class="footer-brand">
@@ -278,7 +283,7 @@ import {
         <nav class="footer-links" aria-label="Links úteis do rodapé">
           <a routerLink="/cardapio">Cardápio</a>
           <a
-            [href]="whatsappUrl"
+            [href]="whatsappDoubtUrl"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Abrir conversa com a Padaria Nova Aliança no WhatsApp"
@@ -310,9 +315,43 @@ import {
       ↑ Topo
     </a>
 
+    <nav class="mobile-bottom-nav" aria-label="Navegação principal mobile">
+      <a href="#topo" class="mobile-bottom-nav-item" aria-label="Voltar para o início">
+        <span aria-hidden="true">🏠</span>
+        <strong>Início</strong>
+      </a>
+
+      <a routerLink="/cardapio" class="mobile-bottom-nav-item" aria-label="Ver cardápio">
+        <span aria-hidden="true">🥖</span>
+        <strong>Cardápio</strong>
+      </a>
+
+      <a
+        [href]="whatsappDoubtUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="mobile-bottom-nav-item"
+        aria-label="Pedir pelo WhatsApp da Padaria Nova Aliança"
+      >
+        <span aria-hidden="true">💬</span>
+        <strong>WhatsApp</strong>
+      </a>
+
+      <a
+        [href]="googleMapsUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="mobile-bottom-nav-item"
+        aria-label="Traçar rota para a Padaria Nova Aliança no Google Maps"
+      >
+        <span aria-hidden="true">📍</span>
+        <strong>Rota</strong>
+      </a>
+    </nav>
+
     <a
       class="floating-whatsapp"
-      [href]="whatsappUrl"
+      [href]="whatsappDoubtUrl"
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Pedir pelo WhatsApp da Padaria Nova Aliança"
@@ -337,16 +376,33 @@ import {
       .public-header {
         display: flex;
         align-items: center;
-        padding: 16px 24px;
+        padding: 12px 24px;
         background-color: #6b3f1d;
         color: white;
         flex-wrap: wrap;
         gap: 12px;
       }
 
-      .brand {
-        font-size: 1.25rem;
-        font-weight: 700;
+      .brand-logo {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        flex: 0 0 auto;
+      }
+
+      .brand-logo img {
+        display: block;
+        width: auto;
+        height: 80px;
+        max-width: 240px;
+        object-fit: contain;
+      }
+
+      .brand-logo:focus-visible {
+        outline: 3px solid #f5a623;
+        outline-offset: 4px;
+        border-radius: 8px;
       }
 
       .spacer {
@@ -417,12 +473,41 @@ import {
 
       .hero-layout {
         width: 100%;
-        max-width: 1200px;
+        max-width: 860px;
         margin: 0 auto;
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(320px, 480px);
-        gap: 48px;
-        align-items: center;
+        display: block;
+      }
+
+      .hero-content,
+      .hero-content-centered {
+        width: 100%;
+        max-width: 860px;
+        margin: 0 auto;
+        text-align: center;
+
+        h1 {
+          font-size: 3.5rem;
+          font-weight: 800;
+          margin-bottom: 24px;
+          line-height: 1.2;
+          text-align: center;
+
+          .highlight {
+            color: #f5a623;
+          }
+        }
+
+        .subtitle {
+          font-size: 1.25rem;
+          opacity: 1;
+          margin-bottom: 40px;
+          line-height: 1.6;
+          color: #fff7e8;
+          max-width: 760px;
+          margin-left: auto;
+          margin-right: auto;
+          text-align: center;
+        }
       }
 
       .hero-text {
@@ -451,17 +536,15 @@ import {
       .hero-image {
         display: flex;
         justify-content: center;
+        align-items: center;
       }
 
       .hero-image img {
-        width: 100%;
-        max-width: 480px;
-        max-height: 360px;
+        display: block;
+        width: clamp(300px, 32vw, 460px);
+        max-width: 100%;
+        height: auto;
         object-fit: contain;
-        border-radius: 24px;
-        padding: 24px;
-        background-color: rgba(255, 247, 232, 0.12);
-        box-shadow: 0 24px 60px rgba(61, 43, 31, 0.22);
       }
 
       .cta-group {
@@ -833,6 +916,19 @@ import {
         outline-offset: 4px;
       }
 
+      .mobile-bottom-nav {
+        display: none;
+      }
+
+      .mobile-bottom-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: inherit;
+      }
+
       .delivery-section {
         padding: 72px 24px;
         background: linear-gradient(135deg, #fff7e8 0%, #ffffff 100%);
@@ -913,7 +1009,7 @@ import {
         margin: 0;
       }
 
-      .delivery-whatsapp-btn {
+      .delivery-cardapio-btn {
         display: inline-flex;
         justify-content: center;
         align-items: center;
@@ -921,22 +1017,21 @@ import {
         margin-top: 8px;
         padding: 12px 22px;
         border-radius: 999px;
-        background-color: #1e7e34;
-        color: #ffffff;
+        background-color: #f5a623;
+        color: #3d2b1f;
         text-decoration: none;
         font-weight: 800;
-        transition:
-          background-color 0.2s,
-          transform 0.2s;
+        transition: background-color 0.2s, color 0.2s, transform 0.2s;
       }
 
-      .delivery-whatsapp-btn:hover {
-        background-color: #16662a;
+      .delivery-cardapio-btn:hover {
+        background-color: #e67e22;
+        color: #ffffff;
         transform: translateY(-2px);
       }
 
-      .delivery-whatsapp-btn:focus-visible {
-        outline: 3px solid #f5a623;
+      .delivery-cardapio-btn:focus-visible {
+        outline: 3px solid #ffffff;
         outline-offset: 4px;
       }
 
@@ -1271,16 +1366,110 @@ import {
         margin: 0;
       }
 
+      .online-order-section {
+        padding: 72px 24px;
+        background-color: #fff7e8;
+      }
+
+      .online-order-card {
+        max-width: 820px;
+        margin: 0 auto;
+        padding: 40px;
+        border-radius: 28px;
+        background-color: #ffffff;
+        text-align: center;
+        border: 1px solid rgba(156, 107, 63, 0.18);
+        box-shadow: 0 18px 48px rgba(61, 43, 31, 0.12);
+      }
+
+      .online-order-card h2 {
+        margin: 0 0 16px;
+        color: #3d2b1f;
+        font-size: 2.2rem;
+        line-height: 1.15;
+      }
+
+      .online-order-card p {
+        max-width: 680px;
+        margin: 0 auto 28px;
+        color: #6b3f1d;
+        font-size: 1.08rem;
+        line-height: 1.7;
+      }
+
+      .online-order-actions {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+
+      .orders-cta {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 48px;
+        padding: 14px 28px;
+        border-radius: 999px;
+        background-color: #6b3f1d;
+        color: #ffffff;
+        text-decoration: none;
+        font-weight: 800;
+        transition: background-color 0.2s, transform 0.2s;
+      }
+
+      .orders-cta:hover {
+        background-color: #3d2b1f;
+        transform: translateY(-2px);
+      }
+
+      .orders-cta:focus-visible {
+        outline: 3px solid #f5a623;
+        outline-offset: 4px;
+      }
+
+      .orders-route-btn {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 48px;
+        padding: 14px 28px;
+        border-radius: 999px;
+        background-color: #1e7e34;
+        color: #ffffff;
+        text-decoration: none;
+        font-weight: 800;
+        box-shadow: 0 10px 24px rgba(30, 126, 52, 0.2);
+        transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      }
+
+      .orders-route-btn:hover {
+        background-color: #16662a;
+        transform: translateY(-2px);
+        box-shadow: 0 14px 30px rgba(30, 126, 52, 0.26);
+      }
+
+      .orders-route-btn:focus-visible {
+        outline: 3px solid #f5a623;
+        outline-offset: 4px;
+      }
+
       @media (max-width: 768px) {
         .public-header {
-          padding: 12px 16px;
+          position: sticky;
+          top: 0;
+          z-index: 900;
+          padding: 10px 16px;
           gap: 8px;
           align-items: center;
+          min-height: 56px;
+          box-shadow: 0 8px 24px rgba(61, 43, 31, 0.18);
         }
 
-        .brand {
-          font-size: 1rem;
-          flex-shrink: 0;
+        .brand-logo img {
+          height: 60px;
+          max-width: 180px;
         }
 
         .spacer {
@@ -1288,10 +1477,7 @@ import {
         }
 
         .nav-links {
-          display: flex;
-          gap: 8px;
-          align-items: center;
-          flex-wrap: nowrap;
+          display: none;
         }
 
         .nav-link {
@@ -1312,52 +1498,54 @@ import {
         }
 
         .hero-section {
-          padding: 48px 16px;
-        }
-
-        .hero-section {
-          padding: 40px 16px 48px;
+          padding: 40px 16px;
+          min-height: auto;
         }
 
         .hero-layout {
-          display: flex;
-          flex-direction: column;
-          gap: 28px;
+          max-width: 100%;
         }
 
-        .hero-image {
-          order: 1;
-          width: 100%;
+        .hero-content,
+        .hero-content-centered {
+          max-width: 100%;
         }
 
-        .hero-text {
-          order: 2;
-          text-align: center;
+        .hero-content h1,
+        .hero-content-centered h1 {
+          font-size: clamp(2rem, 9vw, 2.6rem);
+          line-height: 1.08;
+          margin-bottom: 12px;
         }
 
-        .hero-text h1 {
-          font-size: 2.5rem;
-        }
-
-        .hero-image img {
-          max-width: 320px;
-          max-height: 260px;
-          border-radius: 20px;
-          padding: 18px;
+        .hero-content .subtitle,
+        .hero-content-centered .subtitle {
+          font-size: 1rem;
+          line-height: 1.55;
+          margin-bottom: 20px;
+          color: #fff7e8;
         }
 
         .cta-group {
           flex-direction: column;
+          align-items: stretch;
           width: 100%;
-          max-width: 320px;
-          margin: 0 auto;
+          gap: 12px;
         }
 
         .main-cta,
         .secondary-cta {
           width: 100%;
-          padding: 12px 24px;
+          max-width: 320px;
+          margin-left: auto;
+          margin-right: auto;
+          min-height: 50px;
+          padding: 14px 20px;
           text-align: center;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          -webkit-tap-highlight-color: transparent;
         }
 
         .hours-time {
@@ -1376,12 +1564,32 @@ import {
           align-items: center;
         }
 
+        .info-section {
+          padding: 32px 16px;
+        }
+
         .info-grid {
           grid-template-columns: 1fr;
+          gap: 16px;
+        }
+
+        .info-card {
+          border-radius: 22px;
+          padding: 22px;
+          box-shadow: 0 8px 20px rgba(61, 43, 31, 0.12);
+        }
+
+        .info-card .icon {
+          font-size: 40px;
+          margin-bottom: 12px;
+        }
+
+        .info-card h3 {
+          font-size: 1.15rem;
         }
 
         .delivery-section {
-          padding: 56px 16px;
+          padding: 32px 16px;
         }
 
         .delivery-content {
@@ -1407,38 +1615,44 @@ import {
           align-items: center;
         }
 
-        .delivery-whatsapp-btn {
+        .delivery-cardapio-btn {
           width: 100%;
         }
 
         .featured-products-section {
-          padding: 48px 16px;
+          padding: 28px 16px;
         }
 
         .featured-products-section h2 {
-          font-size: 1.75rem;
+          font-size: 1.6rem;
+          margin-bottom: 12px;
         }
 
         .featured-products-subtitle {
-          font-size: 1rem;
-          margin-bottom: 32px;
+          font-size: 0.95rem;
+          margin-bottom: 24px;
         }
 
         .featured-products-grid {
-          grid-template-columns: repeat(2, 1fr);
-          gap: 16px;
+          grid-template-columns: 1fr;
+          gap: 12px;
         }
 
         .featured-product-card {
-          padding: 20px 16px;
+          padding: 18px 16px;
+          border-radius: 20px;
+          box-shadow: 0 6px 16px rgba(61, 43, 31, 0.1);
+          min-height: auto;
         }
 
         .product-icon {
           font-size: 36px;
+          margin-bottom: 10px;
         }
 
         .featured-product-card h3 {
-          font-size: 1.1rem;
+          font-size: 1.05rem;
+          margin-bottom: 8px;
         }
 
         .featured-product-card p {
@@ -1446,45 +1660,92 @@ import {
         }
 
         .orders-section {
-          padding: 56px 16px;
+          padding: 28px 16px;
+        }
+
+        .orders-content > .section-header h2 {
+          font-size: 1.6rem;
+          margin-bottom: 12px;
+        }
+
+        .orders-content > .section-header p {
+          font-size: 0.95rem;
+          margin-bottom: 24px;
         }
 
         .orders-categories-grid {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 18px;
+          grid-template-columns: 1fr;
+          gap: 12px;
         }
 
         .order-category-card {
-          padding: 24px;
+          padding: 18px 16px;
+          border-radius: 20px;
+          box-shadow: 0 6px 16px rgba(61, 43, 31, 0.1);
+        }
+
+        .order-category-emoji {
+          font-size: 2rem;
+          margin-bottom: 10px;
+        }
+
+        .order-category-card h3 {
+          font-size: 1.05rem;
+          margin-bottom: 8px;
         }
 
         .orders-whatsapp-btn {
           width: 100%;
+          min-height: 50px;
+          margin-top: 20px;
         }
 
         .benefits-section {
-          padding: 56px 16px;
+          padding: 28px 16px;
         }
 
         .benefits-section > .section-header h2 {
-          font-size: 1.9rem;
+          font-size: 1.6rem;
+          margin-bottom: 12px;
+        }
+
+        .benefits-section > .section-header p {
+          font-size: 0.95rem;
+          margin-bottom: 24px;
         }
 
         .benefits-grid {
           grid-template-columns: 1fr;
-          gap: 16px;
+          gap: 12px;
         }
 
         .benefit-card {
-          padding: 22px;
+          padding: 18px 16px;
+          border-radius: 20px;
+          box-shadow: 0 6px 16px rgba(61, 43, 31, 0.1);
+        }
+
+        .benefit-icon {
+          font-size: 2rem;
+          margin-bottom: 10px;
+        }
+
+        .benefit-card h3 {
+          font-size: 1.05rem;
+          margin-bottom: 8px;
+        }
+
+        .benefit-card p {
+          font-size: 0.9rem;
         }
 
         .location-section {
-          padding: 56px 16px;
+          padding: 28px 16px;
         }
 
         .location-content {
           grid-template-columns: 1fr;
+          gap: 20px;
         }
 
         .location-text {
@@ -1492,17 +1753,35 @@ import {
         }
 
         .location-text h2 {
-          font-size: 1.9rem;
+          font-size: 1.6rem;
+          margin-bottom: 12px;
+        }
+
+        .location-text p {
+          font-size: 0.95rem;
         }
 
         .location-card {
-          padding: 28px 24px;
+          padding: 20px 16px;
+          border-radius: 22px;
           text-align: center;
           align-items: center;
+          box-shadow: 0 8px 20px rgba(61, 43, 31, 0.12);
+        }
+
+        .location-icon {
+          font-size: 2.5rem;
+          margin-bottom: 12px;
+        }
+
+        .location-address strong {
+          font-size: 1.05rem;
         }
 
         .location-maps-btn {
           width: 100%;
+          min-height: 50px;
+          margin-top: 16px;
         }
 
         .footer-content {
@@ -1515,21 +1794,76 @@ import {
         }
 
         .floating-whatsapp {
-          left: 16px;
-          right: 16px;
-          bottom: 16px;
-          width: auto;
+          display: none;
         }
 
         .back-to-top {
-          left: 16px;
-          bottom: 84px;
-          min-height: 42px;
-          padding: 9px 14px;
-          font-size: 0.9rem;
+          display: none;
+        }
+
+        .mobile-bottom-nav {
+          position: fixed;
+          left: 12px;
+          right: 12px;
+          bottom: 12px;
+          z-index: 1100;
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 4px;
+          padding: 8px;
+          border-radius: 24px;
+          background-color: rgba(255, 255, 255, 0.96);
+          border: 1px solid rgba(156, 107, 63, 0.18);
+          box-shadow: 0 16px 42px rgba(61, 43, 31, 0.22);
+          backdrop-filter: blur(10px);
+        }
+
+        .mobile-bottom-nav-item {
+          min-height: 56px;
+          border-radius: 18px;
+          color: #6b3f1d;
+          text-decoration: none;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 4px;
+          font-size: 0.75rem;
+          font-weight: 800;
+          transition:
+            background-color 0.2s,
+            transform 0.2s;
+          -webkit-tap-highlight-color: transparent;
+        }
+
+        .mobile-bottom-nav-item span {
+          font-size: 1.2rem;
+          line-height: 1;
+        }
+
+        .mobile-bottom-nav-item strong {
+          font-size: 0.72rem;
+          line-height: 1;
+        }
+
+        .mobile-bottom-nav-item:hover,
+        .mobile-bottom-nav-item:active {
+          background-color: #fff7e8;
+          color: #3d2b1f;
+          transform: scale(0.98);
+        }
+
+        .mobile-bottom-nav-item:focus-visible {
+          outline: 3px solid #f5a623;
+          outline-offset: 3px;
         }
 
         .public-footer {
+          padding-bottom: 120px;
+        }
+
+        :host {
+          display: block;
           padding-bottom: 96px;
         }
       }
@@ -1621,6 +1955,29 @@ import {
         .benefit-card p {
           font-size: 0.85rem;
         }
+
+        .online-order-section {
+          padding: 56px 16px;
+        }
+
+        .online-order-card {
+          padding: 28px 22px;
+          border-radius: 24px;
+        }
+
+        .online-order-card h2 {
+          font-size: 1.8rem;
+        }
+
+        .online-order-actions {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .online-order-actions .main-cta,
+        .online-order-actions .orders-cta {
+          width: 100%;
+        }
       }
     `
   ]
@@ -1652,7 +2009,7 @@ export class SiteHomeComponent implements OnInit {
   readonly heroSubtitle =
     'A Padaria e Lanchonete Nova Aliança prepara seu café, lanche e encomendas com qualidade e carinho em Parque Veneza, Magé.';
 
-  readonly heroImageUrl = 'assets/images/site/logo.png';
+  readonly logoImageUrl = 'assets/images/site/logo.png';
 
   readonly featuredProducts = featuredProducts;
 
@@ -1756,15 +2113,9 @@ export class SiteHomeComponent implements OnInit {
     return hours * 60 + minutes;
   }
 
-  get whatsappUrl(): string {
+  get whatsappDoubtUrl(): string {
     return this.buildWhatsappUrl(
-      'Olá! Vim pelo site da Padaria Nova Aliança e gostaria de fazer um pedido.'
-    );
-  }
-
-  get whatsappOrderUrl(): string {
-    return this.buildWhatsappUrl(
-      'Olá! Vim pelo site da Padaria Nova Aliança e gostaria de fazer uma encomenda.'
+      'Olá! Vim pelo site da Padaria Nova Aliança e tenho uma dúvida.'
     );
   }
 

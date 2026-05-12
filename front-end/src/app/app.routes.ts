@@ -21,6 +21,11 @@ export const routes: Routes = [
       import('./features/site-publico/pages/public-menu/public-menu.component').then((m) => m.PublicMenuComponent)
   },
   {
+    path: 'encomendas',
+    loadComponent: () =>
+      import('./features/site-publico/pages/public-orders/public-orders.component').then((m) => m.PublicOrdersComponent)
+  },
+  {
     path: 'login',
     component: LoginPageComponent
   },

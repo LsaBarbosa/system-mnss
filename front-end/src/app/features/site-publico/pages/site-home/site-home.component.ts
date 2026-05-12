@@ -18,12 +18,12 @@ import {
   standalone: true,
   imports: [CommonModule, RouterLink],
   template: `
-    <header class="public-header">
+    <header class="public-header" id="topo">
       <div class="brand">{{ storeInfo?.name || 'Padaria Nova Aliança' }}</div>
 
       <div class="spacer"></div>
 
-      <nav class="nav-links">
+      <nav class="nav-links" aria-label="Navegação principal da home">
         <a href="#cardapio" class="nav-link">Cardápio</a>
         <a href="#encomendas" class="nav-link hidden-on-mobile">Encomendas</a>
         <a href="#contato" class="nav-link hidden-on-mobile">WhatsApp</a>
@@ -40,7 +40,7 @@ import {
       </nav>
     </header>
 
-    <div id="cardapio" class="hero-section">
+    <div class="hero-section">
       <div class="hero-layout">
         <div class="hero-text">
           <h1>{{ heroTitle }}</h1>
@@ -74,12 +74,11 @@ import {
       </div>
     </div>
 
-    <div id="encomendas" class="future-anchor-section"></div>
+    <div class="future-anchor-section"></div>
 
     <div class="info-section">
       <div class="info-grid" *ngIf="storeInfo">
         <a
-          id="localizacao"
           class="info-card info-card-link"
           [href]="googleMapsUrl"
           target="_blank"
@@ -133,7 +132,7 @@ import {
       </div>
     </div>
 
-    <div class="featured-products-section">
+    <div id="cardapio" class="featured-products-section">
       <div class="featured-products-container">
         <h2>Mais Pedidos da Nova Aliança</h2>
         <p class="featured-products-subtitle">
@@ -304,6 +303,14 @@ import {
     </footer>
 
     <a
+      class="back-to-top"
+      href="#topo"
+      aria-label="Voltar para o topo da página"
+    >
+      ↑ Topo
+    </a>
+
+    <a
       class="floating-whatsapp"
       [href]="whatsappUrl"
       target="_blank"
@@ -317,6 +324,14 @@ import {
     `
       html {
         scroll-behavior: smooth;
+      }
+
+      #topo,
+      #cardapio,
+      #encomendas,
+      #contato,
+      #localizacao {
+        scroll-margin-top: 96px;
       }
 
       .public-header {
@@ -441,10 +456,12 @@ import {
       .hero-image img {
         width: 100%;
         max-width: 480px;
-        aspect-ratio: 4 / 3;
-        object-fit: cover;
+        max-height: 360px;
+        object-fit: contain;
         border-radius: 24px;
-        box-shadow: 0 24px 60px rgba(61, 43, 31, 0.28);
+        padding: 24px;
+        background-color: rgba(255, 247, 232, 0.12);
+        box-shadow: 0 24px 60px rgba(61, 43, 31, 0.22);
       }
 
       .cta-group {
@@ -779,6 +796,39 @@ import {
       }
 
       .floating-whatsapp:focus-visible {
+        outline: 3px solid #f5a623;
+        outline-offset: 4px;
+      }
+
+      .back-to-top {
+        position: fixed;
+        left: 24px;
+        bottom: 24px;
+        z-index: 999;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        padding: 10px 16px;
+        border-radius: 999px;
+        background-color: #6b3f1d;
+        color: #ffffff;
+        text-decoration: none;
+        font-weight: 800;
+        box-shadow: 0 10px 28px rgba(61, 43, 31, 0.22);
+        transition:
+          background-color 0.2s,
+          transform 0.2s,
+          box-shadow 0.2s;
+      }
+
+      .back-to-top:hover {
+        background-color: #3d2b1f;
+        transform: translateY(-2px);
+        box-shadow: 0 14px 34px rgba(61, 43, 31, 0.28);
+      }
+
+      .back-to-top:focus-visible {
         outline: 3px solid #f5a623;
         outline-offset: 4px;
       }
@@ -1290,8 +1340,10 @@ import {
         }
 
         .hero-image img {
-          max-width: 360px;
+          max-width: 320px;
+          max-height: 260px;
           border-radius: 20px;
+          padding: 18px;
         }
 
         .cta-group {
@@ -1469,6 +1521,14 @@ import {
           width: auto;
         }
 
+        .back-to-top {
+          left: 16px;
+          bottom: 84px;
+          min-height: 42px;
+          padding: 9px 14px;
+          font-size: 0.9rem;
+        }
+
         .public-footer {
           padding-bottom: 96px;
         }
@@ -1592,7 +1652,7 @@ export class SiteHomeComponent implements OnInit {
   readonly heroSubtitle =
     'A Padaria e Lanchonete Nova Aliança prepara seu café, lanche e encomendas com qualidade e carinho em Parque Veneza, Magé.';
 
-  readonly heroImageUrl = 'assets/images/site/hero-padaria-placeholder.svg';
+  readonly heroImageUrl = 'assets/images/site/logo.png';
 
   readonly featuredProducts = featuredProducts;
 
